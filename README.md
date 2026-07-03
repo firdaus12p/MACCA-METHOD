@@ -1,4 +1,4 @@
-# MACCA — Workflow
+# MACCA - METHOD
 
 **MACCA** adalah sistem pengembangan perangkat lunak berbasis AI yang bekerja dari **spesifikasi tertulis**, bukan tebakan. Sebelum ada satu baris kode pun, semua keputusan penting sudah didokumentasikan. AI bekerja sesuai dokumen itu — bukan asumsi.
 
@@ -78,7 +78,7 @@ Semua dokumen hasil perencanaan disimpan di folder `project-context/` di dalam p
 | **architecture.md** | Keputusan teknis: bahasa pemrograman, framework, struktur folder, pola desain. |
 | **schema.md** | Desain database: tabel apa yang ada, kolom-kolomnya, dan relasinya. |
 | **api.md** | Daftar endpoint API: URL, method (GET/POST/dll), format request dan response. |
-| **rules.md** | Standar penulisan kode: penamaan variabel, format, aturan yang tidak boleh dilanggar. |
+| **rules.md** | Standar penulisan kode: penamaan variabel, format, dan aturan yang tidak boleh dilanggar. Mengandung seksi `[FORBIDDEN]` — daftar larangan teknis yang wajib dipindai AI sebelum menulis kode. |
 | **StyleGuide.md** | Panduan tampilan: warna, font, komponen UI, framework CSS yang digunakan. |
 | **Task.md** | Rencana kerja bertahap: daftar semua tugas yang harus dikerjakan, dikelompokkan per fase. |
 | **Fase** | Kelompok task yang saling berkaitan, diselesaikan bersama. Contoh: "Fase 1: Setup Database". |
@@ -88,6 +88,8 @@ Semua dokumen hasil perencanaan disimpan di folder `project-context/` di dalam p
 | **spec-compliance** | Verifikasi bahwa kode sudah sesuai dengan dokumen spec. |
 | **code-review** | Pemeriksaan kualitas dan keamanan kode — bukan soal spec, tapi soal kualitas penulisan. |
 | **bug-log.md** | Catatan semua bug yang pernah ditemukan dan diperbaiki — supaya AI belajar dari sejarah. |
+| **[FORBIDDEN]** | Seksi di `rules.md` berisi daftar larangan teknis (hardcode, `any`, console.log, dll). AI memindainya sebelum menulis kode. |
+| **[SELF-REVIEW]** | Output singkat dari `developer` setelah tiap task selesai: 1 potensi security risk, 1 performance bottleneck, 1 asumsi yang dibuat dari spec. |
 
 ---
 
@@ -101,15 +103,15 @@ Semua dokumen hasil perencanaan disimpan di folder `project-context/` di dalam p
 | `brainstorm-architecture` | @Fachri | Membuat architecture.md — keputusan tech stack dan struktur | Setelah PRD selesai (**wajib sebelum schema & api**) |
 | `brainstorm-schema` | @Fachri | Membuat schema.md — desain database | Setelah architecture selesai |
 | `brainstorm-api` | @Fachri | Membuat api.md — kontrak endpoint API | Setelah schema selesai |
-| `brainstorm-rules` | @Fachri | Membuat rules.md — standar penulisan kode | Kapan saja, tapi sebelum coding dimulai |
+| `brainstorm-rules` | @Fachri | Membuat rules.md — standar kode dan daftar larangan `[FORBIDDEN]` | Kapan saja, tapi sebelum coding dimulai |
 | `brainstorm-styleguide` | @Akram | Membuat StyleGuide.md — panduan UI/UX | Setelah PRD selesai, jika project punya UI |
-| `brainstorm-task` | @Galbi | Membuat Task.md — rencana kerja bertahap | Setelah semua spec di atas selesai |
+| `brainstorm-task` | @Galbi | Membuat Task.md — rencana kerja bertahap dengan urutan TDD (task test sebelum task implementasi) | Setelah semua spec di atas selesai |
 
 ### Skill Eksekusi
 
 | Skill | Persona | Fungsi | Kapan Digunakan |
 |---|---|---|---|
-| `developer` | @Firdaus | Mengerjakan task dari Task.md satu per satu | Setelah Task.md ada dan siap dikerjakan |
+| `developer` | @Firdaus | Mengerjakan task dari Task.md dengan pendekatan TDD — test ditulis sebelum implementasi, dilengkapi `[SELF-REVIEW]` setelah tiap task | Setelah Task.md ada dan siap dikerjakan |
 | `spec-compliance` | @Fachri | Verifikasi kode terhadap semua dokumen spec | Otomatis setelah setiap fase di developer |
 | `code-review` | @Fachri | Cek kualitas dan keamanan kode (27 item) | Setelah spec-compliance bersih |
 
@@ -387,6 +389,18 @@ Skill `developer` dirancang untuk menjelaskan keputusan teknis menggunakan **ana
 **Q: Apakah bug-log otomatis diupdate?**
 
 Tidak. Bug hanya dicatat setelah **kamu mengonfirmasi** bahwa bug sudah benar-benar teratasi. AI tidak akan mencatat ke bug-log tanpa izin kamu.
+
+---
+
+**Q: Kenapa developer menulis test sebelum kode implementasi?**
+
+Ini adalah pendekatan TDD (Test-Driven Development). Dengan menulis test dulu, AI dipaksa mendefinisikan signature dan perilaku fungsi secara pasti sebelum implementasi dimulai — mencegah perubahan struktur di tengah jalan. Kamu akan melihat task test (`Task N.1`) selalu hadir sebelum task implementasi (`Task N.2`) di Task.md.
+
+---
+
+**Q: Apa itu `[SELF-REVIEW]` yang muncul setelah developer coding?**
+
+Setelah setiap task selesai, developer menulis refleksi singkat: 1 potensi security risk, 1 potensi performance bottleneck, dan 1 asumsi yang dibuat dari spec. Tujuannya adalah mengekspos tebakan tersembunyi sebelum masuk ke fase verifikasi (`spec-compliance` + `code-review`).
 
 ---
 
