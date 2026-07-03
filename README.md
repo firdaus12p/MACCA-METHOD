@@ -293,25 +293,25 @@ curl -fsSL https://raw.githubusercontent.com/firdaus12p/MACCA-METHOD/main/instal
 irm https://raw.githubusercontent.com/firdaus12p/MACCA-METHOD/main/install.ps1 | iex
 ```
 
-Installer akan menampilkan menu pilihan AI tool:
+Installer akan menampilkan daftar AI tool dengan selektor interaktif:
 
 ```
-  Pilih AI tool yang kamu gunakan:
-  (ketik nomor, pisahkan spasi — contoh: 1 3 4)
-  (ketik 0 untuk pilih semua)
+  Pilih AI provider yang kamu gunakan:
 
-  [1] GitHub Copilot       → .github/skills/
-  [2] Cursor               → .claude/skills/  (Claude Code compatible)
-  [3] Claude Code          → .claude/skills/
-  [4] Windsurf             → .windsurf/skills/
-  [5] Gemini CLI           → .gemini/skills/
-  [6] OpenCode             → .opencode/skill/
-  [7] Kilo Code            → .kilo/skills/
-  [8] Codex (OpenAI)       → .agents/skills/  (sudah ada)
-  [9] Kimi CLI             → ~/.config/agents/skills/
+  [ ]  GitHub Copilot    → .github/skills/
+  [ ]  Cursor            → .cursor/skills/
+  [ ]  Claude Code       → .claude/skills/
+  [ ]  Windsurf          → .windsurf/skills/
+  [ ]  Gemini CLI        → .gemini/skills/
+  [ ]  OpenCode          → .opencode/skill/
+  [ ]  Kilo Code         → .kilo/skills/
+  [ ]  Codex / OpenAI   → .agents/skills/  (native)
+  [ ]  Kimi CLI          → ~/.config/agents/skills/
+
+  ↑/↓ navigasi  ·  Spasi pilih  ·  Enter konfirmasi
 ```
 
-Kamu bisa memilih lebih dari satu tool (contoh: `1 3` untuk Copilot + Claude). Ketik `0` untuk install semua sekaligus. Installer juga menanyakan nama developer (opsional).
+Gunakan ↑/↓ untuk navigasi, Spasi untuk centang/hapus pilihan, dan Enter untuk konfirmasi. Kamu bisa memilih lebih dari satu tool. Installer juga menanyakan nama developer dan nama project (keduanya opsional).
 
 ### Update ke Versi Terbaru
 
@@ -353,36 +353,32 @@ Gunakan skill help
 
 ## 10. Struktur Folder
 
+Contoh struktur setelah install dengan GitHub Copilot dipilih:
+
 ```
 your-project/
 ├── .agents/
-│   ├── skills/                  ← master skills (Codex native + source untuk semua tools)
-│   │   ├── brainstorm-prd/SKILL.md
-│   │   ├── brainstorm-architecture/SKILL.md
-│   │   ├── brainstorm-schema/SKILL.md
-│   │   ├── brainstorm-api/SKILL.md
-│   │   ├── brainstorm-rules/SKILL.md
-│   │   ├── brainstorm-styleguide/SKILL.md
-│   │   ├── brainstorm-task/SKILL.md
-│   │   ├── spec-compliance/SKILL.md
-│   │   ├── code-review/SKILL.md
-│   │   ├── developer/SKILL.md
-│   │   ├── help/SKILL.md
-│   │   ├── bug-fix/SKILL.md
-│   │   ├── add-feature/SKILL.md
-│   │   ├── spec-audit/SKILL.md
-│   │   └── spec-init/SKILL.md
-│   ├── developer-config.json    ← nama developer (opsional)
+│   ├── developer-config.json    ← nama developer & nama project (opsional)
 │   └── macca-tools.txt          ← tools yang dipilih saat install
 │
-├── (dibuat otomatis sesuai tool yang dipilih saat install)
-│   ├── .github/skills/          ← GitHub Copilot
-│   ├── .claude/skills/          ← Claude Code + Cursor
-│   ├── .windsurf/skills/        ← Windsurf
-│   ├── .gemini/skills/          ← Gemini CLI
-│   ├── .opencode/skill/         ← OpenCode
-│   ├── .kilo/skills/            ← Kilo Code
-│   └── ~/.config/agents/skills/ ← Kimi CLI (global user-level)
+├── .github/
+│   └── skills/                  ← folder skills untuk GitHub Copilot
+│       ├── add-feature/
+│       ├── brainstorm-api/
+│       ├── brainstorm-architecture/
+│       ├── brainstorm-prd/
+│       ├── brainstorm-rules/
+│       ├── brainstorm-schema/
+│       ├── brainstorm-styleguide/
+│       ├── brainstorm-task/
+│       ├── bug-fix/
+│       ├── code-review/
+│       ├── developer/
+│       ├── help/
+│       ├── rapat/
+│       ├── spec-audit/
+│       ├── spec-compliance/
+│       └── spec-init/
 │
 ├── project-context/             ← dibuat otomatis oleh skill
 │   ├── PRD.md
@@ -399,6 +395,22 @@ your-project/
 ├── skills-lock.json
 └── ... (kode project kamu)
 ```
+
+Folder skills dibuat sesuai AI tool yang dipilih saat install:
+
+| AI Tool | Folder Skills |
+|---|---|
+| GitHub Copilot | `.github/skills/` |
+| Cursor | `.cursor/skills/` |
+| Claude Code | `.claude/skills/` |
+| Windsurf | `.windsurf/skills/` |
+| Gemini CLI | `.gemini/skills/` |
+| OpenCode | `.opencode/skill/` |
+| Kilo Code | `.kilo/skills/` |
+| Codex (OpenAI) | `.agents/skills/` |
+| Kimi CLI | `~/.config/agents/skills/` (global, di luar project) |
+
+> Jika Codex dipilih, skills berada di `.agents/skills/` — folder `.agents/` akan memiliki subfolder `skills/` tambahan di samping `developer-config.json` dan `macca-tools.txt`. Kamu bisa memilih lebih dari satu tool; setiap tool mendapat salinan skills-nya sendiri.
 
 ---
 

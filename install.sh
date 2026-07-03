@@ -4,7 +4,6 @@
 REPO_URL="https://github.com/firdaus12p/MACCA-METHOD"
 TMP_DIR=$(mktemp -d)
 SELECTED=()
-CLAUDE_COPIED=0
 trap 'rm -rf "$TMP_DIR" 2>/dev/null' INT TERM EXIT
 
 # ─── Banner ────────────────────────────────────────────────────────────────────
@@ -45,12 +44,12 @@ install_tool() {
       echo "  ✓ GitHub Copilot    → .github/skills/"
       ;;
     2|cursor)
-      if [[ $CLAUDE_COPIED -eq 0 ]]; then copy_skills .claude/skills; CLAUDE_COPIED=1; fi
+      copy_skills .cursor/skills
       SELECTED+=("cursor")
-      echo "  ✓ Cursor            → .claude/skills/ (Claude Code compatible)"
+      echo "  ✓ Cursor            → .cursor/skills/"
       ;;
     3|claude)
-      if [[ $CLAUDE_COPIED -eq 0 ]]; then copy_skills .claude/skills; CLAUDE_COPIED=1; fi
+      copy_skills .claude/skills
       SELECTED+=("claude")
       echo "  ✓ Claude Code       → .claude/skills/"
       ;;
@@ -129,7 +128,7 @@ checkbox_select() {
 # ─── Pilih AI provider ────────────────────────────────────────────────────────
 DISPLAY=(
   "GitHub Copilot    → .github/skills/"
-  "Cursor            → .claude/skills/"
+  "Cursor            → .cursor/skills/"
   "Claude Code       → .claude/skills/"
   "Windsurf          → .windsurf/skills/"
   "Gemini CLI        → .gemini/skills/"

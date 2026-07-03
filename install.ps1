@@ -1,7 +1,6 @@
 $REPO_URL     = "https://github.com/firdaus12p/MACCA-METHOD"
 $TMP_DIR      = Join-Path $env:TEMP "macca-install"
 $Selected     = @()
-$ClaudeCopied = $false
 
 # ─── Banner ────────────────────────────────────────────────────────────────────
 Write-Host ""
@@ -39,7 +38,7 @@ function Copy-Skills($Dest) {
 # ─── Checkbox selector (↑/↓ Spasi Enter) ────────────────────────────────────
 $AllToolDisplay = @(
   "GitHub Copilot    -> .github\skills\"
-  "Cursor            -> .claude\skills\"
+  "Cursor            -> .cursor\skills\"
   "Claude Code       -> .claude\skills\"
   "Windsurf          -> .windsurf\skills\"
   "Gemini CLI        -> .gemini\skills\"
@@ -100,8 +99,8 @@ if ($ToolSelected.Count -eq 0) {
   foreach ($Key in $ToolSelected) {
     switch ($Key) {
       'copilot'  { Copy-Skills ".github\skills";   $Selected += 'copilot';  Write-Host "  v GitHub Copilot  -> .github\skills\" }
-      'cursor'   { if (-not $ClaudeCopied) { Copy-Skills ".claude\skills"; $ClaudeCopied = $true }; $Selected += 'cursor';  Write-Host "  v Cursor          -> .claude\skills\" }
-      'claude'   { if (-not $ClaudeCopied) { Copy-Skills ".claude\skills"; $ClaudeCopied = $true }; $Selected += 'claude';  Write-Host "  v Claude Code     -> .claude\skills\" }
+      'cursor'   { Copy-Skills ".cursor\skills"; $Selected += 'cursor';  Write-Host "  v Cursor          -> .cursor\skills\" }
+      'claude'   { Copy-Skills ".claude\skills"; $Selected += 'claude';  Write-Host "  v Claude Code     -> .claude\skills\" }
       'windsurf' { Copy-Skills ".windsurf\skills";  $Selected += 'windsurf'; Write-Host "  v Windsurf        -> .windsurf\skills\" }
       'gemini'   { Copy-Skills ".gemini\skills";    $Selected += 'gemini';   Write-Host "  v Gemini CLI      -> .gemini\skills\" }
       'opencode' { Copy-Skills ".opencode\skill";   $Selected += 'opencode'; Write-Host "  v OpenCode        -> .opencode\skill\" }
