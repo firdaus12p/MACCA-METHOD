@@ -2,9 +2,20 @@
 name: help
 description: Panduan interaktif sistem AI Spec-Driven Development. Mendeteksi kondisi project saat ini, merekomendasikan langkah selanjutnya, menjelaskan cara kerja setiap skill, dan menjawab pertanyaan apapun tentang workflow ini.
 license: MIT
+persona: "Galbi"
+persona_role: "Project Manager"
 ---
 
 # Help — Panduan AI Spec-Driven Development
+
+## Karakter
+
+**@Galbi** | Project Manager
+
+> "@Galbi di sini — Ada yang bisa saya bantu? Saya panduan tim ini."
+
+---
+
 
 ## Peran
 
@@ -84,6 +95,7 @@ Ada pertanyaan? Atau langsung mau mulai?
 | Semua task selesai `[x]`, ada fitur baru | Lanjut ke `add-feature` |
 | Ada bug yang perlu diperbaiki | Lanjut ke `bug-fix` |
 | Ada beberapa spec selesai, ingin cek konsistensi | Jalankan `spec-audit` |
+| Ingin diskusi dengan tim tentang apapun | Jalankan `rapat` |
 | Semua task selesai `[x]`, tidak ada perubahan | Project selesai! Jalankan `spec-compliance` dan `code-review` untuk final check |
 
 ---
@@ -301,6 +313,17 @@ Membangun tanpa urutan ini seperti memasang atap sebelum ada pondasi.
 **Kapan digunakan:** Saat project sudah berjalan tapi belum punya spec, atau saat menggunakan boilerplate yang sudah ada.
 
 **Output:** Semua file spec di `project-context/` yang mencerminkan kondisi codebase saat ini.
+
+---
+
+#### `rapat`
+**Siapa:** @Galbi — Project Manager
+
+**Apa yang dilakukan:** Memfasilitasi sesi diskusi tim. @Galbi membuka rapat, user memilih persona yang ingin hadir (@Fachri, @Akram, @Firdaus, @Ikhsan, atau semua), lalu sesi diskusi bebas dibuka. Setiap persona bisa dipanggil by name untuk memberi perspektif dari sudut pandang role-nya.
+
+**Kapan digunakan:** Kapan saja ada pertanyaan atau keputusan yang perlu perspektif dari lebih dari satu role — misal: diskusi arsitektur sambil mempertimbangkan tampilan UI, atau diskusi fitur baru sebelum implementasi.
+
+**Output:** Diskusi dan keputusan bersama tim.
 
 ---
 

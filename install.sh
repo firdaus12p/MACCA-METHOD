@@ -1,22 +1,22 @@
 #!/bin/bash
 set -e
 
-REPO_URL="https://github.com/firdaus12p/SIGAP---METHOD"
+REPO_URL="https://github.com/firdaus12p/macca-workflow"
 TMP_DIR=$(mktemp -d)
 
-echo "Installing SIGAP..."
-git clone --depth 1 "$REPO_URL" "$TMP_DIR/sigap" --quiet
+echo "Installing MACCA..."
+git clone --depth 1 "$REPO_URL" "$TMP_DIR/macca" --quiet
 
-cp -r "$TMP_DIR/sigap/.agents/" .
-cp "$TMP_DIR/sigap/skills-lock.json" .
+cp -r "$TMP_DIR/macca/.agents/" .
+cp "$TMP_DIR/macca/skills-lock.json" .
 
 rm -rf "$TMP_DIR"
 
-read -r -p "Masukkan nama developer (kosongkan untuk skip): " DEV_NAME </dev/tty
+read -r -p "Kamu mau di panggil apa? (kosongkan untuk skip): " DEV_NAME </dev/tty
 if [ -n "$DEV_NAME" ]; then
   mkdir -p .agents
   printf '{\n  "name": "%s"\n}\n' "$DEV_NAME" > .agents/developer-config.json
   echo "Nama developer disimpan."
 fi
 
-echo "Done! SIGAP installed. Gunakan skill help untuk mulai."
+echo "Done! MACCA installed. Gunakan skill help untuk mulai."

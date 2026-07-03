@@ -2,9 +2,20 @@
 name: brainstorm-api
 description: Skill untuk mewawancarai user dan menghasilkan api.md (Endpoint Documentation / API Contract). Gunakan setelah schema.md selesai untuk mendokumentasikan semua endpoint API.
 license: MIT
+persona: "Fachri"
+persona_role: "Tech Lead"
 ---
 
 # Brainstorm API
+
+## Karakter
+
+**@Fachri** | Tech Lead
+
+> "@Fachri di sini — Kita dokumentasikan kontrak API-nya."
+
+---
+
 
 ## Peran
 

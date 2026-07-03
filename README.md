@@ -1,8 +1,8 @@
-# SIGAP
+# MACCA — Workflow
 
-**SIGAP** adalah sistem pengembangan perangkat lunak berbasis AI yang bekerja dari **spesifikasi tertulis**, bukan tebakan. Sebelum ada satu baris kode pun, semua keputusan penting sudah didokumentasikan. AI bekerja sesuai dokumen itu — bukan asumsi.
+**MACCA** adalah sistem pengembangan perangkat lunak berbasis AI yang bekerja dari **spesifikasi tertulis**, bukan tebakan. Sebelum ada satu baris kode pun, semua keputusan penting sudah didokumentasikan. AI bekerja sesuai dokumen itu — bukan asumsi.
 
-> **Singkatan:** Sistem Intelligence Generatif Aplikasi Presisi
+> **Macca** berasal dari bahasa Bugis yang berarti *pintar, cerdas, pandai*. Dalam falsafah Bugis-Makassar, kepintaran selalu disandingkan dengan sifat-sifat luhur — identitas moral yang dibawa ke mana saja.
 
 ---
 
@@ -31,13 +31,13 @@ Ketika menggunakan AI untuk coding tanpa panduan yang jelas, sering terjadi:
 - Sulit tahu kapan fitur benar-benar selesai
 - Bug yang sama muncul berulang kali
 
-**SIGAP menyelesaikan ini** dengan cara: semua keputusan (fitur, database, API, tampilan, standar kode) ditulis dalam dokumen spec terlebih dahulu. AI membaca dokumen itu sebelum coding, dan memverifikasi hasilnya setelah coding.
+**MACCA menyelesaikan ini** dengan cara: semua keputusan (fitur, database, API, tampilan, standar kode) ditulis dalam dokumen spec terlebih dahulu. AI membaca dokumen itu sebelum coding, dan memverifikasi hasilnya setelah coding.
 
 ---
 
 ## 2. Cara Kerja
 
-SIGAP menggunakan **skill** — instruksi terstruktur yang diberikan ke AI untuk menjalankan tugas spesifik. Setiap skill punya tanggung jawab yang jelas dan tidak tumpang tindih.
+MACCA menggunakan **skill** — instruksi terstruktur yang diberikan ke AI untuk menjalankan tugas spesifik. Setiap skill punya tanggung jawab yang jelas dan tidak tumpang tindih.
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -95,33 +95,46 @@ Semua dokumen hasil perencanaan disimpan di folder `project-context/` di dalam p
 
 ### Skill Perencanaan (Brainstorm)
 
-| Skill | Fungsi | Kapan Digunakan |
-|---|---|---|
-| `brainstorm-prd` | Membuat PRD.md melalui sesi wawancara interaktif | Pertama kali, saat memulai project baru |
-| `brainstorm-architecture` | Membuat architecture.md — keputusan tech stack dan struktur | Setelah PRD selesai (**wajib sebelum schema & api**) |
-| `brainstorm-schema` | Membuat schema.md — desain database | Setelah architecture selesai |
-| `brainstorm-api` | Membuat api.md — kontrak endpoint API | Setelah schema selesai |
-| `brainstorm-rules` | Membuat rules.md — standar penulisan kode | Kapan saja, tapi sebelum coding dimulai |
-| `brainstorm-styleguide` | Membuat StyleGuide.md — panduan UI/UX | Setelah PRD selesai, jika project punya UI |
-| `brainstorm-task` | Membuat Task.md — rencana kerja bertahap | Setelah semua spec di atas selesai |
+| Skill | Persona | Fungsi | Kapan Digunakan |
+|---|---|---|---|
+| `brainstorm-prd` | @Galbi | Membuat PRD.md melalui sesi wawancara interaktif | Pertama kali, saat memulai project baru |
+| `brainstorm-architecture` | @Fachri | Membuat architecture.md — keputusan tech stack dan struktur | Setelah PRD selesai (**wajib sebelum schema & api**) |
+| `brainstorm-schema` | @Fachri | Membuat schema.md — desain database | Setelah architecture selesai |
+| `brainstorm-api` | @Fachri | Membuat api.md — kontrak endpoint API | Setelah schema selesai |
+| `brainstorm-rules` | @Fachri | Membuat rules.md — standar penulisan kode | Kapan saja, tapi sebelum coding dimulai |
+| `brainstorm-styleguide` | @Akram | Membuat StyleGuide.md — panduan UI/UX | Setelah PRD selesai, jika project punya UI |
+| `brainstorm-task` | @Galbi | Membuat Task.md — rencana kerja bertahap | Setelah semua spec di atas selesai |
 
 ### Skill Eksekusi
 
-| Skill | Fungsi | Kapan Digunakan |
-|---|---|---|
-| `developer` | Mengerjakan task dari Task.md satu per satu | Setelah Task.md ada dan siap dikerjakan |
-| `spec-compliance` | Cek apakah kode sesuai spec | Otomatis setelah setiap fase di developer |
-| `code-review` | Cek kualitas dan keamanan kode (27 item) | Setelah spec-compliance bersih |
+| Skill | Persona | Fungsi | Kapan Digunakan |
+|---|---|---|---|
+| `developer` | @Firdaus | Mengerjakan task dari Task.md satu per satu | Setelah Task.md ada dan siap dikerjakan |
+| `spec-compliance` | @Fachri | Verifikasi kode terhadap semua dokumen spec | Otomatis setelah setiap fase di developer |
+| `code-review` | @Fachri | Cek kualitas dan keamanan kode (27 item) | Setelah spec-compliance bersih |
 
 ### Skill Utilitas
 
-| Skill | Fungsi | Kapan Digunakan |
+| Skill | Persona | Fungsi | Kapan Digunakan |
+|---|---|---|---|
+| `help` | @Galbi | Deteksi kondisi project & rekomendasikan langkah berikutnya | Kapan saja, terutama jika bingung harus mulai dari mana |
+| `bug-fix` | @Ikhsan | Diagnosis, perbaikan, dan dokumentasi bug | Saat ada bug yang perlu diperbaiki |
+| `add-feature` | @Galbi | Tambah fitur baru ke project yang sudah berjalan | Setelah project berjalan dan ada fitur baru |
+| `spec-audit` | @Fachri | Cek konsistensi antar semua dokumen spec | Setelah beberapa/semua spec selesai, sebelum coding |
+| `spec-init` | @Fachri | Buat semua spec dari codebase yang sudah ada | Untuk project yang sudah berjalan tapi belum punya spec |
+| `rapat` | @Galbi | Diskusi tim multi-persona dalam satu sesi | Kapan saja, saat butuh perspektif dari beberapa keahlian sekaligus |
+
+### Tim AI MACCA
+
+Setiap skill dijalankan oleh satu **persona** — karakter AI dengan keahlian spesifik. Kamu bisa memanggil mereka by name selama sesi.
+
+| Persona | Role | Skills |
 |---|---|---|
-| `help` | Deteksi kondisi project & rekomendasikan langkah berikutnya | Kapan saja, terutama jika bingung harus mulai dari mana |
-| `bug-fix` | Diagnosis, perbaikan, dan dokumentasi bug | Saat ada bug yang perlu diperbaiki |
-| `add-feature` | Tambah fitur baru ke project yang sudah berjalan | Setelah project berjalan dan ada fitur baru |
-| `spec-audit` | Cek konsistensi antar semua dokumen spec | Setelah beberapa/semua spec selesai, sebelum coding |
-| `spec-init` | Buat semua spec dari codebase yang sudah ada | Untuk project yang sudah berjalan tapi belum punya spec |
+| **@Galbi** | Project Manager | `brainstorm-prd`, `brainstorm-task`, `add-feature`, `help`, `rapat` |
+| **@Fachri** | Tech Lead | `brainstorm-architecture`, `brainstorm-api`, `brainstorm-schema`, `brainstorm-rules`, `spec-init`, `spec-audit`, `spec-compliance`, `code-review` |
+| **@Akram** | UI/UX Designer | `brainstorm-styleguide` |
+| **@Firdaus** | Expert Developer | `developer` |
+| **@Ikhsan** | Debugger | `bug-fix` |
 
 ---
 
@@ -267,16 +280,34 @@ Masuk ke folder project kamu, lalu jalankan **satu perintah** berikut:
 **Linux / Mac**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/firdaus12p/SIGAP---METHOD/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/firdaus12p/macca-workflow/main/install.sh | bash
 ```
 
 **Windows (PowerShell)**
 
 ```powershell
-irm https://raw.githubusercontent.com/firdaus12p/SIGAP---METHOD/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/firdaus12p/macca-workflow/main/install.ps1 | iex
 ```
 
 Installer akan meminta nama developer di akhir proses (opsional, bisa dikosongkan).
+
+### Update ke Versi Terbaru
+
+Dari dalam folder project kamu:
+
+**Linux / Mac**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/firdaus12p/macca-workflow/main/upgrade.sh | bash
+```
+
+**Windows (PowerShell)**
+
+```powershell
+irm https://raw.githubusercontent.com/firdaus12p/macca-workflow/main/upgrade.ps1 | iex
+```
+
+> `project-context/` dan `developer-config.json` kamu **tidak akan tersentuh** saat upgrade.
 
 ### Cara Memanggil Skill
 

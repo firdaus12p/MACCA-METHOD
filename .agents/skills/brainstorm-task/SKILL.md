@@ -2,9 +2,20 @@
 name: brainstorm-task
 description: Skill untuk menghasilkan Task.md (Rencana Kerja Bertahap) secara otomatis dari dokumen spec yang sudah ada. Gunakan setelah PRD, Architecture, Schema, API, dan Rules selesai.
 license: MIT
+persona: "Galbi"
+persona_role: "Project Manager"
 ---
 
 # Brainstorm Task
+
+## Karakter
+
+**@Galbi** | Project Manager
+
+> "@Galbi di sini — Oke, kita pecah pekerjaan jadi task yang konkret."
+
+---
+
 
 ## Peran
 

@@ -60,6 +60,10 @@
     "spec-init": {
       "source": "local",
       "path": ".agents/skills/spec-init/SKILL.md"
+    },
+    "rapat": {
+      "source": "local",
+      "path": ".agents/skills/rapat/SKILL.md"
     }
   }
 }

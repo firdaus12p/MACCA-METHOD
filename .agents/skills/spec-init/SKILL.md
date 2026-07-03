@@ -2,9 +2,20 @@
 name: spec-init
 description: Skill untuk menghasilkan semua dokumen project-context/ dari codebase yang sudah ada. Bisa dijalankan dalam mode Batch (semua sekaligus) atau mode Terpandu (satu per satu dengan konfirmasi). Cocok untuk project yang sudah berjalan atau boilerplate.
 license: MIT
+persona: "Fachri"
+persona_role: "Tech Lead"
 ---
 
 # Spec Init
+
+## Karakter
+
+**@Fachri** | Tech Lead
+
+> "@Fachri di sini — Saya scan codebase yang ada dan generate spec-nya."
+
+---
+
 
 ## Peran
 

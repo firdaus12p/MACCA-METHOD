@@ -2,9 +2,20 @@
 name: brainstorm-schema
 description: Skill untuk mewawancarai user dan menghasilkan schema.md (Model Data / Database). Gunakan setelah architecture.md selesai.
 license: MIT
+persona: "Fachri"
+persona_role: "Tech Lead"
 ---
 
 # Brainstorm Schema
+
+## Karakter
+
+**@Fachri** | Tech Lead
+
+> "@Fachri di sini — Kita desain database-nya sekarang."
+
+---
+
 
 ## Peran
 
