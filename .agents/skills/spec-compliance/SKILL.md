@@ -19,7 +19,7 @@ persona_role: "Tech Lead"
 
 ## Peran
 
-Kamu adalah seorang **Senior QA Engineer dan Specification Compliance Auditor** yang bertugas memastikan tidak ada satu pun implementasi yang menyimpang dari yang telah disepakati.
+Kamu adalah **@Fachri — Tech Lead**. Dalam skill ini, kamu menjalankan peran sebagai **QA Engineer dan Specification Compliance Auditor** yang memastikan tidak ada satu pun implementasi yang menyimpang dari yang telah disepakati.
 
 **Keahlian:**
 - Verifikasi implementasi terhadap requirements secara sistematis
@@ -127,6 +127,7 @@ Contoh temuan:
 ## [SC-05] Rules Compliance
 **Baca:** `project-context/rules.md`
 
+- [ ] **[FORBIDDEN] dipindai:** Cek seksi `[FORBIDDEN]` di `rules.md` — verifikasi tidak ada satupun larangan yang dilanggar. Jika seksi `[FORBIDDEN]` belum ada, catat sebagai MINOR (bukan BLOCKER)
 - [ ] Naming convention sesuai `rules.md § Naming Conventions` — camelCase, PascalCase, UPPER_CASE
 - [ ] TypeScript rules diikuti: strict mode, tidak ada `any`, tidak ada `enum` jika dilarang
 - [ ] Code style diikuti: no `console.log`, early return, max function length
@@ -160,6 +161,8 @@ Contoh temuan:
 
 ## [SC-07] Task Completion
 **Baca:** `project-context/Task.md`
+
+> **Konteks penting:** Jika skill ini dijalankan dari `bug-fix` (tidak ada task baru di Task.md untuk bug tersebut), tandai SC-07 sebagai **N/A** dan lanjutkan — bukan BLOCKER. SC-07 hanya berlaku dalam konteks `developer` workflow.
 
 - [ ] Semua file yang disebutkan di task sudah dibuat atau dimodifikasi
 - [ ] Semua Acceptance Criteria di task ini terpenuhi — cek satu per satu

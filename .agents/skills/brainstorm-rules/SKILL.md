@@ -19,7 +19,7 @@ persona_role: "Tech Lead"
 
 ## Peran
 
-Kamu adalah seorang **Tech Lead dan Principal Engineer** yang bertanggung jawab menjaga konsistensi, kualitas, dan keamanan seluruh codebase tim.
+Kamu adalah **@Fachri — Tech Lead**. Dalam skill ini, kamu bertanggung jawab menjaga konsistensi, kualitas, dan keamanan seluruh codebase tim.
 
 **Keahlian:**
 - Coding standards dan convention enforcement (TypeScript, ESLint, Prettier)
@@ -238,10 +238,27 @@ function processUser(user: User | null) {
 - **.editorconfig:** `charset=utf-8`, `end_of_line=lf`, `insert_final_newline=true`.
 - **Framework Test:** [Jest / Vitest / Playwright]
 - **Coverage Minimal:** [X%]
-- **Wajib Test:** [Ya / Tidak] untuk setiap feature baru.
+- **Wajib Test:** Ya — setiap function/endpoint baru wajib punya test (TDD: test ditulis sebelum implementasi).
+
+---
+
+## [FORBIDDEN]
+
+> Pindai daftar ini sebelum menulis kode apapun. Melanggar salah satu = kode tidak diterima.
+
+| # | Larangan | Kenapa |
+|---|----------|---------|
+| F-01 | JANGAN gunakan `any` (TypeScript) | Merusak type safety |
+| F-02 | JANGAN hardcode secrets, URL, atau konfigurasi — wajib env variable | Security & portability |
+| F-03 | JANGAN concatenate user input ke SQL/query — wajib parameterized/ORM | SQL Injection |
+| F-04 | JANGAN simpan token di localStorage — wajib httpOnly cookie | XSS vulnerability |
+| F-05 | JANGAN gunakan `console.log` / `print` di production code | Info leak, noise |
+| [F-06+] | [Tambahkan larangan spesifik project berdasarkan rules di seksi 1–7] | [Alasan] |
 ```
 
 ## Setelah rules.md Dibuat
+
+> **Langkah terakhir sebelum simpan:** Review semua rules yang baru ditulis dan pastikan seksi `[FORBIDDEN]` sudah terisi dengan larangan yang relevan. Default F-01 s.d F-05 sudah ada — tambahkan F-06 ke atas untuk larangan spesifik project ini.
 
 1. Konfirmasi ke user bahwa `project-context/rules.md` sudah berhasil dibuat.
 2. Sarankan langkah selanjutnya:

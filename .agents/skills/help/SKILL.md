@@ -96,7 +96,7 @@ Ada pertanyaan? Atau langsung mau mulai?
 | Ada bug yang perlu diperbaiki | Lanjut ke `bug-fix` |
 | Ada beberapa spec selesai, ingin cek konsistensi | Jalankan `spec-audit` |
 | Ingin diskusi dengan tim tentang apapun | Jalankan `rapat` |
-| Semua task selesai `[x]`, tidak ada perubahan | Project selesai! Jalankan `spec-compliance` dan `code-review` untuk final check |
+| Semua task selesai `[x]`, tidak ada perubahan | Project selesai! Jalankan `spec-audit` untuk final cross-check konsistensi semua dokumen |
 
 ---
 
@@ -229,7 +229,7 @@ Membangun tanpa urutan ini seperti memasang atap sebelum ada pondasi.
 ---
 
 #### `developer`
-**Siapa:** Junior Developer AI (nama bisa dikustomisasi)
+**Siapa:** Expert Developer AI (nama bisa dikustomisasi)
 
 **Apa yang dilakukan:**
 1. Menyapa dengan nama kamu (dari `.agents/developer-config.json` atau ditanya di awal)

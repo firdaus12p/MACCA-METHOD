@@ -42,6 +42,11 @@ Skill ini digunakan untuk membuat **Task.md** — rencana kerja bertahap yang di
 
 ### Langkah-langkah:
 
+**Deteksi Mode sebelum mulai:**
+Cek apakah `project-context/Task.md` sudah ada.
+- **Belum ada** → lanjutkan langkah di bawah (mode generate baru).
+- **Sudah ada** (biasanya dipanggil dari `add-feature`): masuk **Mode Tambah Fase** — lewati Sesi Klarifikasi topik 1 & 3 (sudah ditetapkan di Task.md lama), hanya tanyakan topik 2 (granularitas task baru), lalu **tambahkan fase/task baru di bawah konten yang ada** tanpa menimpa Task.md dari awal.
+
 1. Sebelum mulai, **BACA semua dokumen spec** yang ada di folder `project-context/`:
    - `project-context/PRD.md` — fitur, business rules, acceptance criteria
    - `project-context/StyleGuide.md` — CSS framework, komponen, spacing (untuk task styling/setup UI)
@@ -83,6 +88,10 @@ Gali:
 - Berhenti setelah setiap fase? (lebih cepat, review per milestone)
 - Commit setelah setiap task?
 
+**Instruksi:** Sesuaikan bagian `## Aturan Eksekusi` di Task.md sesuai jawaban user:
+- Pilih **per task**: `"Setelah selesai satu task, BERHENTI dan tunggu konfirmasi user sebelum lanjut."`
+- Pilih **per fase** (default jika tidak ada preferensi): `"Setelah satu fase selesai, BERHENTI dan tunggu konfirmasi user sebelum lanjut ke fase berikutnya."`
+
 ### 4. Konfirmasi Dokumen yang Tersedia
 **Jangan tanya user** — cek sendiri keberadaan file di folder `project-context/`:
 `project-context/PRD.md`, `project-context/architecture.md`, `project-context/schema.md`, `project-context/api.md`, `project-context/rules.md`, `project-context/StyleGuide.md`
@@ -101,6 +110,7 @@ Sebelum menulis Task.md, lakukan analisis internal:
 5. **Baca `project-context/api.md`** → semua endpoint → setiap endpoint butuh route + controller + service
 6. **Baca `project-context/rules.md`** → standar kode → ada task setup ESLint, Prettier, tsconfig?
 7. Identifikasi dependensi antar task (database harus ada sebelum model, model sebelum service, service sebelum controller)
+8. **TDD:** Setiap task implementasi (service, endpoint, komponen) harus didahului task test dalam urutan task. Format: Task N.1 = tulis test, Task N.2 = implementasi (dengan dependensi: N.1 harus selesai dulu).
 
 Setelah analisis selesai, **tampilkan ringkasan ke user sebelum generate Task.md**:
 
@@ -128,8 +138,8 @@ Tunggu konfirmasi user sebelum generate Task.md.
 > **Total Fase:** [X] | **Total Task:** [Y] | **Terakhir diperbarui:** [tanggal]
 
 ## Aturan Eksekusi
-- Kerjakan task **satu per satu** secara berurutan.
-- Setelah selesai satu task, **BERHENTI** dan tunggu konfirmasi user sebelum lanjut.
+- Kerjakan task **satu per satu** secara berurutan dalam satu fase.
+- Setelah satu **fase** selesai, **BERHENTI** dan tunggu konfirmasi user sebelum lanjut ke fase berikutnya.
 - Update status `[ ]` menjadi `[x]` saat task selesai.
 - Jika task terblokir, tandai dengan `[~]` dan catat alasannya.
 
@@ -190,6 +200,7 @@ Tunggu konfirmasi user sebelum generate Task.md.
 - **Task HARUS diturunkan dari dokumen spec yang ada** — jangan brainstorm dari nol lagi.
 - Setiap task harus memiliki **acceptance criteria yang testable** — bukan hanya deskripsi.
 - Tandai **dependensi antar task** dengan jelas — AI tidak boleh loncat task.
+- **TDD:** Setiap task implementasi wajib didahului task test. Task N.1 = tulis test, Task N.2 = tulis implementasi. Dependensi N.2 → N.1 harus dinyatakan eksplisit.
 - Granularitas task harus **atomik** — bisa dikerjakan dan diverifikasi dalam satu sesi.
 - Gunakan referensi ke dokumen lain (`project-context/schema.md#tabel`, `project-context/api.md#endpoint`) di setiap task.
 - Gunakan Bahasa Indonesia.
