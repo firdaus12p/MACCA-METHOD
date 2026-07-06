@@ -50,7 +50,7 @@ Skill ini digunakan untuk membantu user membuat **StyleGuide.md** melalui sesi w
    **b. Rekomendasi:**
    > "Mau saya berikan **rekomendasi** untuk setiap topik berdasarkan riset terbaru?"
 
-   - Jika **ya** → sebelum setiap topik, gunakan subagent untuk riset mendalam tentang opsi terbaik saat ini (gunakan `context7` atau `exa` jika tersedia). Semua rekomendasi wajib berdasarkan hasil riset — bukan asumsi dari training data.
+   - Jika **ya** → untuk setiap topik: gunakan subagent untuk riset opsi terbaik saat ini terlebih dahulu (gunakan `context7` atau `exa` jika tersedia), lalu ajukan pertanyaan **beserta rekomendasi** berdasarkan hasil riset. Format: *"[Pertanyaan]? Rekomendasi saya: [X] — [alasan singkat dari riset]."* User bisa terima atau berikan jawaban sendiri. Rekomendasi wajib dari hasil riset — bukan dari training data.
    - Jika **tidak** → lanjut tanya tanpa rekomendasi.
 
 3. Lakukan wawancara sesuai mode yang dipilih. Tunggu jawaban sebelum lanjut.

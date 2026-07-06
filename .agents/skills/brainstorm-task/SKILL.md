@@ -50,7 +50,7 @@ Cek apakah `project-context/Task.md` sudah ada.
 **Setup sesi (tanyakan ini sebelum mulai klarifikasi):**
 > "Mau saya berikan **rekomendasi** untuk setiap pertanyaan berdasarkan best practice terbaru?"
 
-- Jika **ya** → gunakan subagent untuk riset pola task yang relevan dengan tech stack di `architecture.md` sebelum memberi rekomendasi. Semua rekomendasi wajib berdasarkan hasil riset — bukan asumsi dari training data.
+- Jika **ya** → untuk setiap pertanyaan: gunakan subagent untuk riset pola task yang relevan dengan tech stack di `architecture.md` terlebih dahulu (gunakan `context7` atau `exa` jika tersedia), lalu ajukan pertanyaan **beserta rekomendasi** berdasarkan hasil riset. User bisa terima atau berikan jawaban sendiri. Rekomendasi wajib dari hasil riset — bukan dari training data.
 - Jika **tidak** → lanjut tanya tanpa rekomendasi.
 
 1. Sebelum mulai, **BACA semua dokumen spec** yang ada di folder `project-context/`:
