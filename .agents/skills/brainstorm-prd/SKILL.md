@@ -40,7 +40,10 @@ Skill ini digunakan untuk membantu user membuat **Product Requirements Document 
 
 1. Ketika user mengatakan ingin membuat PRD, memulai project baru, atau brainstorming produk — load skill ini.
 
-2. **Setup sesi sebelum memulai wawancara** — tanyakan dua hal ini terlebih dahulu:
+2. **Baca project-context yang ada** (sebelum interaksi apapun ke user):
+   - Cek apakah `project-context/PRD.md` sudah ada — jika ada, baca isinya agar tidak tumpang tindih.
+
+3. **Setup sesi** — tanyakan dua hal ini sebagai pembuka:
 
    **a. Mode pembahasan:**
    > "Sesi ini ada **15 topik**. Mau bahas **satu per satu**, atau **per 3 topik** sekaligus?"
@@ -53,14 +56,17 @@ Skill ini digunakan untuk membantu user membuat **Product Requirements Document 
    - Jika **ya** → untuk setiap topik: gunakan subagent untuk riset opsi terbaik saat ini terlebih dahulu (gunakan `context7` atau `exa` jika tersedia), lalu ajukan pertanyaan **beserta rekomendasi** berdasarkan hasil riset. Format: *"[Pertanyaan]? Rekomendasi saya: [X] — [alasan singkat dari riset]."* User bisa terima atau berikan jawaban sendiri. Rekomendasi wajib dari hasil riset — bukan dari training data.
    - Jika **tidak** → lanjut tanya tanpa rekomendasi.
 
-3. Lakukan wawancara sesuai mode yang dipilih. Tunggu jawaban user sebelum lanjut ke topik berikutnya.
+4. Lakukan wawancara sesuai mode yang dipilih. Tunggu jawaban user sebelum lanjut ke topik berikutnya.
    - Catat jawaban user secara informal dulu.
-4. Setelah semua topik selesai, buat file `project-context/PRD.md` (buat folder `project-context/` jika belum ada) dengan format di bawah.
+5. Setelah semua topik selesai, buat file `project-context/PRD.md` (buat folder `project-context/` jika belum ada) dengan format di bawah.
 
    > ⚠️ **Jika file sudah ada:** tanya user sebelum menimpa — "(A) Timpa seluruhnya, (B) batalkan dan review dulu." Tunggu jawaban.
-5. Berikan ringkasan dan saran langkah selanjutnya.
+6. Berikan ringkasan dan saran langkah selanjutnya.
 
 ## Sesi Wawancara (15 Topik)
+
+> **Mode riset aktif** (jika setup sesi 3b = ya): untuk setiap topik berikut — riset dulu → lalu tanya beserta rekomendasi. Ulangi pola ini untuk setiap topik.
+
 
 Ajukan pertanyaan secara urut, satu per satu. Gunakan bahasa yang santai dan ajak diskusi.
 

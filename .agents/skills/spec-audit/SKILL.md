@@ -113,7 +113,7 @@ Untuk setiap masalah yang ditemukan, buat entri dengan format ini:
 
 ---
 
-## Langkah 3.5 — Self-Review Sebelum Lapor
+## Self-Review Sebelum Lapor
 
 > **Wajib dijalankan sebelum Langkah 4.** Spec audit sering hanya dijalankan sekali — pastikan semua temuan sudah lengkap sebelum lapor ke user.
 

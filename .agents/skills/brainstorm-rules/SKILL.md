@@ -40,7 +40,11 @@ Skill ini digunakan untuk membuat **rules.md** — "konstitusi" kode yang membua
 
 1. Load skill ini idealnya sebelum mulai coding.
 
-2. **Setup sesi sebelum memulai wawancara** — tanyakan dua hal ini terlebih dahulu:
+2. **Baca project-context yang ada** (sebelum interaksi apapun ke user):
+   - `project-context/architecture.md` — tech stack dan pola yang sudah ditetapkan.
+   - `project-context/PRD.md` — platform dan constraint yang mempengaruhi standar kode.
+
+3. **Setup sesi** — tanyakan dua hal ini sebagai pembuka:
 
    **a. Mode pembahasan:**
    > "Sesi ini ada **7 topik**. Mau bahas **satu per satu**, atau **per 3 topik** sekaligus?"
@@ -53,13 +57,16 @@ Skill ini digunakan untuk membuat **rules.md** — "konstitusi" kode yang membua
    - Jika **ya** → untuk setiap topik: gunakan subagent untuk riset opsi terbaik saat ini terlebih dahulu (gunakan `context7` atau `exa` jika tersedia), lalu ajukan pertanyaan **beserta rekomendasi** berdasarkan hasil riset. Format: *"[Pertanyaan]? Rekomendasi saya: [X] — [alasan singkat dari riset]."* User bisa terima atau berikan jawaban sendiri. Rekomendasi wajib dari hasil riset — bukan dari training data.
    - Jika **tidak** → lanjut tanya tanpa rekomendasi.
 
-3. Lakukan wawancara sesuai mode yang dipilih. Tunggu jawaban sebelum lanjut.
-4. Setelah semua topik selesai, buat file `project-context/rules.md` (buat folder `project-context/` jika belum ada)
+4. Lakukan wawancara sesuai mode yang dipilih. Tunggu jawaban sebelum lanjut.
+5. Setelah semua topik selesai, buat file `project-context/rules.md` (buat folder `project-context/` jika belum ada)
 
    > ⚠️ **Jika file sudah ada:** tanya user sebelum menimpa — "(A) Timpa seluruhnya, (B) batalkan dan review dulu." Tunggu jawaban..
-5. Berikan ringkasan dan saran langkah selanjutnya.
+6. Berikan ringkasan dan saran langkah selanjutnya.
 
 ## Sesi Wawancara (7 Topik)
+
+> **Mode riset aktif** (jika setup sesi 3b = ya): untuk setiap topik berikut — riset dulu → lalu tanya beserta rekomendasi. Ulangi pola ini untuk setiap topik.
+
 
 ### 1. AI Persona & Tech Stack
 Tanyakan: *"Mari kita definisikan dulu 'identitas' AI saat ngerjain project ini. Tech stack utama apa yang harus AI kuasai?"*

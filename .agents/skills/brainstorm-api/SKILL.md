@@ -40,7 +40,12 @@ Skill ini digunakan untuk membantu user membuat **api.md** — dokumen kontrak A
 
 1. Load skill ini setelah schema selesai.
 
-2. **Setup sesi sebelum memulai wawancara** — tanyakan dua hal ini terlebih dahulu:
+2. **Baca project-context yang ada** (sebelum interaksi apapun ke user):
+   - `project-context/PRD.md` — fitur yang membutuhkan endpoint.
+   - `project-context/architecture.md` — tech stack dan pola API (REST/GraphQL/tRPC).
+   - `project-context/schema.md` — tabel dan field yang tersedia untuk digunakan endpoint.
+
+3. **Setup sesi** — tanyakan dua hal ini sebagai pembuka:
 
    **a. Mode pembahasan:**
    > "Sesi ini ada **5 topik global** + sesi per resource/endpoint. Mau bahas **satu per satu**, atau **per 3 topik** sekaligus untuk topik globalnya?"
@@ -53,13 +58,16 @@ Skill ini digunakan untuk membantu user membuat **api.md** — dokumen kontrak A
    - Jika **ya** → untuk setiap topik: gunakan subagent untuk riset opsi terbaik saat ini terlebih dahulu (gunakan `context7` atau `exa` jika tersedia), lalu ajukan pertanyaan **beserta rekomendasi** berdasarkan hasil riset. Format: *"[Pertanyaan]? Rekomendasi saya: [X] — [alasan singkat dari riset]."* User bisa terima atau berikan jawaban sendiri. Rekomendasi wajib dari hasil riset — bukan dari training data.
    - Jika **tidak** → lanjut tanya tanpa rekomendasi.
 
-3. Lakukan wawancara sesuai mode yang dipilih. Tunggu jawaban sebelum lanjut.
-4. Setelah semua topik selesai, buat file `project-context/api.md` (buat folder `project-context/` jika belum ada)
+4. Lakukan wawancara sesuai mode yang dipilih. Tunggu jawaban sebelum lanjut.
+5. Setelah semua topik selesai, buat file `project-context/api.md` (buat folder `project-context/` jika belum ada)
 
    > ⚠️ **Jika file sudah ada:** tanya user sebelum menimpa — "(A) Timpa seluruhnya, (B) batalkan dan review dulu." Tunggu jawaban..
-5. Berikan ringkasan dan saran langkah selanjutnya.
+6. Berikan ringkasan dan saran langkah selanjutnya.
 
 ## Sesi Wawancara (5 Topik)
+
+> **Mode riset aktif** (jika setup sesi 3b = ya): untuk setiap topik berikut — riset dulu → lalu tanya beserta rekomendasi. Ulangi pola ini untuk setiap topik.
+
 
 ### 1. Base URL, Versioning & Auth
 Tanyakan: *"Base URL API-nya apa? Pakai versioning di URL? Dan bagaimana cara autentikasi ke endpoint yang perlu login?"*

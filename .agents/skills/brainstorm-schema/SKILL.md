@@ -40,7 +40,11 @@ Skill ini digunakan untuk membantu user membuat **schema.md** — dokumen yang m
 
 1. Load skill ini setelah architecture selesai.
 
-2. **Setup sesi sebelum memulai wawancara** — tanyakan dua hal ini terlebih dahulu:
+2. **Baca project-context yang ada** (sebelum interaksi apapun ke user):
+   - `project-context/PRD.md` — fitur dan business rules yang menentukan tabel apa saja yang dibutuhkan.
+   - `project-context/architecture.md` — tech stack, ORM, dan konvensi database yang dipilih.
+
+3. **Setup sesi** — tanyakan dua hal ini sebagai pembuka:
 
    **a. Mode pembahasan:**
    > "Sesi ini ada **5 topik global** + sesi per tabel. Mau bahas **satu per satu**, atau **per 3 topik** sekaligus untuk topik globalnya?"
@@ -53,13 +57,16 @@ Skill ini digunakan untuk membantu user membuat **schema.md** — dokumen yang m
    - Jika **ya** → untuk setiap topik: gunakan subagent untuk riset opsi terbaik saat ini terlebih dahulu (gunakan `context7` atau `exa` jika tersedia), lalu ajukan pertanyaan **beserta rekomendasi** berdasarkan hasil riset. Format: *"[Pertanyaan]? Rekomendasi saya: [X] — [alasan singkat dari riset]."* User bisa terima atau berikan jawaban sendiri. Rekomendasi wajib dari hasil riset — bukan dari training data.
    - Jika **tidak** → lanjut tanya tanpa rekomendasi.
 
-3. Lakukan wawancara sesuai mode yang dipilih. Tunggu jawaban sebelum lanjut.
-4. Setelah semua topik selesai, buat file `project-context/schema.md` (buat folder `project-context/` jika belum ada)
+4. Lakukan wawancara sesuai mode yang dipilih. Tunggu jawaban sebelum lanjut.
+5. Setelah semua topik selesai, buat file `project-context/schema.md` (buat folder `project-context/` jika belum ada)
 
    > ⚠️ **Jika file sudah ada:** tanya user sebelum menimpa — "(A) Timpa seluruhnya, (B) batalkan dan review dulu." Tunggu jawaban..
-5. Berikan ringkasan dan saran langkah selanjutnya.
+6. Berikan ringkasan dan saran langkah selanjutnya.
 
 ## Sesi Wawancara (5 Topik — Semua Wajib Ditanya)
+
+> **Mode riset aktif** (jika setup sesi 3b = ya): untuk setiap topik berikut — riset dulu → lalu tanya beserta rekomendasi. Ulangi pola ini untuk setiap topik.
+
 
 > Tanyakan kelima topik berikut satu per satu. Jangan skip satupun.
 

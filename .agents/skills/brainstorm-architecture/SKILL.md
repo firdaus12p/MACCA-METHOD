@@ -40,7 +40,10 @@ Skill ini digunakan untuk membantu user membuat **architecture.md** — dokumen 
 
 1. Load skill ini setelah PRD selesai, atau ketika user ingin bahas arsitektur.
 
-2. **Setup sesi sebelum memulai wawancara** — tanyakan dua hal ini terlebih dahulu:
+2. **Baca project-context yang ada** (sebelum interaksi apapun ke user):
+   - `project-context/PRD.md` — baca fitur, target user, dan constraint yang mempengaruhi keputusan arsitektur.
+
+3. **Setup sesi** — tanyakan dua hal ini sebagai pembuka:
 
    **a. Mode pembahasan:**
    > "Sesi ini ada **9 topik**. Mau bahas **satu per satu**, atau **per 3 topik** sekaligus?"
@@ -53,13 +56,16 @@ Skill ini digunakan untuk membantu user membuat **architecture.md** — dokumen 
    - Jika **ya** → untuk setiap topik: gunakan subagent untuk riset opsi terbaik saat ini terlebih dahulu (gunakan `context7` atau `exa` jika tersedia), lalu ajukan pertanyaan **beserta rekomendasi** berdasarkan hasil riset. Format: *"[Pertanyaan]? Rekomendasi saya: [X] — [alasan singkat dari riset]."* User bisa terima atau berikan jawaban sendiri. Rekomendasi wajib dari hasil riset — bukan dari training data.
    - Jika **tidak** → lanjut tanya tanpa rekomendasi.
 
-3. Lakukan wawancara sesuai mode yang dipilih. Tunggu jawaban sebelum lanjut.
-4. Setelah semua topik selesai, buat file `project-context/architecture.md` (buat folder `project-context/` jika belum ada)
+4. Lakukan wawancara sesuai mode yang dipilih. Tunggu jawaban sebelum lanjut.
+5. Setelah semua topik selesai, buat file `project-context/architecture.md` (buat folder `project-context/` jika belum ada)
 
    > ⚠️ **Jika file sudah ada:** tanya user sebelum menimpa — "(A) Timpa seluruhnya, (B) batalkan dan review dulu." Tunggu jawaban..
-5. Berikan ringkasan dan saran langkah selanjutnya.
+6. Berikan ringkasan dan saran langkah selanjutnya.
 
 ## Sesi Wawancara (9 Topik)
+
+> **Mode riset aktif** (jika setup sesi 3b = ya): untuk setiap topik berikut — riset dulu → lalu tanya beserta rekomendasi. Ulangi pola ini untuk setiap topik.
+
 
 ### 1. System Context
 Tanyakan: *"Sistem ini berinteraksi dengan apa saja? Ada layanan eksternal, API pihak ketiga, atau sistem lain?"*

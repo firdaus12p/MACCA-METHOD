@@ -134,7 +134,7 @@ Tanpa spec, AI seperti tukang yang menebak-nebak. Dengan spec, AI tahu persis ha
 ### Mengapa Urutannya Harus Begini?
 
 ```
-PRD → StyleGuide/Architecture → Schema → API → Rules → Task → Developer → Verify
+PRD → Architecture → Schema → API → [StyleGuide opsional] → Rules → Task → Developer → Verify
 ```
 
 Setiap dokumen bergantung pada dokumen sebelumnya:
@@ -143,11 +143,26 @@ Setiap dokumen bergantung pada dokumen sebelumnya:
 - **Architecture** setelah PRD — karena tech stack dipilih berdasarkan kebutuhan yang sudah jelas
 - **Schema** setelah Architecture — karena struktur database dipengaruhi oleh tech stack (ORM, DB yang dipilih)
 - **API** setelah Schema — karena endpoint akan menggunakan tabel/model yang sudah didefinisikan
-- **Rules** kapan saja — tapi sebelum coding dimulai
+- **StyleGuide** setelah API — **opsional**, hanya jika project punya UI. Posisinya setelah API karena desain mengikuti data yang sudah didefinisikan, bukan sebaliknya
+- **Rules** setelah API/StyleGuide — tapi sebelum coding dimulai
 - **Task** setelah semua — karena task harus diturunkan dari spec yang lengkap
 - **Developer** setelah Task — karena Developer butuh semua spec untuk kerja dengan benar
 
 Membangun tanpa urutan ini seperti memasang atap sebelum ada pondasi.
+
+---
+
+### Fitur Brainstorm Sessions
+
+Setiap skill `brainstorm-*` punya dua pertanyaan setup di awal sesi:
+
+**1. Mode pembahasan** — Pilih cara membahas topik:
+- *Satu per satu*: lebih fokus, AI menunggu jawaban sebelum lanjut
+- *Per 3 topik*: lebih cepat, cocok untuk user yang sudah tahu gambaran besar
+
+**2. Rekomendasi** — Pilih apakah AI harus memberi saran:
+- *Ya*: untuk setiap topik, AI riset terbaru terlebih dahulu (via subagent/context7/exa), lalu bertanya beserta rekomendasinya. Rekomendasi berdasarkan data riset, bukan asumsi
+- *Tidak*: AI bertanya saja tanpa rekomendasi — cocok jika kamu sudah tahu jawabannya
 
 ---
 
