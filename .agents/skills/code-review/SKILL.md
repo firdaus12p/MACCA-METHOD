@@ -81,9 +81,24 @@ or `"fix-then-report"`. Keep all other fields.
 
 ---
 
+## Preflight — Read Project Context
+
+Before reviewing, read available files in `project-context/`:
+
+| File | Used For |
+|---|---|
+| `rules.md` | Naming, code style, team conventions (always read if exists) |
+| `architecture.md` | Allowed patterns, tech stack, folder structure |
+| `schema.md` | DB naming, relation constraints (if review touches data layer) |
+| `api.md` | Contract, response shape, error codes (if review touches API) |
+
+Skip files that don't exist. Do not block review if `project-context/` is absent.
+
+---
+
 ## Process (3 Phases)
 
-1. **27-Item Code Quality** — detect common problems
+1. **27-Item Code Quality** — detect common problems (use `project-context/rules.md` as naming/style reference)
 2. **Security Essentials** — detect critical security issues
 3. **Report & Fix** — create report, fix BLOCKER/MAJOR
 
