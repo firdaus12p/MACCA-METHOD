@@ -149,6 +149,41 @@ Fix priority:
 - `⚠️ MINOR` → report and discuss
 - `ℹ️ INFO` → backlog
 
+## Plan Status Update (run after all fixes are done)
+
+After fixes are applied and the review is complete, check if a plan file exists for this phase (`project-context/plans/phase-[N]-*.md`). If it exists:
+
+**Step 1 — Detect plan-level deviations.**
+
+A plan-level deviation is any finding where the implementation diverged from a decision explicitly stated in the plan — for example:
+- Wrong library used (plan said Prisma, code used Drizzle)
+- Architectural pattern not followed (plan said repository pattern, code put queries in controller)
+- Scope expanded or reduced compared to plan
+- Approach changed mid-implementation without update to plan
+
+A code-quality finding is **not** a plan deviation — naming issues, missing tests, performance, formatting, and security hardening do not count as plan deviations even if flagged as BLOCKER/MAJOR.
+
+**Step 2 — Update plan file.**
+
+- **If plan-level deviations were found:**
+  1. Append the following section at the bottom of the plan file:
+     ```markdown
+     ## Code Review Notes
+
+     **Reviewed:** [YYYY-MM-DD]
+     **Plan deviations found:**
+
+     - [Deviation 1 — brief description of what differed and how it was resolved]
+     - [Deviation 2 — ...]
+
+     > These deviations were identified during code-review. Implementation has been corrected where possible. See review report for full detail.
+     ```
+  2. Update plan header: `status: code-review` → `status: done`
+
+- **If no plan-level deviations (only code-quality findings):**
+  1. Update plan header only: `status: code-review` → `status: done`
+  2. Do not append any notes section.
+
 ## Key Points
 
 - Read existing code first before writing or recommending new helpers.

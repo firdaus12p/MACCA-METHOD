@@ -1,7 +1,6 @@
 ---
 name: add-feature
 description: Skill for adding new features to running projects. Read existing specs, identify all affected documents, mandatory update of all impacted specs, then add phase and tasks to Task.md.
-license: MIT
 persona: "Galbi"
 persona_role: "Project Manager"
 ---

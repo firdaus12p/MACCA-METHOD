@@ -1,7 +1,6 @@
 ---
 name: rapat
 description: Skill for conducting team discussion sessions. Galbi facilitates, introduces selected team members, opens free discussion where each persona can be called by name for their perspective.
-license: MIT
 persona: "Galbi"
 persona_role: "Project Manager"
 ---

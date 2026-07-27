@@ -1,7 +1,6 @@
 ---
 name: brainstorm-architecture
 description: Skill to interview user and generate architecture.md (System Architecture). Use after PRD is complete to define tech stack, structure, and architectural decisions.
-license: MIT
 persona: "Fachri"
 persona_role: "Tech Lead"
 ---

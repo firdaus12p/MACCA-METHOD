@@ -1,7 +1,6 @@
 ---
 name: brainstorm-api
 description: Skill to interview user and generate api.md (Endpoint Documentation / API Contract). Use after schema.md is complete to document all API endpoints.
-license: MIT
 persona: "Fachri"
 persona_role: "Tech Lead"
 ---

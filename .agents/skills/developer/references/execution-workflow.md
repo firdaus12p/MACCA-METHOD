@@ -101,9 +101,17 @@ Save `workMode = "direct"` to config, skip to **Step 2**.
 Save `workMode = "plan-first"`, then:
 
 1. Read relevant specs (especially `project-context/architecture.md`, `project-context/PRD.md`).
-2. Create plan file at: `project-context/plans/phase-[N]-[slug].md`
+2. Create plan file at: `project-context/plans/phase-[N]-[slug].md` with this header at the top:
+   ```
+   ---
+   status: review
+   phase: [N]
+   created: [YYYY-MM-DD]
+   ---
+   ```
 3. Review the plan internally against `Task.md`, `architecture.md`, and `rules.md`.
 4. Show the draft to the user and wait for `start` before coding.
+5. When user types `start` — update the plan file header: `status: review` → `status: in-progress`.
 
 Use the existing plan template from the main skill file.
 
@@ -216,9 +224,10 @@ Then follow `Task.md § Execution Rules` to decide whether to continue automatic
 ## Step 4 — After All Phase Tasks Done
 
 1. Show phase summary.
-2. Run `spec-compliance`.
-3. If clean, run `code-review`.
-4. If both pass, offer the next phase and wait for confirmation.
+2. If a plan file exists for this phase (`project-context/plans/phase-[N]-*.md`), update its status: `in-progress` → `code-review`.
+3. Run `spec-compliance`.
+4. If clean, run `code-review`.
+5. If both pass, offer the next phase and wait for confirmation.
 
 ## Step 5 — Project Complete
 

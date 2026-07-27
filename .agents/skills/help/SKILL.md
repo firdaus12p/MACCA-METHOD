@@ -1,7 +1,6 @@
 ---
 name: help
 description: Interactive guide to the AI Spec-Driven Development system. Detects current project state, recommends next steps, explains each skill, and answers workflow questions.
-license: MIT
 persona: "Galbi"
 persona_role: "Project Manager"
 ---

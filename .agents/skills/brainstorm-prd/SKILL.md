@@ -1,7 +1,6 @@
 ---
 name: brainstorm-prd
 description: Skill to interview user and generate PRD.md (Product Requirements Document) interactively. Use when creating a PRD or starting a new project.
-license: MIT
 persona: "Galbi"
 persona_role: "Project Manager"
 ---

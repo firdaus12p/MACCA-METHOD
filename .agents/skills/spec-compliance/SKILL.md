@@ -1,7 +1,6 @@
 ---
 name: spec-compliance
 description: Verify that code aligns with all project spec documents (PRD.md, architecture.md, schema.md, api.md, rules.md, StyleGuide.md, Task.md). Run after each phase completes, before code-review.
-license: MIT
 persona: "Fachri"
 persona_role: "Tech Lead"
 ---

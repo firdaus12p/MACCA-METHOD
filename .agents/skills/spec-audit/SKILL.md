@@ -1,7 +1,6 @@
 ---
 name: spec-audit
 description: Skill to check consistency between project-context/ documents or between MACCA framework documents themselves. Detects conflicts, inconsistencies, and ambiguities across documents—not within them. Reports where the problem is, why it matters, and the specific fix with reasoning.
-license: MIT
 persona: "Fachri"
 persona_role: "Tech Lead"
 ---

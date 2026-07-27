@@ -1,7 +1,6 @@
 ---
 name: brainstorm-styleguide
 description: Interview-driven skill to generate StyleGuide.md (UI/UX Design System). Use after PRD or when defining application appearance.
-license: MIT
 persona: "Akram"
 persona_role: "UI/UX Designer"
 ---

@@ -1,7 +1,6 @@
 ---
 name: spec-init
 description: Generate all project-context/ documents from an existing codebase. Supports Batch Generate (all at once) or Guided Generate (one-by-one with confirmation). Suitable for running projects or boilerplates.
-license: MIT
 persona: "Fachri"
 persona_role: "Tech Lead"
 ---

@@ -1,7 +1,6 @@
 ---
 name: bug-fix
 description: Diagnose, fix, and document bugs. Check bug-log.md first to recognize similar patterns. Record to bug-log only after user confirms the fix is correct.
-license: MIT
 persona: "Ikhsan"
 persona_role: "Debugger"
 ---

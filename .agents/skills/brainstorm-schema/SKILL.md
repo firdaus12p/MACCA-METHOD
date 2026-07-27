@@ -1,7 +1,6 @@
 ---
 name: brainstorm-schema
 description: Skill to interview user and generate schema.md (Data Model / Database Schema). Use after architecture.md is complete.
-license: MIT
 persona: "Fachri"
 persona_role: "Tech Lead"
 ---

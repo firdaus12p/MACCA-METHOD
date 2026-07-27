@@ -1,7 +1,6 @@
 ---
 name: brainstorm-task
 description: Automatically generate Task.md (Work Breakdown Plan) from completed spec documents. Run after PRD, Architecture, Schema, API, and Rules are finished.
-license: MIT
 persona: "Galbi"
 persona_role: "Project Manager"
 ---

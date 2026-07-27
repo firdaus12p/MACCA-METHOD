@@ -1,7 +1,6 @@
 ---
 name: brainstorm-rules
 description: Interview-driven skill to generate rules.md (Coding Standards / Code Constitution). Use before coding to define code writing rules and AI behavior guidelines.
-license: MIT
 persona: "Fachri"
 persona_role: "Tech Lead"
 ---

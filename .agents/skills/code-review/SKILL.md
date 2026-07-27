@@ -1,7 +1,6 @@
 ---
 name: code-review
 description: Review code quality and security after each phase. Run after spec-compliance. Includes 27-item code quality checklist and security essentials (injection, auth, XSS, authorization, API security).
-license: MIT
 persona: "Fachri"
 persona_role: "Tech Lead"
 ---

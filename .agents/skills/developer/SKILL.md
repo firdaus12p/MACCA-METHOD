@@ -3,7 +3,6 @@ name: developer
 description: Execute tasks from Task.md phase by phase. Developer reads relevant specs, writes code, updates Task.md, and runs spec-compliance + code-review automatically after each phase completes.
 persona: "Firdaus"
 persona_role: "Expert Developer"
-license: MIT
 ---
 
 # Developer
