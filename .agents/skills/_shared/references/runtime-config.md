@@ -74,10 +74,17 @@ compatible:
 - `project`
 - `languagePreferences`
 - `developerPreferences.workMode`
+- `developerPreferences.scope`
 - `brainstormPreferences`
 - `additionalSkills`
+- `availableMCPs`
 
 ## additionalSkills Compatibility
+
+> **Internal contract only.** These shapes exist for backward compatibility across
+> multiple AI hosts (Copilot, OpenCode, Codex, etc.), each of which stores skill
+> files at different paths. Users do not choose a shape — skills always write the
+> canonical extensible shape when saving. Readers must tolerate all three shapes.
 
 Readers must support all of these shapes:
 

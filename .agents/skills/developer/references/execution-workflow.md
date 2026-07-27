@@ -2,28 +2,77 @@
 
 ## Table of Contents
 
-1. Step 0b — Check Additional Skills
-2. Step 1b — Choose Work Mode
-3. Step 2 — Select Relevant Specs
-4. Step 3 — Execute Tasks One by One
-5. Step 4 — After All Phase Tasks Done
-6. Step 5 — Project Complete
+1. Step 0b — Check Additional Skills & MCP
+2. Step 0c — Set Developer Scope
+3. Step 1b — Choose Work Mode
+4. Step 2 — Select Relevant Specs
+5. Step 3 — Execute Tasks One by One
+6. Step 4 — After All Phase Tasks Done
+7. Step 5 — Project Complete
 
-## Step 0b — Check Additional Skills
+## Step 0b — Check Additional Skills & MCP
+
+### Additional Skills
 
 Check `developer-config.json` field `additionalSkills` first; if exists, skip question.
 
 If not, ask once:
 > "Do you use **additional skills** for this project? E.g., skills specific to frameworks (Laravel, Django, Rails, etc.)?"
 
-**If no:** Continue to Step 1.
+**If no:** Continue to MCP section below.
 
 **If yes:** Ask:
 > "How many? Name each and their purpose briefly."
 
-After answer:
-1. Save to `.agents/developer-config.json` using the stable contract from `../_shared/references/runtime-config.md`. Prefer the canonical `paths` object, but keep reading legacy shapes such as `path`, `githubPath`, and `opencodePath`.
-2. **Coding rule:** When writing code relevant to a listed skill, read its SKILL.md first. Mandatory.
+For each skill named by the user:
+
+1. **Search workspace first** — check these paths in order:
+   - `.agents/skills/{name}/SKILL.md`
+   - `.github/skills/{name}/SKILL.md`
+   - `.opencode/skill/{name}/SKILL.md`
+   - Any file named `{name}.md` or `SKILL.md` inside a folder matching the skill name
+2. **If found:** auto-populate the path. Inform user: `“Found {path}. Using this.”`
+3. **If not found:** ask once per skill: `“I couldn’t find the SKILL.md for **{name}**. Where is it? (e.g., .agents/skills/name/SKILL.md) — or type ‘skip’ to register without path for now.”`
+4. Save to `.agents/developer-config.json` using the canonical `paths` shape from `../_shared/references/runtime-config.md`. Keep reading legacy shapes such as `path`, `githubPath`, and `opencodePath`.
+5. **Coding rule:** When writing code relevant to a listed skill, read its SKILL.md first. Mandatory. Skills with no path cannot be auto-loaded — note this if the task is relevant.
+
+### Available MCPs
+
+Check `developer-config.json` field `availableMCPs` first; if exists, skip question.
+
+If not, ask once:
+> "Which MCPs are available in your workspace? (e.g., context7, supabase, github — or type ‘none’)"
+
+Save answer to `.agents/developer-config.json`:
+
+```json
+{ "availableMCPs": ["context7", "supabase"] }
+```
+
+If already configured, show: `[MCPs: context7, supabase] — tell me now if you want to change.`
+
+**Usage rule:** Only use MCPs listed in `availableMCPs`. Skip silently if no listed MCP benefits the current task.
+
+---
+
+## Step 0c — Set Developer Scope
+
+Check `developer-config.json` field `developerPreferences.scope` first; if exists, skip question. Show: `[Scope: frontend / backend / fullstack] — tell me now if you want to change.`
+
+If missing, ask once:
+
+```text
+What is your scope on this project?
+
+A) Frontend only — I do not touch backend/API/database code
+B) Backend only  — I do not touch UI/frontend code
+C) Fullstack     — I work across the entire stack
+```
+
+Save to `.agents/developer-config.json`:
+- A → `developerPreferences.scope = "frontend"`
+- B → `developerPreferences.scope = "backend"`
+- C → `developerPreferences.scope = "fullstack"`
 
 ## Step 1b — Choose Work Mode
 
@@ -74,6 +123,15 @@ Use the existing plan template from the main skill file.
 | Task touches API/service endpoint | + `project-context/api.md` |
 | Task touches UI/page/component | + `project-context/StyleGuide.md` |
 | Feature/requirement unclear | + `project-context/PRD.md` |
+
+**Scope enforcement:** After selecting specs, read `developerPreferences.scope` from `developer-config.json`:
+
+| Scope | Restriction |
+|-------|-------------|
+| `frontend` | Do not write or modify files in backend folders (routes/, controllers/, services/, repositories/, migrations/, database/). If a task requires backend changes, stop and inform user. |
+| `backend` | Do not write or modify files in frontend folders (components/, pages/, views/, styles/, public/). If a task requires frontend changes, stop and inform user. |
+| `fullstack` | No restriction. |
+| *(missing)* | Treat as `fullstack`. |
 
 **When reading `rules.md`:** Scan `[FORBIDDEN]` section first before any coding. If section doesn't exist, continue without blocking.
 

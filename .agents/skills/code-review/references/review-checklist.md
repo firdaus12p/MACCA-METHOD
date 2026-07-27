@@ -72,12 +72,18 @@ Check all of these:
 - **SEC-06 Data Protection & Logging** — no sensitive logs, no hardcoded secrets
 - **SEC-07 Error Handling Security** — fail-closed, no swallowed exceptions
 - **SEC-08 Input Validation** — runtime validation for body/params/query/headers/cookies
-- **SEC-09 Next.js Specific** — apply only when relevant
+- **SEC-09 Framework-Specific Security** — read `architecture.md` to detect the framework in use, then apply the relevant checks below. If the framework is not listed, apply the equivalent: CSRF protection, secret management, auth middleware coverage, and input sanitization.
+  - **Next.js**: no sensitive data in `NEXT_PUBLIC_*` env vars; Server Actions validate authentication before execution; `middleware.ts` covers all protected routes with no bypass; no wildcard `*` in `next.config.js` image domains; `dangerouslySetInnerHTML` avoided or sanitized with DOMPurify
+  - **Laravel**: CSRF token present on all POST/PUT/DELETE forms and Ajax requests; SQL uses Eloquent or parameterized queries; `.env` not committed; Sanctum/Passport configured correctly
+  - **Django**: `ALLOWED_HOSTS` set for production; `CSRF_TRUSTED_ORIGINS` configured; `SECRET_KEY` not hardcoded or exposed; `DEBUG=False` enforced in production settings
+  - **Express / Fastify / NestJS**: `helmet` configured; CORS restricted to known origins (no wildcard in production); `body-parser` size limits set; no raw `req.body` passed directly to queries or shell commands
+  - **Rails**: strong parameters enforced for all mass assignment; CSRF protection not disabled; secrets in `credentials.yml.enc`, not in plaintext
+- **SEC-10 Dependency Vulnerabilities** — note if packages used in this phase have known CVEs. Flag MAJOR for critical/high severity in direct dependencies. Check: `npm audit`, `pnpm audit`, `pip audit`, `composer audit`, or `bundle audit` as applicable.
 
 ## Self-Review Before Reporting
 
 Before producing the report:
-1. Verify all 27 CR checks and 9 SEC checks were actually reviewed.
+1. Verify all 27 CR checks and 10 SEC checks were actually reviewed.
 2. Re-read the touched files quickly for duplicate functions and hallucinated imports.
 3. Re-check severity proportionality.
 4. Ask whether a rerun after fixing current findings would reveal new findings. If yes, include them now.

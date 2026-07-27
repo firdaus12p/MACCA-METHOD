@@ -91,6 +91,9 @@ Impact analysis for "[feature name]":
 ⬜ StyleGuide.md — NOT IMPACTED
    No new UI components
 
+✅ plans/ — IMPACTED (if plan file exists for the affected phase)
+   Update: [what changed in the approach/scope]
+
 ✅ Task.md — TO BE ADDED
    New phase: Fase [N+1] — [phase name]
 ```
@@ -109,6 +112,7 @@ For each **IMPACTED** document, update in this order:
 4. `api.md` — add endpoints
 5. `StyleGuide.md` — add components/styles
 6. `rules.md` — add conventions if needed
+7. `project-context/plans/` — if a plan file exists for the affected phase (e.g., `plans/phase-2-checkout.md`), update it to reflect the new scope. Append a section: `## Feature Addition: [feature name]` with a brief description of the approach change. Do not overwrite existing plan content.
 
 ### Update Principles:
 - **Append, don't overwrite** — add to relevant section, don't alter existing content except conflicts

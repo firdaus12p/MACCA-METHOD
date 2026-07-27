@@ -56,6 +56,10 @@ Check for:
 
 If `Task.md` exists, count uncompleted `[ ]` vs completed `[x]` tasks.
 
+Also check:
+- `.agents/developer-config.json` — read `name`, `project`, `developerPreferences.workMode`, `developerPreferences.scope`, `additionalSkills`, `availableMCPs`
+- `project-context/plans/` folder — list any plan files present
+
 ---
 
 ## Step 2: Display Status & Recommendation
@@ -74,10 +78,21 @@ Spec Documents
   [ ] rules.md         — Not yet created
   [ ] Task.md          — Not yet created
 
-Status: Architecture complete. Next: define data and API.
+Developer Config
+  [✓] name: [name]
+  [✓] scope: frontend / backend / fullstack  (or “not set — run developer skill to configure”)
+  [✓] workMode: direct / plan-first          (or “not set”)
+  [✓] additionalSkills: [N] skills registered (or “none”)
+  [ ] availableMCPs: not configured          (or list configured MCPs)
+
+Plans
+  [✓] phase-1-setup.md  (or “no plans created yet”)
+
+Status: [current state summary]
 
 Recommended next steps:
-  1. Run `brainstorm-schema` to define database
+  ...
+```
   2. Run `brainstorm-api` to define endpoints
   3. Run `brainstorm-rules` for code standards
   (These 3 can be done in any order)

@@ -186,12 +186,33 @@ You are a **QA Engineer and Spec Auditor** ensuring zero implementation diverges
 ```
 
 ---
+## [SC-08] Scope Compliance
 
+**Read:** `.agents/developer-config.json` § `developerPreferences.scope`
+
+> **Skip if scope field is missing or set to `"fullstack"`.** SC-08 applies only when scope is `"frontend"` or `"backend"`.
+
+- `scope = "frontend"` — verify no backend files were created or modified in this phase:
+  - [ ] No files in `routes/`, `controllers/`, `services/`, `repositories/`
+  - [ ] No database migration files created
+  - [ ] No changes to `schema.md` or ORM model files
+- `scope = "backend"` — verify no frontend files were created or modified in this phase:
+  - [ ] No files in `components/`, `pages/`, `views/`, `public/`, `styles/`
+  - [ ] No CSS/SCSS/Tailwind class additions
+  - [ ] No changes to `StyleGuide.md`
+
+**Example findings:**
+```
+❌ SC-08 MAJOR: developerPreferences.scope = "frontend" but src/routes/product.ts was created
+❌ SC-08 MAJOR: developerPreferences.scope = "backend" but src/components/Button.tsx was modified
+```
+
+---
 ## Self-Review Before Reporting
 
 > **Mandatory before Output Format.** Compliance often runs once per phase — ensure nothing missed.
 
-1. **Verify all 7 items** (SC-01 through SC-07) truly checked — not skipped. "OK" items actually checked, not bypassed.
+1. **Verify all 8 items** (SC-01 through SC-08) truly checked — not skipped. “OK” items actually checked, not bypassed.
 2. **Re-read each finding** — severity proportional? Code examples quoted accurately?
 3. **Ask self:** *"If developer fixes all findings and compliance re-runs, will new findings appear?"* If yes, add now.
 4. **Re-check Task.md acceptance criteria** one more time — this is most often missed.
@@ -219,8 +240,7 @@ Report shown in chat this session. Don't save to file unless user explicitly req
 | project-context/api.md | ⚠️ MINOR | SC-04: field "hasNext" missing |
 | project-context/rules.md | ✅ OK | — |
 | project-context/StyleGuide.md | ⚠️ MINOR | SC-06: hardcoded color |
-| project-context/Task.md | 💥 BLOCKER | SC-07: AC not met |
-
+| project-context/Task.md | 💥 BLOCKER | SC-07: AC not met || developer-config.json (scope) | ✅ OK | — |
 ### Detailed Findings
 [per-item findings list]
 ```
