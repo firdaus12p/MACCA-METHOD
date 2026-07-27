@@ -8,22 +8,18 @@ persona_role: "Tech Lead"
 
 # Spec Init
 
-## Language Policy
+## Shared Runtime Setup
 
-When persisting preferences, always keep both `raw` and `normalized` values under `languagePreferences.communication` and `languagePreferences.documents`.
+Before starting:
 
-Before starting, read `.agents/developer-config.json`.
-
-- If `languagePreferences` is missing, ask once for preferred communication language and preferred generated document language, then merge both into config.
-- Use `languagePreferences.communication.normalized` for chat output and review prompts.
-- Use `languagePreferences.documents.normalized` for all generated `project-context/*.md` files.
-- Never translate filenames, traceability IDs, config keys, or code literals.
+1. Read `../_shared/references/runtime-config.md`.
+2. Read `../_shared/references/human-loop.md`.
+3. Use `languagePreferences.communication.normalized` for chat output and review prompts.
+4. Use `languagePreferences.documents.normalized` for all generated `project-context/*.md` files.
 
 ## Character
 
-**@Fachri** | Tech Lead
-
-> "@Fachri here — I'll scan the codebase and generate the spec."
+Run as `@Fachri` (Tech Lead). Use the shared persona profile in `../_shared/references/personas.md`.
 
 ---
 
@@ -110,7 +106,16 @@ PRD.md           ← inferred from above (last, not guesswork)
 
 ## Confidence Levels (Mandatory)
 
-Every document **must include `## Confidence Summary`** at the end.
+Every document **must include `## Evidence Inputs`** and `## Confidence Summary`.
+
+Minimum evidence block:
+
+```markdown
+## Evidence Inputs
+
+- `[file/path/observed]` — [what evidence it provided]
+- `[file/path/observed]` — [what evidence it provided]
+```
 
 Minimum format:
 
@@ -122,6 +127,15 @@ Minimum format:
 - **Low:** [items needing user verification]
 
 > ⚠️ Need verification: [questions or unproven assumptions]
+```
+
+When Medium or Low confidence exists, also include:
+
+```markdown
+## Assumptions & Needs Verification
+
+- [assumption or inference basis]
+- [question that still needs user confirmation]
 ```
 
 Rules:
@@ -136,7 +150,7 @@ Rules:
 
 Read all relevant files per Step 2 order, then generate all documents at once.
 
-**Every document must include `Confidence Summary`.**
+**Every document must include `Evidence Inputs` and `Confidence Summary`.**
 
 After complete:
 ```
@@ -150,7 +164,7 @@ Documents generated:
 - ✅ project-context/StyleGuide.md  (or: ⬜ skipped — no UI found)
 - ✅ project-context/PRD.md
 
-All include Confidence Summary.
+All include Evidence Inputs and Confidence Summary.
 
 Next steps:
 1. Review each document — correct inaccuracies, especially **Medium** and **Low** confidence items
@@ -167,7 +181,7 @@ Generate one document per Step 2 order. After each:
 ```
 [Document name] complete — saved to project-context/[name].md.
 
-Confidence Summary:
+Evidence Inputs + Confidence Summary:
 - High: [summary]
 - Medium: [summary]
 - Low: [summary]
@@ -196,29 +210,41 @@ Next steps:
 ### architecture.md
 **Read:** folder structure, `package.json`, config files
 **Extract:** tech stack, folder structure, database choice, deployment setup, visible design patterns
+**Add:** `Evidence Inputs` listing the files and folders used to infer the architecture
+**Add if possible:** `Document Role`, `System Boundaries`, `Canonical Terminology`, `ADR Index`, `Assumptions & Open Questions`
 
 ### rules.md
 **Read:** `.eslintrc*`, `.prettierrc*`, `tsconfig.json`, 2-3 code samples
 **Extract:** naming conventions in use, indentation, quote style, consistent patterns
 **Add `[FORBIDDEN]` section:** From ESLint rules and TypeScript strict settings, extract 5–10 most critical technical prohibitions into `[FORBIDDEN]` table format matching `brainstorm-rules` output.
+**Add:** `Evidence Inputs` listing the config files and code samples used
+**Add if possible:** `Document Role`, `Rule Priority`, `Assumptions & Exceptions`
 
 ### schema.md
 **Read:** `migrations/`, `models/`, `prisma/schema.prisma`, equivalent
 **Extract:** table names, columns, data types, relationships, indexes
+**Add:** `Evidence Inputs` listing the schema sources inspected
+**Add if possible:** `Document Role`, `Entity Map`, `Not Yet Modeled / Deferred`, `Assumptions & Open Questions`
 
 ### api.md
 **Read:** `routes/`, `controllers/`, `handlers/`, OpenAPI/Swagger if available
 **Extract:** method + path per endpoint, request body, response format, auth requirements
+**Add:** `Evidence Inputs` listing the routing/controller sources inspected
+**Add if possible:** `Document Role`, `Scope Summary`, `Canonical Terminology`, `Endpoint Inventory`, `Assumptions & Open Questions`
 
 ### StyleGuide.md
 **Read:** `tailwind.config.*`, `components/` folder, main CSS/SCSS files
 **Extract:** colors in use, existing components, spacing system, fonts
 **Skip if:** no UI folder or pure backend project
+**Add:** `Evidence Inputs` listing the UI assets inspected
+**Add if possible:** `Document Role`, `Supported Surfaces`, `Component Inventory`, `Non-Goals / Not Defined Yet`, `Assumptions & Open Questions`
 
 ### PRD.md
 **Don't read new files** — only synthesize from prior documents
 **Extract:** features already built (from api + schema), business rules from schema constraints, non-goals (features *not* present)
 **Confidence note:** PRD typically mixes **High** and **Medium**. Don't state business motivations as fact unless explicitly visible in codebase.
+**Add:** `Evidence Inputs` referencing the previously generated spec files used for synthesis
+**Add if possible:** `Document Role`, `Canonical Terminology`, `Reading Guardrails for AI`
 
 ---
 
@@ -227,7 +253,7 @@ Next steps:
 1. **Document existing code, not ideal code** — if code violates best practice, record it as-is, not the improved version.
 2. **Separate fact from inference** — every claim must clearly indicate **High / Medium / Low** confidence.
 3. **When uncertain, write a note** — use `> ⚠️ Need verification: [question]` instead of inventing.
-4. **Every document needs `Confidence Summary`** — mandatory even in Batch Generate mode.
+4. **Every document needs `Evidence Inputs` and `Confidence Summary`** — mandatory even in Batch Generate mode.
 5. **PRD always last** — inferred from completed facts, not guesswork.
 6. **Task.md not generated here** — direct to `brainstorm-task` after spec verified.
 7. **Mode B: wait for confirmation** — don't generate next doc without "continue" from user.

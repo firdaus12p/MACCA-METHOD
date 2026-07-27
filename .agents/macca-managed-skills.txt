@@ -1,0 +1,17 @@
+_shared
+add-feature
+brainstorm-api
+brainstorm-architecture
+brainstorm-prd
+brainstorm-rules
+brainstorm-schema
+brainstorm-styleguide
+brainstorm-task
+bug-fix
+code-review
+developer
+help
+rapat
+spec-audit
+spec-compliance
+spec-init

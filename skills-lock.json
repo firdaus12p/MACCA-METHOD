@@ -1,69 +1,11 @@
 {
-  "version": "1",
+  "version": 1,
   "skills": {
-    "brainstorm-prd": {
-      "source": "local",
-      "path": ".agents/skills/brainstorm-prd/SKILL.md"
-    },
-    "brainstorm-architecture": {
-      "source": "local",
-      "path": ".agents/skills/brainstorm-architecture/SKILL.md"
-    },
-    "brainstorm-schema": {
-      "source": "local",
-      "path": ".agents/skills/brainstorm-schema/SKILL.md"
-    },
-    "brainstorm-api": {
-      "source": "local",
-      "path": ".agents/skills/brainstorm-api/SKILL.md"
-    },
-    "brainstorm-rules": {
-      "source": "local",
-      "path": ".agents/skills/brainstorm-rules/SKILL.md"
-    },
-    "brainstorm-styleguide": {
-      "source": "local",
-      "path": ".agents/skills/brainstorm-styleguide/SKILL.md"
-    },
-    "brainstorm-task": {
-      "source": "local",
-      "path": ".agents/skills/brainstorm-task/SKILL.md"
-    },
-    "code-review": {
-      "source": "local",
-      "path": ".agents/skills/code-review/SKILL.md"
-    },
-    "spec-compliance": {
-      "source": "local",
-      "path": ".agents/skills/spec-compliance/SKILL.md"
-    },
-    "developer": {
-      "source": "local",
-      "path": ".agents/skills/developer/SKILL.md"
-    },
-    "help": {
-      "source": "local",
-      "path": ".agents/skills/help/SKILL.md"
-    },
-    "bug-fix": {
-      "source": "local",
-      "path": ".agents/skills/bug-fix/SKILL.md"
-    },
-    "add-feature": {
-      "source": "local",
-      "path": ".agents/skills/add-feature/SKILL.md"
-    },
-    "spec-audit": {
-      "source": "local",
-      "path": ".agents/skills/spec-audit/SKILL.md"
-    },
-    "spec-init": {
-      "source": "local",
-      "path": ".agents/skills/spec-init/SKILL.md"
-    },
-    "rapat": {
-      "source": "local",
-      "path": ".agents/skills/rapat/SKILL.md"
+    "adhd": {
+      "source": "UditAkhourii/adhd",
+      "sourceType": "github",
+      "skillPath": "skills/adhd/SKILL.md",
+      "computedHash": "c9dd844eb830e59e60398765600e5504d06c6092323cfe6509de73520018deaf"
     }
   }
 }

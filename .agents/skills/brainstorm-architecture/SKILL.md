@@ -10,9 +10,7 @@ persona_role: "Tech Lead"
 
 ## Character
 
-**@Fachri** | Tech Lead
-
-> "@Fachri here — Let's design the system architecture."
+Run as `@Fachri` (Tech Lead). Use the shared persona profile in `../_shared/references/personas.md`.
 
 ---
 
@@ -33,30 +31,15 @@ You are **@Fachri — Tech Lead**, a **Senior Software Architect** skilled at de
 
 ---
 
-## Language Policy
+## Shared Runtime Setup
 
-When persisting preferences, always keep both `raw` and `normalized` values under `languagePreferences.communication` and `languagePreferences.documents`.
+Before any interview:
 
-Before starting any interview:
-
-1. Read `.agents/developer-config.json` for `languagePreferences`:
-   ```json
-   {
-     "languagePreferences": {
-       "communication": { "normalized": "english" },
-       "documents": { "normalized": "english" }
-     }
-   }
-   ```
-
-2. If missing, ask once:
-   - *"What language for chat?"* → `languagePreferences.communication.normalized`
-   - *"What language for documents?"* → `languagePreferences.documents.normalized`
-   - Save to config, preserving other fields
-
-3. Use `languagePreferences.communication.normalized` for chat
-4. Use `languagePreferences.documents.normalized` for final `architecture.md`
-5. Never translate: filenames, IDs, config keys, code literals
+1. Read `../_shared/references/runtime-config.md`.
+2. Read `../_shared/references/brainstorm-session.md`.
+3. Use `languagePreferences.communication.normalized` for chat.
+4. Use `languagePreferences.documents.normalized` for final `project-context/architecture.md`.
+5. Apply `brainstormPreferences.discussionMode` and `brainstormPreferences.recommendations` using the shared session policy.
 
 ---
 
@@ -67,27 +50,7 @@ Before starting any interview:
 2. **Read existing project-context**:
    - `project-context/PRD.md` — features, users, constraints
 
-3. **Setup session** — check `.agents/developer-config.json`:
-
-   ```json
-   {
-     "brainstormPreferences": {
-       "discussionMode": "one-by-one" | "three-at-a-time",
-       "recommendations": true | false
-     }
-   }
-   ```
-
-   - If missing: ask both questions and save
-   - If exists: confirm and ask to override if needed
-
-   **a. Discussion Mode:**
-   > "This session has **10 topics**. Cover **one by one** or **three at a time**?"
-
-   **b. Recommendations:**
-   > "Want **recommendations** based on current best practices?"
-   - If yes: research first, then present with rationale
-   - If no: proceed without recommendations
+3. Run the shared runtime setup above. For this skill, ask whether to cover the 10 topics one by one or three at a time, then apply the saved or chosen recommendations preference.
 
 4. Conduct interview per chosen mode. Wait for answers.
 
@@ -199,6 +162,21 @@ Gather:
 
 > **Version:** 1.0 | **Date:** [date]
 
+## Document Role
+- **Source of Truth:** System design, technical boundaries, and architectural decisions
+- **Primary Owner:** `brainstorm-architecture`
+- **Out of Scope:** Detailed API payload schemas, table-by-table database columns, UI design tokens, and task sequencing
+
+## System Boundaries
+| Topic | Canonical Document |
+|-------|---------------------|
+| Product scope and business intent | `project-context/PRD.md` |
+| Data model and column-level contract | `project-context/schema.md` |
+| Endpoint contract and error payloads | `project-context/api.md` |
+| UI language and component styling | `project-context/StyleGuide.md` |
+| Coding standards and AI behavior | `project-context/rules.md` |
+| Execution order and implementation plan | `project-context/Task.md` |
+
 ---
 
 ## 1. System Context
@@ -268,7 +246,17 @@ Gather:
 - **CDN/Storage:** Cloudflare / S3 / etc.
 - **Domain:** [Domain plan]
 
-## 10. Architecture Decision Records (ADR)
+## 10. Canonical Terminology
+| Term | Definition |
+|------|-----------|
+| [Term] | [Definition in project context] |
+
+## 11. Architecture Decision Records (ADR)
+
+### ADR Index
+| ADR ID | Title | Status | Summary |
+|--------|-------|--------|---------|
+| ADR-001 | [Title] | Accepted / Proposed | [One-line reason] |
 
 ### ADR-001: [Title]
 - **Context:** [Situation leading to decision]
@@ -279,10 +267,13 @@ Gather:
 
 ---
 
-## Glossary
-| Term | Definition |
-|------|-----------|
-| [Term] | [Definition in project context] |
+## 12. Assumptions & Open Questions
+
+### Assumptions
+- [Assumption the architecture depends on]
+
+### Open Questions
+- [Question still unresolved]
 ```
 
 ## After architecture.md is Created

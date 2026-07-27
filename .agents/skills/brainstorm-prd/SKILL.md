@@ -10,9 +10,7 @@ persona_role: "Project Manager"
 
 ## Character
 
-**@Galbi** | Project Manager
-
-> "@Galbi here — Let's build the PRD."
+Run as `@Galbi` (Project Manager). Use the shared persona profile in `../_shared/references/personas.md`.
 
 ---
 
@@ -33,30 +31,15 @@ You are an experienced **Product Manager** skilled at transforming raw ideas int
 
 ---
 
-## Language Policy
+## Shared Runtime Setup
 
-When persisting preferences, always keep both `raw` and `normalized` values under `languagePreferences.communication` and `languagePreferences.documents`.
+Before any interview:
 
-Before starting any interview:
-
-1. Read `.agents/developer-config.json` to check for `languagePreferences`:
-   ```json
-   {
-     "languagePreferences": {
-       "communication": { "normalized": "english" },
-       "documents": { "normalized": "english" }
-     }
-   }
-   ```
-
-2. If `languagePreferences` is missing, ask once:
-   - *"What language do you prefer for chat with me?"* → set `languagePreferences.communication.normalized`
-   - *"What language for generated documents?"* → set `languagePreferences.documents.normalized`
-   - Merge answers into `.agents/developer-config.json`, preserving other fields
-
-3. Use `languagePreferences.communication.normalized` for all chat output with the user
-4. Use `languagePreferences.documents.normalized` when rendering final `PRD.md`
-5. Never translate: filenames, IDs (FEAT-01, BR-01), config keys, or code literals
+1. Read `../_shared/references/runtime-config.md`.
+2. Read `../_shared/references/brainstorm-session.md`.
+3. Use `languagePreferences.communication.normalized` for chat.
+4. Use `languagePreferences.documents.normalized` for final `project-context/PRD.md`.
+5. Apply `brainstormPreferences.discussionMode` and `brainstormPreferences.recommendations` using the shared session policy.
 
 ---
 
@@ -67,28 +50,7 @@ Before starting any interview:
 2. **Read existing project-context** (before any user interaction):
    - Check if `project-context/PRD.md` exists to avoid duplication
 
-3. **Setup session** — check `.agents/developer-config.json`:
-
-   ```json
-   {
-     "brainstormPreferences": {
-       "discussionMode": "one-by-one" | "three-at-a-time",
-       "recommendations": true | false
-     }
-   }
-   ```
-
-   - If missing: ask both questions below and save to config
-   - If exists: show brief confirmation and ask to confirm or override
-   - On override: update config while preserving other fields
-
-   **a. Discussion Mode:**
-   > "This session has **15 topics**. Cover them **one by one** or **three at a time**?"
-
-   **b. Recommendations:**
-   > "Want **recommendations** for each topic based on current best practices?"
-   - If yes: research first (use available search tools), then present question with recommendation
-   - If no: proceed with questions only
+3. Run the shared runtime setup above. For this skill, ask whether to cover the 15 topics one by one or three at a time, then apply the saved or chosen recommendations preference.
 
 4. Conduct interview per chosen mode. Wait for answers before proceeding.
 
@@ -242,6 +204,16 @@ Don't renumber old IDs in future updates; add new IDs sequentially.
 
 > **Version:** 1.0 | **Date:** [date] | **Status:** Draft
 
+## Document Role
+- **Source of Truth:** Product scope, user intent, business rules, and success criteria
+- **Primary Owner:** `brainstorm-prd`
+- **Out of Scope:** API payload details, schema column definitions, code patterns, and implementation sequencing
+
+## Canonical Terminology
+| Term | Meaning |
+|------|---------|
+| [Term] | [Exact meaning in this project] |
+
 ---
 
 ## 1. Project Goal
@@ -314,6 +286,11 @@ Don't renumber old IDs in future updates; add new IDs sequentially.
 | Question | Status | Owner |
 |----------|--------|-------|
 | [Question] | Pending | [Who] |
+
+## Reading Guardrails for AI
+- If this PRD conflicts with implementation detail docs, PRD wins on business intent and scope.
+- If a term is ambiguous, prefer the definition in `Canonical Terminology`.
+- Use `Non-Goals / Out of Scope`, `Assumptions`, and `Open Questions` to avoid overbuilding.
 ```
 
 ## After PRD.md is Created
@@ -324,7 +301,7 @@ Don't renumber old IDs in future updates; add new IDs sequentially.
    1. **`brainstorm-architecture`** ← required next
    2. `brainstorm-schema` → after architecture
    3. `brainstorm-api` → after schema
-   4. `brainstorm-styleguide` → optional, ask: *"Does this project have UI? Define style guide?"*
+   4. `brainstorm-styleguide` → optional after architecture, ask: *"Does this project have UI? Define style guide?"*
    5. `brainstorm-rules` → after API (or style guide)
    6. `brainstorm-task` → final step before coding
 

@@ -10,9 +10,7 @@ persona_role: "UI/UX Designer"
 
 ## Character
 
-**@Akram** | UI/UX Designer
-
-> "@Akram here — Let's define the look and feel."
+Run as `@Akram` (UI/UX Designer). Use the shared persona profile in `../_shared/references/personas.md`.
 
 ---
 
@@ -37,52 +35,27 @@ Skill generates **StyleGuide.md** through interactive interview. Prevents random
 
 ## Usage
 
-1. Run after api.md complete or when discussing UI design.
+1. Run after PRD and architecture are clear, or when discussing UI design.
 
 2. **Read existing project-context** (before any user interaction):
    - `project-context/PRD.md` — target platform and referenced UI patterns
    - `project-context/architecture.md` — frontend tech stack chosen
 
-3. **Language Policy** — Execute before interview:
+3. **Shared Runtime Setup** — before interview:
+   - Read `../_shared/references/runtime-config.md`.
+   - Read `../_shared/references/brainstorm-session.md`.
+   - Use `languagePreferences.communication.normalized` for chat.
+   - Use `languagePreferences.documents.normalized` for final `project-context/StyleGuide.md`.
+   - Apply `brainstormPreferences.discussionMode` and `brainstormPreferences.recommendations` using the shared session policy.
+   - For this skill, ask whether to cover the 7 topics one by one or three at a time.
 
-   - When persisting preferences, always keep both `raw` and `normalized` values under `languagePreferences.communication` and `languagePreferences.documents`.
-   Read `.agents/developer-config.json` first:
-   - If `languagePreferences` is missing: ask once for **preferred communication language** and **preferred generated document language**. Merge responses into config, then continue. Do not ask again this session.
-   - If `languagePreferences` exists: confirm briefly ("I found saved language preferences: [language]. Use these?").
-   - Use `languagePreferences.communication.normalized` for all chat output.
-   - Use `languagePreferences.documents.normalized` for generated file content.
+4. Interview following chosen mode. Wait for answers.
 
-4. **Session Setup** — check `.agents/developer-config.json`:
-
-   ```json
-   {
-      "brainstormPreferences": {
-         "discussionMode": "one-by-one" | "three-at-a-time",
-         "recommendations": true | false
-      }
-   }
-   ```
-
-   - If file missing: ask after language setup, then save to config.
-   - If preferences exist: confirm briefly and reuse (skip setup questions).
-   - If user overrides: update config while preserving other fields.
-
-   **a. Discussion mode:**
-   > "This session has **7 topics**. Discuss **one by one** or **three at a time**?"
-
-   **b. Research-backed recommendations:**
-   > "Should I provide **recommendations** for each topic based on current best practices?"
-
-   - If **yes**: Research via subagent first, then present question **with recommendation**. Format: *"[Question]? My recommendation: [X] — [brief reasoning]."* User can accept or provide own answer.
-   - If **no**: Continue with questions only.
-
-5. Interview following chosen mode. Wait for answers.
-
-6. After all topics complete, generate `project-context/StyleGuide.md` (create `project-context/` folder if needed).
+5. After all topics complete, generate `project-context/StyleGuide.md` (create `project-context/` folder if needed).
 
    > ⚠️ **If file exists:** ask user before overwrite — "(A) Replace entire file, (B) cancel and review first." Wait for answer.
 
-7. Provide summary and next steps.
+6. Provide summary and next steps.
 
 ## Interview Topics (7)
 
@@ -160,6 +133,19 @@ Skill generates **StyleGuide.md** through interactive interview. Prevents random
 
 > **Framework:** [CSS Framework] | **Approach:** [Utility-first / Component-based]
 
+## Document Role
+- **Source of Truth:** Visual system and UI conventions for this project
+- **Primary Owner:** `brainstorm-styleguide`
+- **Out of Scope:** Backend logic, API contracts, and non-UI technical architecture
+
+## Supported Surfaces
+| Surface | Included? | Notes |
+|---------|-----------|-------|
+| Web app | Yes / No | [notes] |
+| Admin panel | Yes / No | [notes] |
+| Marketing site | Yes / No | [notes] |
+| Email / PDF / export | Yes / No | [notes] |
+
 ---
 
 ## 1. CSS Framework
@@ -214,6 +200,15 @@ Skill generates **StyleGuide.md** through interactive interview. Prevents random
 - **Border Radius:** [rounded-md / rounded-lg / none]
 - **Shadow:** [shadow-sm / shadow-md / none]
 
+## Component Inventory
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Button | Defined | [notes] |
+| Card | Defined | [notes] |
+| Input | Defined | [notes] |
+| Modal | Defined / Deferred | [notes] |
+| Table | Defined / Deferred | [notes] |
+
 ### Button
 | Variant | Style |
 |---------|-------|
@@ -255,6 +250,13 @@ Skill generates **StyleGuide.md** through interactive interview. Prevents random
 - **Default Size:** [20px / 24px]
 - **Import Pattern:** `import { IconName } from 'lucide-react'`
 - **Notes:** [Icon usage rules]
+
+## Non-Goals / Not Defined Yet
+- [UI area intentionally outside this style guide]
+
+## Assumptions & Open Questions
+- [Assumption about branding, assets, or surface coverage]
+- [Question needing confirmation]
 ```
 
 ---

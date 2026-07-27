@@ -7,8 +7,10 @@ Write-Host "  Updating MACCA skills..."
 # ─── Backup user configs ───────────────────────────────────────────────────────
 $ConfigBackup = $null
 $ToolsBackup  = $null
+$ManagedSkillsBackup = @()
 if (Test-Path ".agents\developer-config.json") { $ConfigBackup = Get-Content ".agents\developer-config.json" -Raw }
 if (Test-Path ".agents\macca-tools.txt")        { $ToolsBackup  = Get-Content ".agents\macca-tools.txt" -Raw }
+if (Test-Path ".agents\macca-managed-skills.txt") { $ManagedSkillsBackup = Get-Content ".agents\macca-managed-skills.txt" | Where-Object { $_ -ne "" } }
 
 # ─── Clone repo ────────────────────────────────────────────────────────────────
 if (Test-Path $TMP_DIR) { Remove-Item -Recurse -Force $TMP_DIR }
@@ -23,13 +25,31 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # ─── Helper: copy langsung dari temp ke folder tool ───────────────────────────
+function Get-NewManagedSkills {
+  $ManifestPath = Join-Path $TMP_DIR ".agents\macca-managed-skills.txt"
+  if (Test-Path $ManifestPath) {
+    return @(Get-Content $ManifestPath | Where-Object { $_ -ne "" })
+  }
+
+  $SrcSkills = Join-Path $TMP_DIR ".agents\skills"
+  return @((Get-ChildItem $SrcSkills -Directory).Name)
+}
+
 function Copy-SkillsFromTemp($Dest) {
   New-Item -ItemType Directory -Force -Path $Dest | Out-Null
   $SrcSkills = Join-Path $TMP_DIR ".agents\skills"
-  foreach ($Dir in (Get-ChildItem $SrcSkills -Directory)) {
-    $Target = Join-Path $Dest $Dir.Name
+  $ManagedNow = Get-NewManagedSkills
+  $NamesToClean = @($ManagedSkillsBackup + $ManagedNow | Where-Object { $_ -and $_.Trim() -ne "" } | Sort-Object -Unique)
+
+  foreach ($Name in $NamesToClean) {
+    $Target = Join-Path $Dest $Name
     if (Test-Path $Target) { Remove-Item -Recurse -Force $Target }
-    Copy-Item -Recurse $Dir.FullName $Target
+  }
+
+  foreach ($Name in $ManagedNow) {
+    $Source = Join-Path $SrcSkills $Name
+    $Target = Join-Path $Dest $Name
+    if (Test-Path $Source) { Copy-Item -Recurse $Source $Target }
   }
 }
 
@@ -65,6 +85,7 @@ Copy-Item "$TMP_DIR\skills-lock.json" . -Force
 
 # ─── Restore user configs ─────────────────────────────────────────────────────
 New-Item -ItemType Directory -Force -Path ".agents" | Out-Null
+if (Test-Path (Join-Path $TMP_DIR ".agents\macca-managed-skills.txt")) { Copy-Item (Join-Path $TMP_DIR ".agents\macca-managed-skills.txt") ".agents\macca-managed-skills.txt" -Force }
 if ($null -ne $ConfigBackup) { Set-Content ".agents\developer-config.json" $ConfigBackup }
 if ($null -ne $ToolsBackup)  { Set-Content ".agents\macca-tools.txt"       $ToolsBackup  }
 

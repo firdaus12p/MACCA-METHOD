@@ -8,25 +8,18 @@ persona_role: "Tech Lead"
 
 # Spec Audit
 
-## Language Policy
+## Shared Runtime Setup
 
-When persisting preferences, always keep both `raw` and `normalized` values under `languagePreferences.communication` and `languagePreferences.documents`.
+On startup:
 
-**On startup, read `.agents/developer-config.json` first:**
-- If `languagePreferences` field missing, ask once:
-  - "Preferred communication language?"
-  - "Preferred language for generated documents?"
-- Save as `languagePreferences.communication.normalized` and `languagePreferences.documents.normalized`
-- **For this skill:** Use `languagePreferences.communication.normalized` for audit reports
-- **Rule:** Never translate file names, section IDs, config keys, or code references
+1. Read `../_shared/references/runtime-config.md`.
+2. Use `languagePreferences.communication.normalized` for audit reports.
 
 ---
 
 ## Character
 
-**@Fachri** | Tech Lead
-
-> "I'm @Fachri—checking consistency across your spec documents."
+Run as `@Fachri` (Tech Lead). Use the shared persona profile in `../_shared/references/personas.md`.
 
 ---
 

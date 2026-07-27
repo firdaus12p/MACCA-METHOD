@@ -10,9 +10,7 @@ persona_role: "Tech Lead"
 
 ## Character
 
-**@Fachri** | Tech Lead
-
-> "@Fachri here — Let's establish team coding standards."
+Run as `@Fachri` (Tech Lead). Use the shared persona profile in `../_shared/references/personas.md`.
 
 ---
 
@@ -45,46 +43,21 @@ Skill generates **rules.md** — the "code constitution" ensuring AI works consi
    - `project-context/schema.md` — decisions on PII, retention, data protection
    - `project-context/api.md` — auth contracts, rate limiting, abuse control
 
-3. **Language Policy** — Execute before interview:
+3. **Shared Runtime Setup** — before interview:
+  - Read `../_shared/references/runtime-config.md`.
+  - Read `../_shared/references/brainstorm-session.md`.
+  - Use `languagePreferences.communication.normalized` for chat.
+  - Use `languagePreferences.documents.normalized` for final `project-context/rules.md`.
+  - Apply `brainstormPreferences.discussionMode` and `brainstormPreferences.recommendations` using the shared session policy.
+  - For this skill, ask whether to cover the 7 topics one by one or three at a time.
 
-   - When persisting preferences, always keep both `raw` and `normalized` values under `languagePreferences.communication` and `languagePreferences.documents`.
-   Read `.agents/developer-config.json` first:
-   - If `languagePreferences` is missing: ask once for **preferred communication language** and **preferred generated document language**. Merge responses into config, then continue. Do not ask again this session.
-   - If `languagePreferences` exists: confirm briefly ("I found saved language preferences: [language]. Use these?").
-   - Use `languagePreferences.communication.normalized` for all chat output.
-   - Use `languagePreferences.documents.normalized` for generated file content.
+4. Interview following chosen mode. Wait for answers before advancing.
 
-4. **Session Setup** — check `.agents/developer-config.json`:
-
-   ```json
-   {
-     "brainstormPreferences": {
-       "discussionMode": "one-by-one" | "three-at-a-time",
-       "recommendations": true | false
-     }
-   }
-   ```
-
-   - If file missing: ask after language setup, then save to config.
-   - If preferences exist: confirm briefly and reuse (skip setup questions).
-   - If user overrides: update config while preserving other fields.
-
-   **a. Discussion mode:**
-   > "This session has **7 topics**. Discuss **one by one** or **three at a time**?"
-
-   **b. Research-backed recommendations:**
-   > "Should I provide **recommendations** for each topic based on current best practices?"
-
-   - If **yes**: Research via subagent first, then present question **with recommendation**. Format: *"[Question]? My recommendation: [X] — [brief reasoning from research]."* User can accept or provide own answer.
-   - If **no**: Continue with questions only.
-
-5. Interview following chosen mode. Wait for answers before advancing.
-
-6. After all topics complete, generate `project-context/rules.md` (create `project-context/` folder if needed).
+5. After all topics complete, generate `project-context/rules.md` (create `project-context/` folder if needed).
 
    > ⚠️ **If file exists:** ask user before overwrite — "(A) Replace entire file, (B) cancel and review first." Wait for answer.
 
-7. Provide summary and next steps.
+6. Provide summary and next steps.
 
 ## Interview Topics (7)
 
@@ -120,6 +93,9 @@ Skill generates **rules.md** — the "code constitution" ensuring AI works consi
 - Function max length?
 - Import ordering preference?
 - Else after return — forbidden (prefer early return)?
+- Dependency decision ladder: reuse existing code → standard library → native platform → installed dependency → new dependency?
+- Deliberate simplifications: require `tradeoff:` comment with ceiling and upgrade trigger?
+- Non-negotiables that must never be simplified away: trust-boundary validation, data-loss protection, accessibility basics, explicit requirements?
 
 ### 4. Security Rules
 **Ask:** *"What security rules are mandatory? Token storage, input sanitization, CORS?"*
@@ -172,6 +148,11 @@ Skill generates **rules.md** — the "code constitution" ensuring AI works consi
 ```markdown
 # Coding Standards (Rules)
 
+## Document Role
+- **Source of Truth:** Coding standards, AI behavior constraints, and implementation safety rules
+- **Primary Owner:** `brainstorm-rules`
+- **Out of Scope:** Product scope decisions, schema design, endpoint payload contracts, and task sequencing
+
 ---
 
 ## 1. AI Persona & Tech Stack
@@ -206,6 +187,9 @@ Skill generates **rules.md** — the "code constitution" ensuring AI works consi
 - **Import order:** builtin → external → internal → relative → types
 - **Max function length:** [X lines]
 - **Comments:** [JSDoc required / minimal]
+- **Dependency ladder:** Reuse existing code first, then standard library, native platform, installed dependency, and only then add a new dependency.
+- **Deliberate simplifications:** Mark with `tradeoff:` comment naming ceiling and upgrade trigger.
+- **Never simplify away:** trust-boundary validation, protections against data loss, accessibility basics, or explicitly requested behavior.
 
 ```typescript
 // ✅ CORRECT — early return
@@ -248,6 +232,11 @@ function processUser(user: User | null) {
 - **New Package Installation:** Get permission first; state reason.
 - **Out-of-scope Modifications:** Forbidden without confirmation.
 - **Complex Implementation:** Show plan/reasoning before implementing.
+
+## Rule Priority
+- **Priority Order:** Security → correctness → data protection → consistency → maintainability → convenience
+- If two rules appear to conflict, choose the higher-priority rule and note the trade-off.
+- If a local exception is needed, mark it clearly with a `tradeoff:` comment and explain the upgrade trigger.
 
 ---
 
@@ -297,6 +286,10 @@ function processUser(user: User | null) {
 | F-04 | NEVER store tokens in localStorage — use httpOnly cookie | XSS vulnerability |
 | F-05 | NEVER use `console.log` / `print` in production code | Info leak, noise |
 | [F-06+] | [Project-specific forbiddens from topics 1–7] | [Reason] |
+
+## Assumptions & Exceptions
+- [Assumption about team workflow or tooling]
+- [Temporary exception with owner / revisit trigger]
 ```
 
 ---

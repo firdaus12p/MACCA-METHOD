@@ -11,8 +11,10 @@ echo "  Updating MACCA skills..."
 # ─── Backup user configs ──────────────────────────────────────────────────────
 CONFIG_BACKUP=""
 TOOLS_BACKUP=""
+MANAGED_SKILLS_BACKUP=""
 [ -f ".agents/developer-config.json" ] && CONFIG_BACKUP=$(cat ".agents/developer-config.json")
 [ -f ".agents/macca-tools.txt" ]        && TOOLS_BACKUP=$(cat ".agents/macca-tools.txt")
+[ -f ".agents/macca-managed-skills.txt" ] && MANAGED_SKILLS_BACKUP=$(cat ".agents/macca-managed-skills.txt")
 
 # ─── Clone repo ───────────────────────────────────────────────────────────────
 if ! git clone --depth 1 "$REPO_URL" "$TMP_DIR/macca" --quiet 2>&1; then
@@ -24,10 +26,38 @@ if ! git clone --depth 1 "$REPO_URL" "$TMP_DIR/macca" --quiet 2>&1; then
 fi
 
 # ─── Helper: copy langsung dari temp ke folder tool ──────────────────────────
+list_new_managed_skills() {
+  if [ -f "$TMP_DIR/macca/.agents/macca-managed-skills.txt" ]; then
+    cat "$TMP_DIR/macca/.agents/macca-managed-skills.txt"
+    return
+  fi
+
+  for path in "$TMP_DIR/macca/.agents/skills"/*; do
+    [ -d "$path" ] || continue
+    basename "$path"
+  done
+}
+
+list_managed_skills_to_clean() {
+  {
+    printf '%s\n' "$MANAGED_SKILLS_BACKUP"
+    list_new_managed_skills
+  } | sed '/^$/d' | sort -u
+}
+
 copy_skills() {
   local DEST="$1"
   mkdir -p "$DEST"
-  cp -r "$TMP_DIR/macca/.agents/skills/." "$DEST/"
+
+  while IFS= read -r SKILL_DIR; do
+    [ -z "$SKILL_DIR" ] && continue
+    rm -rf "$DEST/$SKILL_DIR"
+  done < <(list_managed_skills_to_clean)
+
+  while IFS= read -r SKILL_DIR; do
+    [ -z "$SKILL_DIR" ] && continue
+    cp -r "$TMP_DIR/macca/.agents/skills/$SKILL_DIR" "$DEST/$SKILL_DIR"
+  done < <(list_new_managed_skills)
 }
 
 # ─── Update skills langsung ke folder masing-masing tool ─────────────────────
@@ -62,6 +92,7 @@ cp "$TMP_DIR/macca/skills-lock.json" .
 
 # ─── Restore user configs ─────────────────────────────────────────────────────
 mkdir -p .agents
+[ -f "$TMP_DIR/macca/.agents/macca-managed-skills.txt" ] && cp "$TMP_DIR/macca/.agents/macca-managed-skills.txt" .agents/macca-managed-skills.txt
 [ -n "$CONFIG_BACKUP" ] && echo "$CONFIG_BACKUP" > .agents/developer-config.json
 [ -n "$TOOLS_BACKUP" ]  && echo "$TOOLS_BACKUP"  > .agents/macca-tools.txt
 

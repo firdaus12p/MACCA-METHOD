@@ -103,7 +103,7 @@ Untuk data yang bisa dibuat terstruktur, utamakan tabel, heading tetap, dan fiel
 | **Acceptance Criteria** | Kondisi yang harus terpenuhi agar sebuah task dianggap selesai. Bisa dicek secara konkret. |
 | **Boilerplate** | Template atau starter code project yang sudah ada sebelum mulai coding dari nol. |
 | **spec-compliance** | Verifikasi bahwa kode sudah sesuai dengan dokumen spec. |
-| **code-review** | Pemeriksaan kualitas dan keamanan kode — bukan soal spec, tapi soal kualitas penulisan. |
+| **code-review** | Pemeriksaan kualitas, keamanan, dan over-engineering kode — bukan soal spec, tapi soal kualitas implementasi dan peluang simplifikasi yang aman. |
 | **bug-log.md** | Catatan semua bug yang pernah ditemukan dan diperbaiki — supaya AI belajar dari sejarah. |
 | **[FORBIDDEN]** | Seksi di `rules.md` berisi daftar larangan teknis (hardcode, `any`, console.log, dll). AI memindainya sebelum menulis kode. |
 | **[SELF-REVIEW]** | Output singkat dari `developer` setelah tiap task selesai: 1 potensi security risk, 1 performance bottleneck, 1 asumsi yang dibuat dari spec. |
@@ -132,7 +132,7 @@ Aturan:
 
 MACCA memakai istilah `mode` untuk konteks yang berbeda. Bedakan seperti ini:
 
-- **Mode pembahasan**: dipakai di skill `brainstorm-*` untuk memilih cara wawancara, misalnya `satu per satu` atau `per 3 topik`.
+- **Mode pembahasan**: dipakai di skill `brainstorm-*` untuk memilih cara wawancara, misalnya `satu per satu` atau `tiga topik sekaligus`.
 - **Mode audit**: dipakai di `spec-audit`, yaitu `Project Audit` atau `Framework Audit`.
 - **Mode generate**: dipakai di `spec-init`, yaitu `Batch Generate` atau `Guided Generate`.
 
@@ -164,8 +164,12 @@ File `.agents/developer-config.json` adalah konfigurasi bersama lintas skill. Fi
   "additionalSkills": [
     {
       "name": "nama-skill",
-      "path": ".agents/skills/nama-skill/SKILL.md",
-      "purpose": "fungsi singkat"
+      "purpose": "fungsi singkat",
+      "paths": {
+        "copilot": ".github/skills/nama-skill/SKILL.md",
+        "opencode": ".opencode/skill/nama-skill/SKILL.md",
+        "codex": ".agents/skills/nama-skill/SKILL.md"
+      }
     }
   ]
 }
@@ -176,6 +180,7 @@ Aturan penulisan:
 - Field yang tidak dikenali skill tetap harus dipertahankan.
 - `languagePreferences.*.raw` menyimpan input asli/effective choice dari user.
 - `languagePreferences.*.normalized` menyimpan bentuk stabil yang dipakai skill untuk routing bahasa output.
+- Untuk kompatibilitas, reader skill harus menerima bentuk lama seperti `path`, `githubPath`, `opencodePath`, atau nilai bahasa singkat seperti `id` / `en` jika ditemukan pada project lama.
 
 Catatan:
 - Saat install pertama, installer menanyakan **bahasa komunikasi** dan **bahasa dokumen yang dihasilkan** lalu menyimpannya di file ini.
@@ -198,26 +203,26 @@ Catatan:
 | `brainstorm-schema` | @Fachri | Membuat schema.md — desain database | Setelah architecture selesai |
 | `brainstorm-api` | @Fachri | Membuat api.md — kontrak endpoint API | Setelah schema selesai |
 | `brainstorm-rules` | @Fachri | Membuat rules.md — standar kode dan daftar larangan `[FORBIDDEN]` | Kapan saja, tapi sebelum coding dimulai |
-| `brainstorm-styleguide` | @Akram | Membuat StyleGuide.md — panduan desain UI/UX | Setelah api.md selesai, jika project punya UI (**opsional, bisa diskip**) |
+| `brainstorm-styleguide` | @Akram | Membuat StyleGuide.md — panduan desain UI/UX | Setelah PRD dan architecture jelas, jika project punya UI (**opsional, bisa diskip**) |
 | `brainstorm-task` | @Galbi | Membuat Task.md — rencana kerja bertahap dengan urutan TDD (task test sebelum task implementasi) | Setelah semua spec di atas selesai |
 
 ### Skill Eksekusi
 
 | Skill | Persona | Fungsi | Kapan Digunakan |
 |---|---|---|---|
-| `developer` | @Firdaus | Mengerjakan task dari Task.md dengan pendekatan TDD — test ditulis sebelum implementasi, tiap task divalidasi sempit, `[SELF-REVIEW]` ditulis setelah tiap task, dan mode kerja bisa diingat antar sesi | Setelah Task.md ada dan siap dikerjakan |
+| `developer` | @Firdaus | Mengerjakan task dari Task.md dengan pendekatan TDD — test ditulis sebelum implementasi, solusi dipilih dari opsi paling kecil yang tetap aman, tiap task divalidasi sempit, `[SELF-REVIEW]` ditulis setelah tiap task, dan mode kerja bisa diingat antar sesi | Setelah Task.md ada dan siap dikerjakan |
 | `spec-compliance` | @Fachri | Verifikasi kode terhadap semua dokumen spec | Otomatis setelah setiap fase di developer |
-| `code-review` | @Fachri | Cek kualitas dan keamanan kode (27 item) | Setelah spec-compliance bersih |
+| `code-review` | @Fachri | Cek kualitas, keamanan, dan over-engineering kode (27 item + security essentials + peluang simplifikasi) | Setelah spec-compliance bersih |
 
 ### Skill Utilitas
 
 | Skill | Persona | Fungsi | Kapan Digunakan |
 |---|---|---|---|
-| `help` | @Galbi | Deteksi kondisi project & rekomendasikan langkah berikutnya | Kapan saja, terutama jika bingung harus mulai dari mana |
+| `help` | @Galbi | Deteksi kondisi project, rekomendasikan langkah berikutnya, dan merujuk ke README/skill yang relevan saat butuh penjelasan lebih dalam | Kapan saja, terutama jika bingung harus mulai dari mana |
 | `bug-fix` | @Ikhsan | Diagnosis, perbaikan, dokumentasi bug, dan regression prevention | Saat ada bug yang perlu diperbaiki |
 | `add-feature` | @Galbi | Tambah fitur baru ke project yang sudah berjalan | Setelah project berjalan dan ada fitur baru |
 | `spec-audit` | @Fachri | Cek konsistensi antar dokumen spec project atau antar instruksi framework MACCA itu sendiri | Setelah beberapa/semua spec selesai, sebelum coding, atau saat ingin merapikan MACCA |
-| `spec-init` | @Fachri | Buat semua spec dari codebase yang sudah ada, lengkap dengan `Confidence Summary` per dokumen | Untuk project yang sudah berjalan tapi belum punya spec |
+| `spec-init` | @Fachri | Buat semua spec dari codebase yang sudah ada, lengkap dengan `Evidence Inputs` dan `Confidence Summary` per dokumen | Untuk project yang sudah berjalan tapi belum punya spec |
 | `rapat` | @Galbi | Diskusi tim multi-persona dalam satu sesi, dengan handoff keputusan ke artefak spec | Kapan saja, saat butuh perspektif dari beberapa keahlian sekaligus |
 
 > `spec-audit` punya dua mode: **mode project** untuk audit `project-context/`, dan **mode framework** untuk audit README + skill docs MACCA.
@@ -261,7 +266,7 @@ Langkah 3b: Definisikan API (jika ada)
   → Hasil: project-context/api.md
 
 Langkah 3c: Definisikan tampilan (jika ada UI)
-  → Panggil: brainstorm-styleguide
+  → Panggil: brainstorm-styleguide   ← setelah PRD + architecture jelas
   → Hasil: project-context/StyleGuide.md
 
 Langkah 4: Tetapkan standar kode
@@ -316,7 +321,7 @@ Langkah 1: Generate spec dari codebase yang ada
 
 Langkah 2: Review & koreksi dokumen spec
   → Baca setiap file di project-context/ dan pastikan isinya akurat.
-  → Perhatikan terutama item dengan confidence Sedang / Rendah.
+  → Perhatikan terutama item dengan `Evidence Inputs`, confidence Sedang / Rendah, dan bagian asumsi yang masih perlu verifikasi.
   → Koreksi jika ada yang tidak sesuai dengan kenyataan project.
 
 Langkah 3: Cek konsistensi
@@ -470,6 +475,15 @@ your-project/
 │   │                              juga menyimpan mode kerja developer jika dipilih
 │   └── macca-tools.txt          ← tools yang dipilih saat install
 │
+├── .agents/skills/              ← hanya jika Codex / OpenAI dipilih
+│   ├── _shared/
+│   │   └── references/          ← source of truth bersama (config, ownership, persona, dll)
+│   ├── developer/
+│   │   └── references/          ← detail workflow yang diekstrak dari SKILL.md utama
+│   ├── code-review/
+│   │   └── references/          ← checklist review yang diekstrak dari SKILL.md utama
+│   └── ...
+│
 ├── .github/
 │   └── skills/                  ← folder skills untuk GitHub Copilot
 │       ├── add-feature/
@@ -540,6 +554,21 @@ Bisa. Itulah kenapa ada `spec-compliance` (cek kode vs spec) dan `code-review` (
 **Q: Apakah semua dokumen punya `Confidence Summary`?**
 
 Tidak. `Confidence Summary` adalah output default dari `spec-init`, karena skill itu mengekstrak fakta dan inferensi dari codebase yang sudah ada. Skill `brainstorm-*` biasanya tidak memerlukannya karena isinya dibangun langsung lewat wawancara dan konfirmasi user.
+
+Namun untuk dokumen hasil `spec-init`, AI sekarang sebaiknya mengandalkan dua penanda sekaligus:
+- `Evidence Inputs` → file/sumber apa yang dipakai untuk menyusun dokumen
+- `Confidence Summary` → mana fakta kuat, mana inferensi, mana yang masih perlu verifikasi
+
+Kalau project banyak ditulis dengan AI, dua section ini sangat membantu agent berikutnya agar tidak salah menganggap inferensi sebagai fakta.
+
+**Q: Kenapa ada section seperti `Document Role`, `Canonical Terminology`, atau `Assumptions & Open Questions` di beberapa template output?**
+
+Karena AI sering membaca `project-context/` berulang kali saat coding. Section seperti ini membuat dokumen lebih mudah dipindai mesin:
+- `Document Role` → dokumen ini source of truth untuk apa
+- `Canonical Terminology` → istilah yang harus dipakai konsisten
+- `Assumptions & Open Questions` → area yang belum final, supaya AI tidak overbuild
+
+Tujuannya bukan menambah formalitas, tapi mengurangi tebakan agent saat bekerja lintas sesi.
 
 **Q: Apakah saya harus memilih mode kerja `developer` setiap sesi?**
 

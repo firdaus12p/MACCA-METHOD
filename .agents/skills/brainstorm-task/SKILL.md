@@ -8,22 +8,19 @@ persona_role: "Project Manager"
 
 # Brainstorm Task
 
-## Language Policy
+## Shared Runtime Setup
 
-When persisting preferences, always keep both `raw` and `normalized` values under `languagePreferences.communication` and `languagePreferences.documents`.
+Before starting:
 
-Before starting, read `.agents/developer-config.json`.
-
-- If `languagePreferences` is missing, ask once for preferred communication language and preferred generated document language, then merge both into config.
-- Use `languagePreferences.communication.normalized` for all chat output.
-- Use `languagePreferences.documents.normalized` for generated `Task.md` content.
-- Never translate filenames, traceability IDs, config keys, or code literals.
+1. Read `../_shared/references/runtime-config.md`.
+2. Read `../_shared/references/brainstorm-session.md`.
+3. Use `languagePreferences.communication.normalized` for chat.
+4. Use `languagePreferences.documents.normalized` for final `project-context/Task.md`.
+5. Apply `brainstormPreferences.recommendations` using the shared session policy.
 
 ## Character
 
-**@Galbi** | Project Manager
-
-> "@Galbi here — Let's break this work into concrete, orderable tasks."
+Run as `@Galbi` (Project Manager). Use the shared persona profile in `../_shared/references/personas.md`.
 
 ---
 
@@ -59,26 +56,9 @@ Check if `project-context/Task.md` exists.
 
 **Session setup (ask before clarification):**
 
-Run language setup first, then continue with `brainstormPreferences`.
-
-Check `.agents/developer-config.json`:
-
-```json
-{
-  "brainstormPreferences": {
-    "recommendations": true | false
-  }
-}
-```
-
-- If file missing: ask after language setup, then save to config.
-- If preference exists: confirm briefly and reuse (skip setup questions).
-- If user overrides: update config while preserving other fields.
-
-> "Should I provide **recommendations** for each question based on best practices?"
-
-- If **yes**: Research via subagent first, then present question **with recommendation**. Format: *"[Question]? My recommendation: [X] — [brief reasoning]."*
-- If **no**: Continue with questions only.
+Run the shared runtime setup first, then ask whether the user wants
+recommendations for the clarification questions if that preference is still
+missing or overridden.
 
 1. **READ all spec documents** in `project-context/`:
    - `project-context/PRD.md` — features, business rules, acceptance criteria
@@ -178,6 +158,21 @@ Wait for user confirmation before generating Task.md.
 
 > **Total Phases:** [X] | **Total Tasks:** [Y] | **Last Updated:** [date]
 
+## Document Role
+- **Source of Truth:** Execution plan derived from approved spec documents
+- **Primary Owner:** `brainstorm-task`
+- **Out of Scope:** New product scope, new schema/API decisions, and code-quality review findings
+
+## Upstream Dependencies
+| Topic | Canonical Source |
+|------|-------------------|
+| Product scope | `project-context/PRD.md` |
+| Technical structure | `project-context/architecture.md` |
+| Data contract | `project-context/schema.md` |
+| API contract | `project-context/api.md` |
+| UI contract | `project-context/StyleGuide.md` |
+| Coding rules | `project-context/rules.md` |
+
 ## Execution Rules
 - Work through tasks **one at a time** in order within each phase.
 - After each **phase** completes, **STOP** and wait for user confirmation before next phase.
@@ -192,6 +187,12 @@ Wait for user confirmation before generating Task.md.
 | 1 | [Setup & Config] | [ ] | 0/3 |
 | 2 | [Database & Models] | [ ] | 0/4 |
 | 3 | [Backend: Auth] | [ ] | 0/3 |
+
+## Reading Order for AI
+1. Read `Execution Rules`
+2. Read `Progress Overview`
+3. Read the current phase only
+4. Use `References` and `Traceability IDs` before looking elsewhere
 
 ---
 
@@ -240,6 +241,10 @@ Wait for user confirmation before generating Task.md.
 | BR-01 | `project-context/PRD.md` | `Task 1.1` |
 | API-01 | `project-context/api.md` | `Task 2.1` |
 | DATA-01 | `project-context/schema.md` | `Task 1.2` |
+
+## Assumptions & Open Questions
+- [Assumption affecting planning granularity or ordering]
+- [Open question that may change future phases]
 ```
 
 ---

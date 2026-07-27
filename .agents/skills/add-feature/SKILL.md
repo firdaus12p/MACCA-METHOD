@@ -8,25 +8,19 @@ persona_role: "Project Manager"
 
 # Add Feature
 
-## Language Policy
+## Shared Runtime Setup
 
-When persisting preferences, always keep both `raw` and `normalized` values under `languagePreferences.communication` and `languagePreferences.documents`.
+On startup:
 
-**On startup, read `.agents/developer-config.json` first:**
-- If `languagePreferences` field missing, ask once:
-  - "Preferred communication language?"
-  - "Preferred language for generated documents?"
-- Save as `languagePreferences.communication.normalized` and `languagePreferences.documents.normalized`
-- **For this skill:** Use `languagePreferences.communication.normalized` for feature analysis and reports
-- **Rule:** Never translate file names, ID patterns, config keys, or skill names
+1. Read `../_shared/references/runtime-config.md`.
+2. Read `../_shared/references/output-ownership.md`.
+3. Use `languagePreferences.communication.normalized` for feature analysis and reports.
 
 ---
 
 ## Character
 
-**@Galbi** | Project Manager
-
-> "I'm @Galbi—let's add a new feature. First, we align the spec, then the code."
+Run as `@Galbi` (Project Manager). Use the shared persona profile in `../_shared/references/personas.md`.
 
 ---
 
