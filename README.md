@@ -1,6 +1,6 @@
-# MACCA - METHOD
+content = r"""# MACCA — Method
 
-**MACCA** adalah sistem pengembangan perangkat lunak berbasis AI yang bekerja dari **spesifikasi tertulis**, bukan tebakan. Sebelum ada satu baris kode pun, semua keputusan penting sudah didokumentasikan. AI bekerja sesuai dokumen itu — bukan asumsi.
+**MACCA** adalah sistem pengembangan perangkat lunak berbasis AI yang bekerja dari **spesifikasi tertulis**, bukan tebakan. Sebelum ada satu baris kode pun, semua keputusan penting sudah didokumentasikan. AI membaca dokumen itu sebelum coding, lalu memverifikasi hasilnya setelah coding.
 
 > **Macca** berasal dari bahasa Bugis yang berarti *pintar, cerdas, pandai*. Dalam falsafah Bugis-Makassar, kepintaran selalu disandingkan dengan sifat-sifat luhur — identitas moral yang dibawa ke mana saja.
 
@@ -12,14 +12,15 @@
 
 1. [Masalah yang Diselesaikan](#1-masalah-yang-diselesaikan)
 2. [Cara Kerja](#2-cara-kerja)
-3. [Glosarium Istilah](#3-glosarium-istilah)
-4. [Daftar Skill](#4-daftar-skill)
-5. [Workflow: Project Baru](#5-workflow-project-baru)
-6. [Workflow: Project yang Sudah Berjalan / Boilerplate](#6-workflow-project-yang-sudah-berjalan--boilerplate)
-7. [Workflow: Menambah Fitur Baru](#7-workflow-menambah-fitur-baru)
-8. [Workflow: Memperbaiki Bug](#8-workflow-memperbaiki-bug)
-9. [Instalasi & Cara Menggunakan](#9-instalasi--cara-menggunakan)
-10. [Struktur Folder](#10-struktur-folder)
+3. [Skill Perencanaan](#3-skill-perencanaan)
+4. [Skill Eksekusi](#4-skill-eksekusi)
+5. [Skill Utilitas](#5-skill-utilitas)
+6. [Tim AI MACCA](#6-tim-ai-macca)
+7. [Workflow](#7-workflow)
+8. [Instalasi & Cara Menggunakan](#8-instalasi--cara-menggunakan)
+9. [Konfigurasi](#9-konfigurasi)
+10. [Pertanyaan Umum](#10-pertanyaan-umum)
+11. [Lisensi](#11-lisensi)
 
 ---
 
@@ -27,7 +28,7 @@
 
 Ketika menggunakan AI untuk coding tanpa panduan yang jelas, sering terjadi:
 
-- AI membuat kode yang tidak sesuai dengan kebutuhan bisnis
+- AI membuat kode yang tidak sesuai kebutuhan bisnis
 - Setiap sesi AI seolah "lupa" konteks project sebelumnya
 - Tidak ada standar kode — setiap file ditulis dengan gaya berbeda
 - Sulit tahu kapan fitur benar-benar selesai
@@ -42,103 +43,821 @@ Ketika menggunakan AI untuk coding tanpa panduan yang jelas, sering terjadi:
 MACCA menggunakan **skill** — instruksi terstruktur yang diberikan ke AI untuk menjalankan tugas spesifik. Setiap skill punya tanggung jawab yang jelas dan tidak tumpang tindih.
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                    FASE PERENCANAAN                  │
-│                                                     │
-│  brainstorm-prd → brainstorm-architecture           │
-│                             ↓                       │
-│                         brainstorm-schema           │
-│                             ↓                       │
-│                         brainstorm-api              │
-│                             ↓                       │
-│                  brainstorm-styleguide (opsional)   │
-│                             ↓                       │
-│                         brainstorm-rules            │
-│                             ↓                       │
-│                         brainstorm-task             │
-└─────────────────────────────────────────────────────┘
-                          ↓
-┌─────────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────┐
+│                   FASE PERENCANAAN                   │
+│                                                      │
+│  brainstorm-prd → brainstorm-architecture            │
+│                            ↓                         │
+│                       brainstorm-schema              │
+│                            ↓                         │
+│                       brainstorm-api                 │
+│                            ↓                         │
+│                 brainstorm-styleguide (opsional)     │
+│                            ↓                         │
+│                       brainstorm-rules               │
+│                            ↓                         │
+│                       brainstorm-task                │
+└──────────────────────────────────────────────────────┘
+                           ↓
+┌──────────────────────────────────────────────────────┐
 │                    FASE EKSEKUSI                     │
-│                                                     │
-│            developer (per fase Task.md)             │
-│                ↓ (setelah tiap fase)                │
-│         spec-compliance → code-review               │
-└─────────────────────────────────────────────────────┘
+│                                                      │
+│             developer (per fase Task.md)             │
+│                 ↓ (setelah tiap fase)                │
+│          spec-compliance → code-review               │
+└──────────────────────────────────────────────────────┘
 ```
 
-Semua dokumen hasil perencanaan disimpan di folder `project-context/` di dalam project kamu.
+Semua dokumen hasil perencanaan disimpan di folder `project-context/` dalam project kamu.
 
-> **Kapan saja:** kamu bisa memanggil `rapat` di fase perencanaan maupun eksekusi jika butuh diskusi multi-persona sebelum lanjut.
-
-Jika diringkas, alurnya sederhana:
-- Tentukan kebutuhan produk lewat dokumen spec.
-- Turunkan spec menjadi task yang kecil dan bisa diverifikasi.
-- Kerjakan task secara bertahap.
-- Verifikasi hasilnya terhadap spec dan kualitas kode.
-
-Mulai dari requirement utama, spec sebaiknya memakai `Traceability ID` agar coverage ke schema, API, task, dan implementasi bisa diaudit dengan cepat.
-Untuk data yang bisa dibuat terstruktur, utamakan tabel, heading tetap, dan field eksplisit. Jangan kembali ke paragraf bebas jika informasi itu perlu dipindai mesin maupun diaudit manusia.
+> **Kapan saja:** kamu bisa memanggil `help` untuk melihat kondisi project dan langkah yang disarankan, atau `rapat` jika butuh diskusi multi-persona sebelum lanjut.
 
 ---
 
-## 3. Glosarium Istilah
+## 3. Skill Perencanaan
 
-| Istilah | Penjelasan Sederhana |
-|---|---|
-| **Skill** | Instruksi lengkap untuk AI agar melakukan tugas tertentu. Seperti "SOP" untuk AI. |
-| **Spec** / **Dokumen Spec** | Dokumen perencanaan project — berisi semua keputusan sebelum coding dimulai. |
-| **Subagent** | Agen bantu yang dipakai AI untuk eksplorasi, riset, atau analisis terfokus, lalu kembali dengan ringkasan singkat. |
-| **project-context/** | Folder tempat semua dokumen spec disimpan, di dalam project kamu. |
-| **PRD.md** | *Product Requirements Document* — daftar fitur, aturan bisnis, dan kriteria selesai. |
-| **architecture.md** | Keputusan teknis: bahasa pemrograman, framework, struktur folder, pola desain. |
-| **schema.md** | Desain database: tabel apa yang ada, kolom-kolomnya, dan relasinya. |
-| **api.md** | Daftar endpoint API: URL, method (GET/POST/dll), format request dan response. |
-| **rules.md** | Standar penulisan kode: penamaan variabel, format, dan aturan yang tidak boleh dilanggar. Mengandung seksi `[FORBIDDEN]` — daftar larangan teknis yang wajib dipindai AI sebelum menulis kode. |
-| **StyleGuide.md** | Panduan tampilan: warna, font, komponen UI, framework CSS yang digunakan. |
-| **Task.md** | Rencana kerja bertahap: daftar semua tugas yang harus dikerjakan, dikelompokkan per fase. |
-| **Fase** | Kelompok task yang saling berkaitan, diselesaikan bersama. Contoh: "Fase 1: Setup Database". |
-| **Task** | Satuan pekerjaan terkecil yang bisa diselesaikan dalam satu sesi. |
-| **Traceability ID** | Label stabil seperti `FEAT-01`, `BR-02`, `API-03`, `DATA-01` yang dipakai untuk melacak requirement dari PRD sampai task dan implementasi. |
-| **Acceptance Criteria** | Kondisi yang harus terpenuhi agar sebuah task dianggap selesai. Bisa dicek secara konkret. |
-| **Boilerplate** | Template atau starter code project yang sudah ada sebelum mulai coding dari nol. |
-| **spec-compliance** | Verifikasi bahwa kode sudah sesuai dengan dokumen spec. |
-| **code-review** | Pemeriksaan kualitas, keamanan, dan over-engineering kode — bukan soal spec, tapi soal kualitas implementasi dan peluang simplifikasi yang aman. |
-| **bug-log.md** | Catatan semua bug yang pernah ditemukan dan diperbaiki — supaya AI belajar dari sejarah. |
-| **[FORBIDDEN]** | Seksi di `rules.md` berisi daftar larangan teknis (hardcode, `any`, console.log, dll). AI memindainya sebelum menulis kode. |
-| **[SELF-REVIEW]** | Output singkat dari `developer` setelah tiap task selesai: 1 potensi security risk, 1 performance bottleneck, 1 asumsi yang dibuat dari spec. |
+Skill perencanaan dijalankan melalui sesi wawancara. Di awal setiap sesi, AI mengumumkan jumlah topik, lalu menanyakan dua hal (jika belum tersimpan di config):
+1. **Pacing**: (A) satu per satu · (B) tiga sekaligus · (C) semua sekaligus
+2. **Rekomendasi**: apakah AI memberikan saran jawaban di setiap pertanyaan?
 
-### 3b. Traceability ID Scheme
+Pilihan ini disimpan dan dipakai terus di sesi berikutnya.
 
-Gunakan prefix berikut secara konsisten di dokumen spec:
+---
 
-| Prefix | Digunakan Untuk |
-|---|---|
-| `FEAT-01` | Fitur utama di `PRD.md` |
-| `BR-01` | Business rule di `PRD.md` |
-| `NFR-01` | Non-functional requirement di `PRD.md` |
-| `AC-01` | Acceptance Criteria di `PRD.md` |
-| `US-01` | User story di `PRD.md` |
-| `DATA-01` | Tabel atau entitas data di `schema.md` |
-| `API-01` | Endpoint atau kontrak API di `api.md` |
-| `RULE-01` | Aturan spesifik di `rules.md` jika perlu dirujuk lintas dokumen |
+<details>
+<summary><strong>brainstorm-prd</strong> — Membuat PRD.md (Product Requirements Document)</summary>
 
-Aturan:
-- Nomor dimulai dari `01` untuk setiap prefix.
-- Jangan ubah ID lama hanya karena urutan konten berubah.
-- Item baru menambah ID baru; item lama mempertahankan ID lama.
+**Persona:** @Galbi — Project Manager
 
-### 3c. Istilah Mode
+**Dipanggil saat:** Pertama kali memulai project baru. Jika `PRD.md` sudah ada, AI akan bertanya sebelum menimpa.
 
-MACCA memakai istilah `mode` untuk konteks yang berbeda. Bedakan seperti ini:
+**Output:** `project-context/PRD.md`
 
-- **Mode pembahasan**: dipakai di skill `brainstorm-*` untuk memilih cara wawancara, misalnya `satu per satu` atau `tiga topik sekaligus`.
-- **Mode audit**: dipakai di `spec-audit`, yaitu `Project Audit` atau `Framework Audit`.
-- **Mode generate**: dipakai di `spec-init`, yaitu `Batch Generate` atau `Guided Generate`.
+**Jumlah topik:** 15 topik
 
-### 3d. developer-config.json Schema
+**Topik yang dibahas:**
+1. Tujuan Project — visi jangka panjang dan keunikan project
+2. Target User — persona pengguna, demografi, pain points
+3. Masalah yang Diselesaikan — masalah nyata, bukan asumsi
+4. Fitur Utama (MVP) — fitur minimal yang harus ada di versi pertama
+5. Business Rules — aturan bisnis yang tidak boleh dilanggar (misal: stok tidak boleh negatif)
+6. Non-Goals — apa yang *tidak* akan dibangun di versi ini
+7. User Stories — alur kerja nyata dari perspektif pengguna
+8. Acceptance Criteria — kondisi konkret agar fitur dianggap selesai
+9. Non-Functional Requirements — performa, keamanan, aksesibilitas
+10. Platform & Constraints — web, mobile, atau keduanya; batasan teknis
+11. Integrasi Eksternal — payment gateway, email, OAuth, dll
+12. Monetisasi — model bisnis dan sumber pendapatan
+13. Analitik & Logging — data apa yang perlu dipantau
+14. Roadmap — prioritas rilis dan fase setelah MVP
+15. Open Questions — hal yang belum diputuskan
 
-File `.agents/developer-config.json` adalah konfigurasi bersama lintas skill. Field-field ini **boleh hidup berdampingan** dalam satu file:
+**Perilaku penting:**
+- Menggunakan `Traceability ID` (`FEAT-*`, `BR-*`, `AC-*`, `NFR-*`, `US-*`) agar setiap requirement bisa ditelusuri ke task dan kode
+- Tidak menimpa file yang sudah ada tanpa konfirmasi
+
+</details>
+
+---
+
+<details>
+<summary><strong>brainstorm-architecture</strong> — Membuat architecture.md (Arsitektur Sistem)</summary>
+
+**Persona:** @Fachri — Tech Lead
+
+**Dipanggil saat:** Setelah `PRD.md` selesai. **Wajib** sebelum brainstorm-schema dan brainstorm-api.
+
+**Dibaca sebelum mulai:** `project-context/PRD.md`
+
+**Output:** `project-context/architecture.md`
+
+**Jumlah topik:** 10 topik
+
+**Topik yang dibahas:**
+1. System Context — sistem dan layanan eksternal yang berinteraksi
+2. Tech Stack — frontend, backend, database, hosting, CI/CD
+3. Folder Structure — organisasi file dan direktori project
+4. Design Patterns — pola arsitektur (MVC, Clean Architecture, Feature-based, Hexagonal)
+5. Authentication & Authorization — metode login, JWT/session, RBAC
+6. API Style — REST, GraphQL, atau tRPC
+7. State Management — Zustand, Redux, Context API, dll
+8. Deployment — environment dev/staging/prod, strategi deploy, cloud provider
+9. Observability — logging, monitoring, error tracking
+10. Architecture Decision Records — keputusan penting dengan alasannya
+
+**Perilaku penting:**
+- Setiap keputusan harus bisa dipertahankan dengan alasan
+- Field `Tech Stack` dan `Folder Structure` menjadi referensi wajib bagi `spec-compliance` (SC-02) dan `developer` (Step 2)
+
+</details>
+
+---
+
+<details>
+<summary><strong>brainstorm-schema</strong> — Membuat schema.md (Desain Database)</summary>
+
+**Persona:** @Fachri — Tech Lead
+
+**Dipanggil saat:** Setelah `architecture.md` selesai.
+
+**Dibaca sebelum mulai:** `project-context/PRD.md`, `project-context/architecture.md`
+
+**Output:** `project-context/schema.md`
+
+**Jumlah topik:** 5 topik
+
+**Topik yang dibahas:**
+1. Database Conventions — ID strategy (UUID/auto-increment/CUID), naming convention, audit fields, soft delete, timezone
+2. Table List — semua tabel/koleksi yang dibutuhkan
+3. Detail per Tabel — kolom, tipe data, constraint, dan index
+4. Relasi — foreign key, one-to-many, many-to-many, cascade rules
+5. Sensitive Data & Compliance — PII, kebijakan retensi, anonimisasi
+
+**Perilaku penting:**
+- Setiap tabel diberi `Traceability ID` (`DATA-*`) yang bisa dilacak ke requirement di `PRD.md`
+- Nama tabel dan kolom yang disepakati adalah **kontrak** — `spec-compliance` (SC-03) memverifikasi kode mengikuti nama persis seperti di dokumen ini
+
+</details>
+
+---
+
+<details>
+<summary><strong>brainstorm-api</strong> — Membuat api.md (Kontrak Endpoint API)</summary>
+
+**Persona:** @Fachri — Tech Lead
+
+**Dipanggil saat:** Setelah `schema.md` selesai.
+
+**Dibaca sebelum mulai:** `project-context/PRD.md`, `project-context/architecture.md`, `project-context/schema.md`
+
+**Output:** `project-context/api.md`
+
+**Jumlah topik:** 5 topik
+
+**Topik yang dibahas:**
+1. Base URL, Versioning & Auth — base URL dev/prod, versioning, metode autentikasi, format response standar
+2. Error Catalog — semua kode error yang mungkin terjadi beserta artinya
+3. Core Endpoints — endpoint utama berdasarkan fitur di `PRD.md`
+4. Pagination, Filter & Sorting — pola standar untuk list endpoint
+5. Rate Limiting & Security — batas request per menit, CORS policy, CSRF protection
+
+**Perilaku penting:**
+- Setiap endpoint diberi `Traceability ID` (`API-*`)
+- Format request dan response yang disepakati adalah **kontrak** yang diverifikasi `spec-compliance` (SC-04) saat coding
+
+</details>
+
+---
+
+<details>
+<summary><strong>brainstorm-styleguide</strong> — Membuat StyleGuide.md (Panduan Desain UI/UX)</summary>
+
+**Persona:** @Akram — UI/UX Designer
+
+**Dipanggil saat:** Setelah `PRD.md` dan `architecture.md` jelas. **Opsional** — skip jika project tidak punya UI.
+
+**Dibaca sebelum mulai:** `project-context/PRD.md`, `project-context/architecture.md`
+
+**Output:** `project-context/StyleGuide.md`
+
+**Jumlah topik:** 7 topik
+
+**Topik yang dibahas:**
+1. CSS Framework — Tailwind CSS (v3/v4), Bootstrap, CSS Modules, atau custom
+2. Color Palette — warna primer, sekunder, aksen, status (error/success/warning/info), dark mode
+3. Typography — font family, ukuran heading dan body, line height, font weight
+4. Spacing System — skala spacing yang dipakai (4px, 8px, 16px, 24px, dll)
+5. Component Styles — button, card, form input, modal, table — styling dan state
+6. Responsive & Breakpoints — breakpoint sm/md/lg/xl dan perubahan layout
+7. Icons & Assets — library icon, format gambar, konvensi penamaan aset
+
+**Perilaku penting:**
+- Warna dan spacing yang disepakati adalah **kontrak** — `spec-compliance` (SC-06) menandai penggunaan nilai arbitrary di luar daftar ini
+
+</details>
+
+---
+
+<details>
+<summary><strong>brainstorm-rules</strong> — Membuat rules.md (Standar Kode / Code Constitution)</summary>
+
+**Persona:** @Fachri — Tech Lead
+
+**Dipanggil saat:** Kapan saja, tapi sebaiknya sebelum coding dimulai.
+
+**Dibaca sebelum mulai:** `project-context/architecture.md`, `project-context/PRD.md`, `project-context/schema.md`, `project-context/api.md`
+
+**Output:** `project-context/rules.md`
+
+**Jumlah topik:** 7 topik
+
+**Topik yang dibahas:**
+1. AI Persona & Tech Stack — teknologi utama, library yang diprioritaskan, pola yang disukai dan dihindari
+2. Naming Conventions — variabel, fungsi, komponen, file, folder, konstanta
+3. Code Style — format (Prettier/ESLint), panjang fungsi maksimal, aturan `console.log`, early return
+4. Testing Strategy — coverage minimum, testing tools, pendekatan TDD
+5. Security Rules — penyimpanan token, validasi input, secret management
+6. Git Workflow — konvensi commit message, branching strategy
+7. `[FORBIDDEN]` Section — daftar larangan teknis yang **wajib dipindai** AI sebelum menulis kode
+
+**Perilaku penting:**
+- Seksi `[FORBIDDEN]` adalah yang pertama dibaca `developer` sebelum coding
+- Jika seksi `[FORBIDDEN]` tidak ada, `spec-compliance` mencatatnya sebagai MINOR finding
+
+</details>
+
+---
+
+<details>
+<summary><strong>brainstorm-task</strong> — Membuat Task.md (Rencana Kerja Bertahap)</summary>
+
+**Persona:** @Galbi — Project Manager
+
+**Dipanggil saat:** Setelah semua dokumen spec selesai. Juga dipanggil otomatis oleh `add-feature` untuk menambah fase baru.
+
+**Dibaca sebelum mulai:** Semua dokumen di `project-context/` (PRD, architecture, schema, api, rules, StyleGuide)
+
+**Output:** `project-context/Task.md`
+
+**Jumlah topik klarifikasi:** 4 topik
+
+**Topik klarifikasi:**
+1. Phase Priority Order — urutan pengerjaan, fitur mana yang harus selesai duluan
+2. Task Granularity — seberapa kecil task? Satu file, satu endpoint, atau satu fitur lengkap?
+3. Execution Rules — berhenti konfirmasi setelah tiap task, atau lanjut otomatis per fase?
+4. Testing Approach — unit, integrasi, atau E2E? Coverage minimum?
+
+**Dua mode operasi:**
+- **Generate New** — membuat `Task.md` dari nol berdasarkan semua spec yang ada
+- **Add Phase Mode** — menambah fase baru di bawah konten `Task.md` yang ada (dipanggil dari `add-feature`, tidak menimpa konten lama)
+
+**Perilaku penting:**
+- Task **tidak dibuat dari tebakan** — semuanya diturunkan dari dokumen spec
+- Setiap task punya `Acceptance Criteria` yang konkret dan bisa diverifikasi
+- Task test selalu hadir *sebelum* task implementasi (urutan TDD)
+- Setiap task punya `Traceability ID` yang menghubungkannya ke requirement di spec
+
+</details>
+
+---
+
+## 4. Skill Eksekusi
+
+---
+
+<details>
+<summary><strong>developer</strong> — Mengerjakan task dari Task.md fase per fase</summary>
+
+**Persona:** @Firdaus — Expert Developer
+
+**Dipanggil saat:** Setelah `Task.md` ada dan siap dikerjakan.
+
+**Alur kerja lengkap:**
+
+**Step 0 — Identifikasi nama & project**
+Membaca `.agents/developer-config.json`. Jika `name` atau `project` belum ada, AI bertanya sekali dan menyimpan jawabannya.
+
+**Step 0b — Setup additional skills & MCP**
+
+*Additional Skills:*
+- Jika `additionalSkills` sudah ada di config → langsung digunakan
+- Jika belum → AI bertanya sekali: *"Apakah ada skills tambahan untuk project ini?"*
+- Untuk setiap skill yang disebutkan, AI **mencari sendiri** di workspace dulu (`.agents/skills/`, `.github/skills/`, `.opencode/skill/`). Baru menanyakan path ke kamu jika tidak ditemukan.
+- Saat mengerjakan task yang relevan, AI **wajib membaca** SKILL.md dari skill tersebut sebelum menulis kode.
+
+*MCP (Model Context Protocol):*
+- Jika `availableMCPs` sudah ada di config → langsung digunakan
+- Jika belum → AI bertanya sekali: *"MCP apa yang tersedia di workspace kamu?"*
+- Hanya MCP yang terdaftar yang akan digunakan.
+
+**Step 0c — Set developer scope**
+- Jika `developerPreferences.scope` sudah ada → langsung digunakan
+- Jika belum → AI bertanya sekali:
+  ```
+  Apa scope pekerjaan kamu di project ini?
+  A) Frontend only — tidak menyentuh backend/API/database
+  B) Backend only  — tidak menyentuh UI/frontend
+  C) Fullstack     — mengerjakan seluruh stack
+  ```
+- Scope ini di-enforce di setiap fase: AI tidak akan membuat/mengubah file di luar scope.
+
+**Step 1b — Pilih mode kerja**
+- Jika `developerPreferences.workMode` sudah ada → langsung digunakan
+- Jika belum → AI bertanya sekali:
+  ```
+  A) Code now   — mulai langsung
+  B) Plan first — tulis plan dulu untuk review kamu
+  ```
+- **Mode plan-first:** AI membuat file rencana di `project-context/plans/phase-[N]-[slug].md` sebelum coding. Kamu review plannya, ketik `start` untuk mulai.
+
+**Step 2 — Pilih spec yang relevan + terapkan scope**
+
+| Kondisi | Dibaca |
+|---------|--------|
+| Semua task (selalu) | `rules.md`, `architecture.md` |
+| Task menyentuh database/model | + `schema.md` |
+| Task menyentuh API/endpoint | + `api.md` |
+| Task menyentuh UI/komponen | + `StyleGuide.md` |
+| Requirement belum jelas | + `PRD.md` |
+
+Scope enforcement: jika `scope=frontend`, AI tidak menyentuh file backend. Jika `scope=backend`, tidak menyentuh file frontend.
+
+**Step 3 — Kerjakan task satu per satu**
+
+Untuk setiap task:
+1. Pahami task dan acceptance criteria
+2. Cek ladder: perlu dibangun? Ada di codebase? Ada di stdlib? (YAGNI)
+3. Tulis I/O contract untuk fungsi non-trivial
+4. Tulis test dahulu, baru implementasi (TDD)
+5. Setelah selesai, tulis `[SELF-REVIEW]`:
+   ```
+   1. Security risk: [1 potensi — atau "none identified"]
+   2. Performance bottleneck: [1 area — atau "none identified"]
+   3. Spec assumption: [1 asumsi — atau "none"]
+   ```
+6. Jalankan validasi, update `Task.md` (`[ ]` → `[x]`)
+
+**Step 4 — Setelah semua task fase selesai**
+1. Tampilkan ringkasan fase
+2. Jalankan `spec-compliance` otomatis
+3. Jika bersih, jalankan `code-review` otomatis
+4. Tawarkan fase berikutnya
+
+**MCP yang digunakan (jika terdaftar di `availableMCPs`):**
+- `context7` — fetch dokumentasi library versi yang diinstall sebelum coding
+- `sequential-thinking` — untuk masalah kompleks/arsitektur
+- `grep-app` — cari contoh implementasi nyata di repo publik
+- `exa` — changelog, breaking changes, verifikasi maintenance aktif
+
+</details>
+
+---
+
+<details>
+<summary><strong>spec-compliance</strong> — Verifikasi kode terhadap semua dokumen spec</summary>
+
+**Persona:** @Fachri — Tech Lead
+
+**Dipanggil saat:** Otomatis setelah setiap fase selesai oleh `developer`. Dijalankan **sebelum** `code-review`.
+
+**Checklist (8 item):**
+
+| ID | Aspek | Dokumen yang Dibaca |
+|----|-------|---------------------|
+| SC-01 | PRD Compliance | `PRD.md` — fitur, business rules, acceptance criteria, non-goals |
+| SC-02 | Architecture Compliance | `architecture.md` — tech stack, folder structure, design patterns, auth method |
+| SC-03 | Schema Compliance | `schema.md` — nama tabel/kolom exact, relasi, soft delete, audit fields, PII |
+| SC-04 | API Compliance | `api.md` — path endpoint, HTTP method, request/response format, error codes |
+| SC-05 | Rules Compliance | `rules.md` — seksi `[FORBIDDEN]`, naming convention, TypeScript rules |
+| SC-06 | StyleGuide Compliance | `StyleGuide.md` — CSS framework, color tokens, spacing system |
+| SC-07 | Task Completion | `Task.md` — semua acceptance criteria terpenuhi, tidak ada task setengah jadi |
+| SC-08 | Scope Compliance | `developer-config.json` — scope frontend/backend dihormati, tidak ada file di luar scope |
+
+**Severity:** `💥 BLOCKER` → fix sekarang, re-run | `🔴 MAJOR` → fix sebelum fase berikutnya | `⚠️ MINOR` → diskusikan | `✅ PASS` → lanjut ke `code-review`
+
+**Catatan:** SC-07 adalah N/A jika dijalankan dari `bug-fix`.
+
+</details>
+
+---
+
+<details>
+<summary><strong>code-review</strong> — Pemeriksaan kualitas dan keamanan kode</summary>
+
+**Persona:** @Fachri — Tech Lead
+
+**Dipanggil saat:** Otomatis setelah `spec-compliance` bersih. Bisa juga dipanggil manual kapan saja.
+
+**Fix mode (ditanya sekali, disimpan ke config):**
+```
+A) Laporkan dulu — tampilkan semua temuan, tunggu konfirmasi sebelum fixing
+B) Fix langsung  — fix BLOCKER/MAJOR otomatis, laporan lengkap di akhir
+```
+Disimpan sebagai `codeReviewPreferences.fixMode` di `developer-config.json`.
+
+**Phase 1 — 27-Item Code Quality:**
+
+| Tier | Item |
+|------|------|
+| 💥 BLOCKER | CR-01 Wrong imports · CR-02 Runtime errors · CR-03 Null/undefined · CR-04 SQL injection · CR-05 Deprecated methods |
+| 🔴 MAJOR | CR-06 Duplicate function · CR-07 Unused code · CR-08 Duplicate logic · CR-09 Obsolete code · CR-10 Inconsistent naming · CR-11 Ignoring existing code · CR-12 Missing dependency · CR-13 Dependency conflict · CR-14 Memory leaks · CR-15 Security ignored · CR-16 No rate limit handling · CR-17 No tests |
+| ⚠️ MINOR | CR-18 Edge cases · CR-19 Happy path only · CR-20 Performance · CR-21 Outdated pattern · CR-22 Under-engineering · CR-23 Over-engineering · CR-24 Environment assumptions |
+| ℹ️ INFO | CR-25 Missing comments · CR-26 Jargon · CR-27 Comment quality |
+
+**Phase 2 — 10 Security Essentials:**
+
+| ID | Aspek |
+|----|-------|
+| SEC-01 | Injection Prevention — SQL, shell, eval |
+| SEC-02 | Authentication — password hashing, cookie attributes |
+| SEC-03 | Authorization — deny-by-default, ownership checks, mass assignment |
+| SEC-04 | XSS Prevention — innerHTML, dangerouslySetInnerHTML |
+| SEC-05 | API Security — rate limiting, CORS, JWT verification |
+| SEC-06 | Data Protection & Logging — no sensitive logs, no hardcoded secrets |
+| SEC-07 | Error Handling Security — fail-closed, no swallowed exceptions |
+| SEC-08 | Input Validation — body/params/query/headers/cookies |
+| SEC-09 | Framework-Specific Security — AI baca `architecture.md` untuk deteksi framework: **Next.js** (NEXT_PUBLIC_*, Server Actions, middleware, wildcard image domains), **Laravel** (CSRF, Eloquent, .env), **Django** (ALLOWED_HOSTS, DEBUG, SECRET_KEY), **Express/NestJS** (helmet, CORS, body limits), **Rails** (strong params) |
+| SEC-10 | Dependency Vulnerabilities — packages dengan CVE critical/high (`npm audit`, `pip audit`, `composer audit`, dll) |
+
+**Format setiap temuan:** Di mana? → Kenapa terjadi? → Jika tidak diperbaiki? → Jika diperbaiki? → Rekomendasi fix → Kenapa fix ini?
+
+</details>
+
+---
+
+## 5. Skill Utilitas
+
+---
+
+<details>
+<summary><strong>help</strong> — Dashboard kondisi project dan panduan langkah berikutnya</summary>
+
+**Persona:** @Galbi — Project Manager
+
+**Dipanggil saat:** Kapan saja, terutama jika bingung harus mulai dari mana.
+
+**Yang dicek:**
+
+- Dokumen spec di `project-context/` — PRD.md, StyleGuide.md, architecture.md, schema.md, api.md, rules.md, Task.md (hitung `[ ]` vs `[x]`)
+- Developer config di `.agents/developer-config.json` — name, project, scope, workMode, additionalSkills, availableMCPs
+- Plans di `project-context/plans/` — list semua file plan yang sudah dibuat
+
+**Format output:**
+```
+Checking your project now...
+
+Spec Documents
+  [✓] PRD.md           — Product requirements
+  [✓] architecture.md  — System architecture
+  [ ] schema.md        — Not yet created
+  ...
+
+Developer Config
+  [✓] name: Firdaus
+  [✓] scope: fullstack
+  [✓] workMode: plan-first
+  [✓] additionalSkills: 2 skills
+  [ ] availableMCPs: not configured
+
+Plans
+  [✓] phase-1-setup.md
+
+Status: [ringkasan kondisi]
+Recommended next steps: ...
+```
+
+</details>
+
+---
+
+<details>
+<summary><strong>bug-fix</strong> — Diagnosis, perbaikan, dan dokumentasi bug</summary>
+
+**Persona:** @Ikhsan — Debugger
+
+**Dipanggil saat:** Ada bug yang perlu diperbaiki.
+
+**Alur kerja:**
+1. Kamu deskripsikan bug (gejala, lokasi, cara reproduksi, pesan error)
+2. AI cek `bug-log.md` — pernah terjadi?
+   - **Identik** → terapkan fix yang sama (konfirmasi dulu)
+   - **Mirip tapi berbeda** → diagnosis ulang
+   - **Baru** → lanjut ke diagnosis
+3. AI baca file yang bermasalah + semua caller dari shared code — satu fix di root cause lebih baik dari banyak guard di tiap caller
+4. AI rumuskan root cause dan jelaskan → tunggu konfirmasi sebelum fix
+5. Fix diterapkan → `spec-compliance` + `code-review` dijalankan
+6. Kamu konfirmasi bug teratasi
+7. AI tambah regression prevention (test, rule/spec update)
+8. AI catat ke `project-context/bug-log.md` ← **hanya setelah konfirmasi kamu, tidak otomatis**
+
+</details>
+
+---
+
+<details>
+<summary><strong>add-feature</strong> — Menambah fitur baru ke project yang sudah berjalan</summary>
+
+**Persona:** @Galbi — Project Manager
+
+**Dipanggil saat:** Ada fitur baru yang ingin ditambahkan ke project yang sudah berjalan.
+
+**Alur kerja:**
+1. Kamu deskripsikan fitur baru (nama, fungsi, pengguna, alasan)
+2. AI baca semua spec yang ada di `project-context/`
+3. AI tunjukkan impact analysis — dokumen mana yang terdampak (termasuk `plans/`)
+4. Kamu konfirmasi analisis
+5. AI update **semua** dokumen yang terdampak:
+   - `PRD.md` → `architecture.md` → `schema.md` → `api.md` → `StyleGuide.md` → `rules.md`
+   - `project-context/plans/` — jika ada file plan untuk fase terdampak, tambahkan seksi `## Feature Addition: [nama]` tanpa menimpa konten lama
+6. AI panggil `brainstorm-task` (Add Phase Mode) untuk tambah fase & task baru di `Task.md`
+7. Lanjut dengan `developer`
+
+**Aturan mutlak:** setiap dokumen yang terdampak wajib diupdate — tidak ada yang dilewati.
+
+</details>
+
+---
+
+<details>
+<summary><strong>spec-audit</strong> — Cek konsistensi antar dokumen</summary>
+
+**Persona:** @Fachri — Tech Lead
+
+**Dua mode:**
+
+**Mode Project** — audit `project-context/`
+Memeriksa konsistensi *antar* dokumen: tabel di schema tidak punya endpoint di api? Fitur di PRD tidak punya task di Task.md? Tech stack architecture bertentangan rules? Traceability ID dirujuk tapi tidak ada di sumbernya?
+
+**Mode Framework** — audit MACCA itu sendiri
+Memeriksa konsistensi *antar* instruksi skill: README, skill docs, dan workflow tidak bertentangan?
+
+**Yang dicek:** konflik langsung → workflow drift → inkonsistensi → ambiguitas
+
+**Format temuan:** Di mana? → Mengapa masalah? → Fix spesifik yang disarankan + alasannya
+
+</details>
+
+---
+
+<details>
+<summary><strong>spec-init</strong> — Generate semua spec dari codebase yang sudah ada</summary>
+
+**Persona:** @Fachri — Tech Lead
+
+**Dipanggil saat:** Project sudah berjalan tapi belum punya dokumen spec.
+
+**Dua mode:**
+```
+Mode A — Batch Generate: scan seluruh codebase, generate semua sekaligus.
+Mode B — Guided Generate: satu dokumen → kamu review → konfirmasi → lanjut.
+```
+
+**Urutan generate:** `architecture.md` → `rules.md` → `schema.md` → `api.md` → `StyleGuide.md` → `PRD.md`
+
+PRD dibuat terakhir karena isinya disimpulkan dari kode yang ada, bukan asumsi.
+
+**Setiap dokumen yang dihasilkan memiliki:**
+- **Evidence Inputs** — file/sumber yang dipakai sebagai dasar klaim
+- **Confidence Level** per klaim: *High* (terlihat langsung di kode) / *Medium* (inferensi kuat) / *Low* (tebakan, perlu verifikasi)
+- **Confidence Summary** — ringkasan fakta kuat, inferensi, dan yang perlu verifikasi manual
+
+</details>
+
+---
+
+<details>
+<summary><strong>rapat</strong> — Diskusi tim multi-persona</summary>
+
+**Persona:** @Galbi (fasilitator)
+
+**Dipanggil saat:** Kapan saja, saat butuh perspektif dari beberapa keahlian sekaligus.
+
+**Cara kerja:** @Galbi memfasilitasi, kamu bisa memanggil persona mana pun by name untuk meminta pendapatnya. Setiap persona merespons sesuai keahlian dan role-nya.
+
+**Persona yang tersedia:**
+- `@Galbi` — Project Manager: scope, prioritas, dampak bisnis
+- `@Fachri` — Tech Lead: keputusan teknis, trade-offs, keamanan
+- `@Akram` — UI/UX Designer: usability, konsistensi visual, aksesibilitas
+- `@Firdaus` — Developer: feasibility, estimasi kompleksitas
+- `@Ikhsan` — Debugger: risiko, edge cases, potensi bug
+
+</details>
+
+---
+
+## 6. Tim AI MACCA
+
+| Persona | Role | Skills |
+|---------|------|--------|
+| **@Galbi** | Project Manager | `brainstorm-prd`, `brainstorm-task`, `add-feature`, `help`, `rapat` |
+| **@Fachri** | Tech Lead | `brainstorm-architecture`, `brainstorm-api`, `brainstorm-schema`, `brainstorm-rules`, `spec-init`, `spec-audit`, `spec-compliance`, `code-review` |
+| **@Akram** | UI/UX Designer | `brainstorm-styleguide` |
+| **@Firdaus** | Expert Developer | `developer` |
+| **@Ikhsan** | Debugger | `bug-fix` |
+
+> **Aturan Persona:** Jangan tukar persona pemilik skill. Instruksi, nada, dan tanggung jawabnya sudah dirancang untuk role tersebut.
+
+---
+
+## 7. Workflow
+
+<details>
+<summary><strong>Project Baru</strong> — Mulai dari nol</summary>
+
+```
+Langkah 1: Tentukan kebutuhan produk
+  → Panggil: brainstorm-prd
+  → Hasil: project-context/PRD.md
+
+Langkah 2: Definisikan arsitektur
+  → Panggil: brainstorm-architecture   ← WAJIB sebelum lanjut
+  → Hasil: project-context/architecture.md
+
+Langkah 3a: Desain database (jika ada)
+  → Panggil: brainstorm-schema
+  → Hasil: project-context/schema.md
+
+Langkah 3b: Definisikan API (jika ada)
+  → Panggil: brainstorm-api
+  → Hasil: project-context/api.md
+
+Langkah 3c: Definisikan tampilan UI (opsional)
+  → Panggil: brainstorm-styleguide
+  → Hasil: project-context/StyleGuide.md
+
+Langkah 4: Tetapkan standar kode
+  → Panggil: brainstorm-rules
+  → Hasil: project-context/rules.md
+
+Langkah 5: Cek konsistensi (disarankan)
+  → Panggil: spec-audit (mode project)
+
+Langkah 6: Buat rencana kerja
+  → Panggil: brainstorm-task
+  → Hasil: project-context/Task.md
+
+Langkah 7: Mulai coding
+  → Panggil: developer
+  → Per task: kode → validasi → [SELF-REVIEW]
+  → Per fase: spec-compliance → code-review → fase berikutnya
+```
+
+> Bingung harus mulai dari mana? Panggil `help`.
+
+</details>
+
+---
+
+<details>
+<summary><strong>Project yang Sudah Berjalan / Boilerplate</strong> — Ada codebase, belum ada spec</summary>
+
+```
+Langkah 1: Generate spec dari codebase yang ada
+  → Panggil: spec-init
+  → Mode A (Batch): semua dokumen dibuat sekaligus
+  → Mode B (Guided): satu dokumen → review → lanjut
+
+  Urutan generate: architecture.md → rules.md → schema.md → api.md → StyleGuide.md → PRD.md
+
+Langkah 2: Review & koreksi
+  → Perhatikan item dengan Confidence: Low dan bagian asumsi
+
+Langkah 3: Cek konsistensi
+  → Panggil: spec-audit (mode project)
+
+Langkah 4: Buat rencana kerja
+  → Panggil: brainstorm-task
+
+Langkah 5: Mulai coding
+  → Panggil: developer
+```
+
+</details>
+
+---
+
+<details>
+<summary><strong>Menambah Fitur Baru</strong></summary>
+
+```
+→ Panggil: add-feature
+
+Yang terjadi:
+  1. Kamu deskripsikan fitur baru
+  2. AI baca semua spec yang ada
+  3. AI tunjukkan impact analysis (dokumen + plans yang terdampak)
+  4. Kamu konfirmasi analisis
+  5. AI update SEMUA dokumen yang terdampak (tidak ada yang dilewati)
+  6. AI panggil brainstorm-task untuk tambahkan fase & task baru
+  7. Lanjut dengan developer
+```
+
+</details>
+
+---
+
+<details>
+<summary><strong>Memperbaiki Bug</strong></summary>
+
+```
+→ Panggil: bug-fix
+
+Yang terjadi:
+  1. Kamu deskripsikan bug
+  2. AI cek bug-log.md — pernah terjadi sebelumnya?
+  3. AI cek semua caller dari kode yang bermasalah
+  4. AI jelaskan root cause → tunggu konfirmasi sebelum fix
+  5. Fix diterapkan → spec-compliance + code-review
+  6. Kamu konfirmasi bug teratasi
+  7. AI tambah regression prevention
+  8. AI catat ke bug-log.md ← hanya setelah konfirmasi kamu
+```
+
+</details>
+
+---
+
+## 8. Instalasi & Cara Menggunakan
+
+**Prasyarat:** GitHub Copilot aktif di VS Code (atau AI tool lain yang didukung).
+
+### Instalasi
+
+**Linux / Mac**
+```bash
+curl -fsSL https://raw.githubusercontent.com/firdaus12p/MACCA-METHOD/main/install.sh | bash
+```
+
+**Windows (PowerShell)**
+```powershell
+irm https://raw.githubusercontent.com/firdaus12p/MACCA-METHOD/main/install.ps1 | iex
+```
+
+Installer menampilkan selektor interaktif untuk memilih AI tool, menanyakan nama developer, nama project, dan preferensi bahasa.
+
+### Update ke Versi Terbaru
+
+**Linux / Mac**
+```bash
+curl -fsSL https://raw.githubusercontent.com/firdaus12p/MACCA-METHOD/main/upgrade.sh | bash
+```
+
+**Windows (PowerShell)**
+```powershell
+irm https://raw.githubusercontent.com/firdaus12p/MACCA-METHOD/main/upgrade.ps1 | iex
+```
+
+> `project-context/` dan `developer-config.json` **tidak disentuh** saat upgrade.
+
+### Cara Memanggil Skill
+
+```
+Gunakan skill brainstorm-prd
+Gunakan skill developer
+Gunakan skill help
+```
+
+### Struktur Folder
+
+```
+your-project/
+├── .agents/
+│   ├── developer-config.json    ← konfigurasi bersama lintas skill
+│   └── macca-tools.txt          ← tools yang dipilih saat install
+│
+├── .github/skills/              ← jika GitHub Copilot dipilih
+│   ├── add-feature/
+│   ├── brainstorm-api/
+│   ├── brainstorm-architecture/
+│   ├── brainstorm-prd/
+│   ├── brainstorm-rules/
+│   ├── brainstorm-schema/
+│   ├── brainstorm-styleguide/
+│   ├── brainstorm-task/
+│   ├── bug-fix/
+│   ├── code-review/
+│   ├── developer/
+│   ├── help/
+│   ├── rapat/
+│   ├── spec-audit/
+│   ├── spec-compliance/
+│   └── spec-init/
+│
+├── project-context/
+│   ├── PRD.md
+│   ├── architecture.md
+│   ├── schema.md
+│   ├── api.md
+│   ├── rules.md
+│   ├── StyleGuide.md
+│   ├── Task.md
+│   ├── bug-log.md               ← dibuat saat ada bug pertama
+│   └── plans/                   ← rencana per fase (mode plan-first)
+│       └── phase-1-setup.md
+│
+└── ... (kode project kamu)
+```
+
+| AI Tool | Folder Skills |
+|---------|---------------|
+| GitHub Copilot | `.github/skills/` |
+| Cursor | `.cursor/skills/` |
+| Claude Code | `.claude/skills/` |
+| Windsurf | `.windsurf/skills/` |
+| Gemini CLI | `.gemini/skills/` |
+| OpenCode | `.opencode/skill/` |
+| Kilo Code | `.kilo/skills/` |
+| Codex (OpenAI) | `.agents/skills/` |
+| Kimi CLI | `~/.config/agents/skills/` (global) |
+
+---
+
+## 9. Konfigurasi
+
+<details>
+<summary><strong>developer-config.json — Schema Lengkap</strong></summary>
+
+File `.agents/developer-config.json` adalah konfigurasi bersama lintas skill. Semua skill membaca dan memperbarui file ini dengan cara **merge** — tidak pernah menimpa seluruh isi.
 
 ```json
 {
@@ -155,447 +874,183 @@ File `.agents/developer-config.json` adalah konfigurasi bersama lintas skill. Fi
     }
   },
   "developerPreferences": {
-    "workMode": "direct"
+    "workMode": "direct",
+    "scope": "fullstack"
   },
   "brainstormPreferences": {
     "discussionMode": "one-by-one",
     "recommendations": true
   },
+  "codeReviewPreferences": {
+    "fixMode": "report-first"
+  },
   "additionalSkills": [
     {
-      "name": "nama-skill",
-      "purpose": "fungsi singkat",
+      "name": "laravel-best-practices",
+      "purpose": "Gunakan saat menulis kode Laravel",
       "paths": {
-        "copilot": ".github/skills/nama-skill/SKILL.md",
-        "opencode": ".opencode/skill/nama-skill/SKILL.md",
-        "codex": ".agents/skills/nama-skill/SKILL.md"
+        "copilot": ".github/skills/laravel-best-practices/SKILL.md",
+        "opencode": ".opencode/skill/laravel-best-practices/SKILL.md",
+        "codex": ".agents/skills/laravel-best-practices/SKILL.md"
       }
     }
-  ]
+  ],
+  "availableMCPs": ["context7", "supabase"]
 }
 ```
 
-Aturan penulisan:
-- Semua skill yang mengubah file ini harus **merge dengan isi yang sudah ada**, bukan menimpa seluruh file.
-- Field yang tidak dikenali skill tetap harus dipertahankan.
-- `languagePreferences.*.raw` menyimpan input asli/effective choice dari user.
-- `languagePreferences.*.normalized` menyimpan bentuk stabil yang dipakai skill untuk routing bahasa output.
-- Untuk kompatibilitas, reader skill harus menerima bentuk lama seperti `path`, `githubPath`, `opencodePath`, atau nilai bahasa singkat seperti `id` / `en` jika ditemukan pada project lama.
+| Field | Siapa yang mengisi | Keterangan |
+|-------|--------------------|------------|
+| `name` | `developer` (Step 0) | Ditanya sekali |
+| `project` | `developer` (Step 0) | Ditanya sekali |
+| `languagePreferences` | installer / skill pertama | Bahasa komunikasi dan bahasa dokumen |
+| `developerPreferences.workMode` | `developer` (Step 1b) | `"direct"` atau `"plan-first"` |
+| `developerPreferences.scope` | `developer` (Step 0c) | `"frontend"`, `"backend"`, atau `"fullstack"` |
+| `brainstormPreferences.discussionMode` | brainstorm-* skills | `"one-by-one"`, `"three-at-a-time"`, atau `"all-at-once"` |
+| `brainstormPreferences.recommendations` | brainstorm-* skills | `true` = AI berikan saran jawaban di tiap pertanyaan |
+| `codeReviewPreferences.fixMode` | `code-review` | `"report-first"` atau `"fix-then-report"` |
+| `additionalSkills` | `developer` (Step 0b) | AI cari path sendiri di workspace dulu, baru tanya jika tidak ditemukan |
+| `availableMCPs` | `developer` (Step 0b) | MCP yang tersedia; hanya yang terdaftar yang digunakan |
 
-Catatan:
-- Saat install pertama, installer menanyakan **bahasa komunikasi** dan **bahasa dokumen yang dihasilkan** lalu menyimpannya di file ini.
-- Untuk project lama yang belum punya `languagePreferences`, skill pertama yang dijalankan harus **bertanya sekali**, menyimpan hasilnya, lalu memakai preferensi itu untuk sesi berikutnya.
-- Semua **instruksi sistem skill** boleh ditulis dalam bahasa Inggris demi hemat token dan presisi, tetapi **output ke user** dan **dokumen yang dihasilkan** wajib mengikuti `languagePreferences`.
-- Literal sistem/teknis seperti nama file (`PRD.md`, `Task.md`), ID (`FEAT-01`, `API-01`), field (`ai_enabled`), atau simbol kode (`fromMe: true`) **tidak diterjemahkan**.
-- `developerPreferences.workMode` dipakai oleh skill `developer` untuk mengingat pilihan mode kerja (`direct` atau `plan-first`).
-- Begitu dipilih sekali, mode ini dipakai terus di sesi berikutnya sampai kamu meminta perubahan.
+**Aturan:** semua skill harus **merge**, tidak boleh menimpa file. Field yang tidak dikenali tetap dipertahankan.
 
----
-
-## 4. Daftar Skill
-
-### Skill Perencanaan (Brainstorm)
-
-| Skill | Persona | Fungsi | Kapan Digunakan |
-|---|---|---|---|
-| `brainstorm-prd` | @Galbi | Membuat PRD.md melalui sesi wawancara interaktif | Pertama kali, saat memulai project baru |
-| `brainstorm-architecture` | @Fachri | Membuat architecture.md — keputusan tech stack dan struktur | Setelah PRD selesai (**wajib sebelum schema & api**) |
-| `brainstorm-schema` | @Fachri | Membuat schema.md — desain database | Setelah architecture selesai |
-| `brainstorm-api` | @Fachri | Membuat api.md — kontrak endpoint API | Setelah schema selesai |
-| `brainstorm-rules` | @Fachri | Membuat rules.md — standar kode dan daftar larangan `[FORBIDDEN]` | Kapan saja, tapi sebelum coding dimulai |
-| `brainstorm-styleguide` | @Akram | Membuat StyleGuide.md — panduan desain UI/UX | Setelah PRD dan architecture jelas, jika project punya UI (**opsional, bisa diskip**) |
-| `brainstorm-task` | @Galbi | Membuat Task.md — rencana kerja bertahap dengan urutan TDD (task test sebelum task implementasi) | Setelah semua spec di atas selesai |
-
-### Skill Eksekusi
-
-| Skill | Persona | Fungsi | Kapan Digunakan |
-|---|---|---|---|
-| `developer` | @Firdaus | Mengerjakan task dari Task.md dengan pendekatan TDD — test ditulis sebelum implementasi, solusi dipilih dari opsi paling kecil yang tetap aman, tiap task divalidasi sempit, `[SELF-REVIEW]` ditulis setelah tiap task, dan mode kerja bisa diingat antar sesi | Setelah Task.md ada dan siap dikerjakan |
-| `spec-compliance` | @Fachri | Verifikasi kode terhadap semua dokumen spec | Otomatis setelah setiap fase di developer |
-| `code-review` | @Fachri | Cek kualitas, keamanan, dan over-engineering kode (27 item + security essentials + peluang simplifikasi) | Setelah spec-compliance bersih |
-
-### Skill Utilitas
-
-| Skill | Persona | Fungsi | Kapan Digunakan |
-|---|---|---|---|
-| `help` | @Galbi | Deteksi kondisi project, rekomendasikan langkah berikutnya, dan merujuk ke README/skill yang relevan saat butuh penjelasan lebih dalam | Kapan saja, terutama jika bingung harus mulai dari mana |
-| `bug-fix` | @Ikhsan | Diagnosis, perbaikan, dokumentasi bug, dan regression prevention | Saat ada bug yang perlu diperbaiki |
-| `add-feature` | @Galbi | Tambah fitur baru ke project yang sudah berjalan | Setelah project berjalan dan ada fitur baru |
-| `spec-audit` | @Fachri | Cek konsistensi antar dokumen spec project atau antar instruksi framework MACCA itu sendiri | Setelah beberapa/semua spec selesai, sebelum coding, atau saat ingin merapikan MACCA |
-| `spec-init` | @Fachri | Buat semua spec dari codebase yang sudah ada, lengkap dengan `Evidence Inputs` dan `Confidence Summary` per dokumen | Untuk project yang sudah berjalan tapi belum punya spec |
-| `rapat` | @Galbi | Diskusi tim multi-persona dalam satu sesi, dengan handoff keputusan ke artefak spec | Kapan saja, saat butuh perspektif dari beberapa keahlian sekaligus |
-
-> `spec-audit` punya dua mode: **mode project** untuk audit `project-context/`, dan **mode framework** untuk audit README + skill docs MACCA.
-> Gunakan **mode framework** terutama setelah perubahan besar di beberapa skill, sebelum rilis versi MACCA baru, saat ada skill baru, atau saat kamu curiga ada drift instruksi antar skill.
-
-### Tim AI MACCA
-
-Setiap skill dijalankan oleh satu **persona** — karakter AI dengan keahlian spesifik. Kamu bisa memanggil mereka by name selama sesi.
-
-| Persona | Role | Skills |
-|---|---|---|
-| **@Galbi** | Project Manager | `brainstorm-prd`, `brainstorm-task`, `add-feature`, `help`, `rapat` |
-| **@Fachri** | Tech Lead | `brainstorm-architecture`, `brainstorm-api`, `brainstorm-schema`, `brainstorm-rules`, `spec-init`, `spec-audit`, `spec-compliance`, `code-review` |
-| **@Akram** | UI/UX Designer | `brainstorm-styleguide` |
-| **@Firdaus** | Expert Developer | `developer` |
-| **@Ikhsan** | Debugger | `bug-fix` |
-
-**Aturan Persona:** Setiap skill dirancang untuk satu persona spesifik. Jangan tukar persona pemilik skill, karena instruksi, nada, dan tanggung jawabnya sudah dibentuk untuk role tersebut.
+</details>
 
 ---
 
-## 5. Workflow: Project Baru
+<details>
+<summary><strong>Glosarium & Traceability ID</strong></summary>
 
-Gunakan alur ini jika kamu memulai project dari nol.
+| Istilah | Penjelasan |
+|---------|------------|
+| **Skill** | Instruksi lengkap untuk AI — seperti SOP untuk AI |
+| **Spec** | Dokumen perencanaan berisi semua keputusan sebelum coding |
+| **Subagent** | Agen bantu untuk eksplorasi/analisis terfokus |
+| **project-context/** | Folder tempat semua dokumen spec disimpan |
+| **[FORBIDDEN]** | Seksi di `rules.md` — larangan teknis yang dipindai AI sebelum coding |
+| **[SELF-REVIEW]** | Refleksi singkat developer setelah tiap task: security risk, performance, spec assumption |
+| **Traceability ID** | Label stabil (`FEAT-01`, `API-03`) untuk melacak requirement dari PRD ke implementasi |
+| **Acceptance Criteria** | Kondisi konkret agar task dianggap selesai |
+| **scope** | Batas pekerjaan developer: frontend-only, backend-only, atau fullstack |
+| **fixMode** | Preferensi code-review: lapor dulu atau fix langsung |
+| **availableMCPs** | MCP yang terdaftar dan bisa digunakan di project ini |
+| **Confidence Level** | Di `spec-init`: High/Medium/Low untuk klaim dari analisis codebase |
+| **Evidence Inputs** | Di `spec-init`: file/sumber yang dipakai sebagai dasar klaim |
 
-```
-Langkah 1: Mulai dari ide
-  → Panggil: brainstorm-prd
-  → Hasil: project-context/PRD.md
+**Traceability ID Scheme:**
 
-Langkah 2: Definisikan arsitektur
-  → Panggil: brainstorm-architecture   ← WAJIB sebelum lanjut
-  → Hasil: project-context/architecture.md
+| Prefix | Digunakan untuk |
+|--------|----------------|
+| `FEAT-01` | Fitur utama di `PRD.md` |
+| `BR-01` | Business rule di `PRD.md` |
+| `NFR-01` | Non-functional requirement di `PRD.md` |
+| `AC-01` | Acceptance Criteria di `PRD.md` |
+| `US-01` | User story di `PRD.md` |
+| `DATA-01` | Tabel atau entitas data di `schema.md` |
+| `API-01` | Endpoint di `api.md` |
+| `RULE-01` | Aturan di `rules.md` yang dirujuk lintas dokumen |
 
-Langkah 3a: Desain database (jika ada)
-  → Panggil: brainstorm-schema
-  → Hasil: project-context/schema.md
-
-Langkah 3b: Definisikan API (jika ada)
-  → Panggil: brainstorm-api            ← harus setelah schema
-  → Hasil: project-context/api.md
-
-Langkah 3c: Definisikan tampilan (jika ada UI)
-  → Panggil: brainstorm-styleguide   ← setelah PRD + architecture jelas
-  → Hasil: project-context/StyleGuide.md
-
-Langkah 4: Tetapkan standar kode
-  → Panggil: brainstorm-rules
-  → Hasil: project-context/rules.md
-
-Langkah 5: Cek konsistensi (opsional tapi disarankan)
-  → Panggil: spec-audit (mode project)
-  → Hasil: Laporan konflik antar dokumen
-
-Langkah 6: Buat rencana kerja
-  → Panggil: brainstorm-task
-  → Hasil: project-context/Task.md
-
-Langkah 7: Mulai coding
-  → Panggil: developer
-  → Per task: kode → validasi task
-  → Per fase: spec-compliance → code-review → fase berikutnya
-  → Hingga: semua task selesai
-```
-
-> **Tips:** Jika bingung harus mulai dari mana, panggil `help` — skill ini akan mendeteksi kondisi project kamu dan merekomendasikan langkah berikutnya.
+</details>
 
 ---
 
-## 6. Workflow: Project yang Sudah Berjalan / Boilerplate
+## 10. Pertanyaan Umum
 
-Gunakan alur ini jika kamu punya codebase yang sudah ada tapi belum punya dokumen spec.
+<details>
+<summary>Harus isi semua dokumen spec dulu sebelum coding?</summary>
 
-```
-Langkah 1: Generate spec dari codebase yang ada
-  → Panggil: spec-init
-  → AI akan baca codebase kamu dan generate semua dokumen spec secara otomatis.
-  
-  Ada dua mode:
-  ┌─────────────────────────────────────────────────────┐
-  │ Mode Batch Generate  : Semua dokumen dibuat         │
-  │                       sekaligus.                    │
-  │                Cocok untuk project kecil.           │
-  │                                                     │
-  │ Mode Guided Generate : Satu dokumen dibuat,         │
-  │                        kamu review, konfirmasi,     │
-  │                        lalu lanjut ke berikutnya    │
-  │                Cocok untuk project besar.           │
-  └─────────────────────────────────────────────────────┘
-  
-  Urutan generate (otomatis):
-  architecture.md → rules.md → schema.md → api.md → StyleGuide.md → PRD.md
-  
-  Catatan: PRD dibuat terakhir karena isinya disimpulkan dari kode yang ada,
-  bukan dari asumsi.
+Tidak harus sempurna. Minimal yang harus ada sebelum `developer` bisa jalan: `PRD.md` dan `architecture.md`. Semakin lengkap spec, semakin akurat AI bekerja.
 
-Langkah 2: Review & koreksi dokumen spec
-  → Baca setiap file di project-context/ dan pastikan isinya akurat.
-  → Perhatikan terutama item dengan `Evidence Inputs`, confidence Sedang / Rendah, dan bagian asumsi yang masih perlu verifikasi.
-  → Koreksi jika ada yang tidak sesuai dengan kenyataan project.
+</details>
 
-Langkah 3: Cek konsistensi
-  → Panggil: spec-audit (mode project)
-  → Pastikan tidak ada konflik antar dokumen.
+<details>
+<summary>Apakah bisa dipakai untuk project yang sudah berjalan?</summary>
 
-Langkah 4: Buat rencana kerja untuk fitur-fitur baru
-  → Panggil: brainstorm-task
-  → Hasil: project-context/Task.md
+Bisa. Gunakan `spec-init` — AI membaca codebase dan menghasilkan semua dokumen spec. Setiap klaim diberi tingkat kepercayaan (High/Medium/Low) dan sumber buktinya.
 
-Langkah 5: Lanjut seperti biasa
-  → Panggil: developer untuk mulai mengerjakan task.
-```
+</details>
 
----
+<details>
+<summary>Apakah AI bisa membuat kesalahan?</summary>
 
-## 7. Workflow: Menambah Fitur Baru
+Bisa. Itulah kenapa ada `spec-compliance` dan `code-review` yang dijalankan otomatis setelah setiap fase. Jika ada yang tidak sesuai, AI memperbaikinya sebelum lanjut.
 
-Gunakan alur ini ketika semua task sudah selesai tapi ada fitur baru yang ingin ditambahkan.
+</details>
 
-```
-→ Panggil: add-feature
+<details>
+<summary>Apa itu [SELF-REVIEW]?</summary>
 
-Apa yang terjadi:
-  1. AI membaca semua spec yang ada
-  2. Kamu mendeskripsikan fitur baru
-  3. AI mengidentifikasi dokumen mana yang perlu diupdate
-  4. AI mengupdate SEMUA dokumen yang terdampak (wajib, tidak ada yang dilewati)
-  5. AI memanggil brainstorm-task untuk menambahkan fase dan task baru
-  6. Kamu melanjutkan dengan developer seperti biasa
-```
+Setelah setiap task selesai, developer menulis refleksi singkat: 1 potensi security risk, 1 performance bottleneck, dan 1 asumsi dari spec. Tujuannya mengekspos tebakan tersembunyi sebelum verifikasi formal.
 
----
+</details>
 
-## 8. Workflow: Memperbaiki Bug
+<details>
+<summary>Kenapa developer menulis test sebelum implementasi?</summary>
 
-Gunakan alur ini ketika ada bug yang perlu diperbaiki.
+Pendekatan TDD. Dengan menulis test dulu, AI mendefinisikan perilaku fungsi secara pasti sebelum implementasi — mencegah perubahan struktur di tengah jalan. Task test selalu hadir sebelum task implementasi di `Task.md`.
 
-```
-→ Panggil: bug-fix
+</details>
 
-Apa yang terjadi:
-  1. Kamu mendeskripsikan bug (gejala, lokasi, cara reproduksi)
-  2. AI cek bug-log.md — apakah bug ini pernah terjadi sebelumnya?
-     - Jika identik dengan bug lama → terapkan fix yang sama
-     - Jika mirip tapi berbeda → diagnosis ulang, tambah log baru
-     - Jika baru → diagnosis dari awal
-  3. AI merumuskan root cause (penyebab utama) dan menjelaskan ke kamu
-  4. Kamu konfirmasi sebelum fix diterapkan
-  5. Fix diterapkan, lalu spec-compliance + code-review dijalankan
-  6. Kamu konfirmasi bahwa bug sudah teratasi
-  7. AI menambahkan regression prevention (test, rule/spec update, atau checklist manual)
-  8. AI mencatat bug + solusi ke project-context/bug-log.md
-    (baru dicatat setelah kamu konfirmasi — tidak otomatis)
-```
+<details>
+<summary>Apakah bug-log otomatis diupdate?</summary>
 
----
+Tidak. Bug hanya dicatat setelah **kamu mengonfirmasi** bahwa bug sudah teratasi. AI tidak mencatat ke bug-log tanpa izin.
 
-## 9. Instalasi & Cara Menggunakan
+</details>
 
-**Prasyarat:** GitHub Copilot aktif di VS Code.
+<details>
+<summary>Harus memilih preferensi di developer setiap sesi?</summary>
 
-### Instalasi
+Tidak. Semua preferensi (scope, workMode, additional skills, MCP, code review mode) ditanya sekali dan disimpan. Di sesi berikutnya langsung digunakan.
 
-Masuk ke folder project kamu, lalu jalankan **satu perintah** berikut:
+</details>
 
-**Linux / Mac**
+<details>
+<summary>Apa itu mode plan-first dan di mana plan disimpan?</summary>
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/firdaus12p/MACCA-METHOD/main/install.sh | bash
-```
+Saat memilih `plan-first`, AI membuat file rencana di `project-context/plans/phase-[N]-[slug].md` sebelum mulai coding. Kamu review plannya, ketik `start` untuk mulai. Plan diakui oleh `help` (ditampilkan dalam status), `spec-compliance` (verifikasi kesesuaian), dan `add-feature` (update jika fase terdampak).
 
-**Windows (PowerShell)**
+</details>
 
-```powershell
-irm https://raw.githubusercontent.com/firdaus12p/MACCA-METHOD/main/install.ps1 | iex
-```
+<details>
+<summary>Apa itu scope di developer?</summary>
 
-Installer akan menampilkan daftar AI tool dengan selektor interaktif:
+Scope menentukan batas pekerjaan AI: **Frontend only** (tidak menyentuh routes/, controllers/, migrations/), **Backend only** (tidak menyentuh components/, pages/, styles/), atau **Fullstack** (tidak ada batasan). Di-enforce di `developer` sebelum coding dan `spec-compliance` (SC-08) setelah coding.
 
-```
-  Pilih AI provider yang kamu gunakan:
+</details>
 
-  [ ]  GitHub Copilot    → .github/skills/
-  [ ]  Cursor            → .cursor/skills/
-  [ ]  Claude Code       → .claude/skills/
-  [ ]  Windsurf          → .windsurf/skills/
-  [ ]  Gemini CLI        → .gemini/skills/
-  [ ]  OpenCode          → .opencode/skill/
-  [ ]  Kilo Code         → .kilo/skills/
-  [ ]  Codex / OpenAI   → .agents/skills/  (native)
-  [ ]  Kimi CLI          → ~/.config/agents/skills/
+<details>
+<summary>Bagaimana additional skills bekerja?</summary>
 
-  ↑/↓ navigasi  ·  Spasi pilih  ·  Enter konfirmasi
-```
+Skill project-specific (misal `laravel-best-practices`). Ditanya sekali oleh `developer`. AI mencari sendiri di workspace dulu; baru tanya kamu jika tidak ditemukan. Saat mengerjakan task yang relevan, AI wajib membaca SKILL.md dari skill tersebut sebelum menulis kode.
 
-Gunakan ↑/↓ untuk navigasi, Spasi untuk centang/hapus pilihan, dan Enter untuk konfirmasi. Kamu bisa memilih lebih dari satu tool. Installer juga menanyakan nama developer dan nama project (keduanya opsional).
+</details>
 
-### Update ke Versi Terbaru
+<details>
+<summary>Bagaimana spec-audit berbeda dari spec-compliance?</summary>
 
-Dari dalam folder project kamu:
+- `spec-compliance` — kode vs spec. Dijalankan setelah coding.
+- `spec-audit` — antar dokumen spec. Dijalankan sebelum coding atau kapan saja saat curiga ada inkonsistensi.
 
-**Linux / Mac**
+Analoginya: spec-compliance adalah inspeksi hasil konstruksi terhadap blueprint. Spec-audit adalah cek silang antar blueprint itu sendiri.
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/firdaus12p/MACCA-METHOD/main/upgrade.sh | bash
-```
+</details>
 
-**Windows (PowerShell)**
+<details>
+<summary>Mengapa security review ada di code-review, bukan hanya di developer?</summary>
 
-```powershell
-irm https://raw.githubusercontent.com/firdaus12p/MACCA-METHOD/main/upgrade.ps1 | iex
-```
+Developer punya tanggung jawab keamanan dasar: `[FORBIDDEN]` di rules.md dan `[SELF-REVIEW]` yang mencatat potensi security risk. Tapi `code-review` adalah checkpoint formal dengan 10 item security yang lebih dalam (SEC-01–SEC-10), termasuk framework-specific checks dan dependency CVE. Dua lapis ini saling melengkapi.
 
-> `project-context/` dan `developer-config.json` kamu **tidak akan tersentuh** saat upgrade. Skills di semua folder tool **diperbarui otomatis** sesuai pilihan saat install.
-
-### Cara Memanggil Skill
-
-Ketik nama skill di chat tool AI kamu. Semua tool yang didukung mengenali skill secara native.
-
-Pola paling aman dan paling konsisten adalah:
-
-```
-Gunakan skill brainstorm-prd untuk mulai project baru saya.
-```
-
-Contoh lain:
-
-```
-Gunakan skill developer
-```
-
-Kalau belum yakin harus mulai dari mana, panggil `help`:
-
-```
-Gunakan skill help
-```
-
-Kalau ingin konsisten, cukup gunakan frasa **"Gunakan skill [nama-skill]"** untuk semua skill.
+</details>
 
 ---
 
-## 10. Struktur Folder
-
-Contoh struktur setelah install dengan GitHub Copilot dipilih:
-
-```
-your-project/
-├── .agents/
-│   ├── developer-config.json    ← nama developer, nama project, dan preferensi brainstorm (opsional)
-│   │                              juga menyimpan mode kerja developer jika dipilih
-│   └── macca-tools.txt          ← tools yang dipilih saat install
-│
-├── .agents/skills/              ← hanya jika Codex / OpenAI dipilih
-│   ├── _shared/
-│   │   └── references/          ← source of truth bersama (config, ownership, persona, dll)
-│   ├── developer/
-│   │   └── references/          ← detail workflow yang diekstrak dari SKILL.md utama
-│   ├── code-review/
-│   │   └── references/          ← checklist review yang diekstrak dari SKILL.md utama
-│   └── ...
-│
-├── .github/
-│   └── skills/                  ← folder skills untuk GitHub Copilot
-│       ├── add-feature/
-│       ├── brainstorm-api/
-│       ├── brainstorm-architecture/
-│       ├── brainstorm-prd/
-│       ├── brainstorm-rules/
-│       ├── brainstorm-schema/
-│       ├── brainstorm-styleguide/
-│       ├── brainstorm-task/
-│       ├── bug-fix/
-│       ├── code-review/
-│       ├── developer/
-│       ├── help/
-│       ├── rapat/
-│       ├── spec-audit/
-│       ├── spec-compliance/
-│       └── spec-init/
-│
-├── project-context/             ← dibuat otomatis oleh skill
-│   ├── PRD.md
-│   ├── architecture.md
-│   ├── schema.md
-│   ├── api.md
-│   ├── rules.md
-│   ├── StyleGuide.md
-│   ├── Task.md
-│   ├── bug-log.md               ← dibuat otomatis saat ada bug pertama
-│   └── plans/                   ← rencana kerja per fase (opsional)
-│       └── fase-1-setup-database.md
-│
-├── skills-lock.json
-└── ... (kode project kamu)
-```
-
-Folder skills dibuat sesuai AI tool yang dipilih saat install:
-
-| AI Tool | Folder Skills |
-|---|---|
-| GitHub Copilot | `.github/skills/` |
-| Cursor | `.cursor/skills/` |
-| Claude Code | `.claude/skills/` |
-| Windsurf | `.windsurf/skills/` |
-| Gemini CLI | `.gemini/skills/` |
-| OpenCode | `.opencode/skill/` |
-| Kilo Code | `.kilo/skills/` |
-| Codex (OpenAI) | `.agents/skills/` |
-| Kimi CLI | `~/.config/agents/skills/` (global, di luar project) |
-
-> Jika Codex dipilih, skills berada di `.agents/skills/` — folder `.agents/` akan memiliki subfolder `skills/` tambahan di samping `developer-config.json` dan `macca-tools.txt`. Kamu bisa memilih lebih dari satu tool; setiap tool mendapat salinan skills-nya sendiri.
-
----
-
-## Pertanyaan Umum
-
-**Q: Harus isi semua dokumen spec dulu sebelum coding?**
-
-Tidak harus sempurna. Minimal yang harus ada sebelum `developer` bisa jalan: `PRD.md`, `architecture.md`. Semakin lengkap spec, semakin akurat AI bekerja — tapi tidak harus sempurna di awal.
-
-**Q: Apakah bisa dipakai untuk project yang sudah berjalan?**
-
-Bisa. Gunakan skill `spec-init` — AI akan membaca kodebase yang ada dan menghasilkan semua dokumen spec secara otomatis.
-
-**Q: Apakah AI bisa membuat kesalahan?**
-
-Bisa. Itulah kenapa ada `spec-compliance` (cek kode vs spec) dan `code-review` (cek kualitas kode) yang dijalankan otomatis setelah setiap fase selesai. Jika ada yang tidak sesuai, AI memperbaikinya sebelum lanjut.
-
-**Q: Apakah semua dokumen punya `Confidence Summary`?**
-
-Tidak. `Confidence Summary` adalah output default dari `spec-init`, karena skill itu mengekstrak fakta dan inferensi dari codebase yang sudah ada. Skill `brainstorm-*` biasanya tidak memerlukannya karena isinya dibangun langsung lewat wawancara dan konfirmasi user.
-
-Namun untuk dokumen hasil `spec-init`, AI sekarang sebaiknya mengandalkan dua penanda sekaligus:
-- `Evidence Inputs` → file/sumber apa yang dipakai untuk menyusun dokumen
-- `Confidence Summary` → mana fakta kuat, mana inferensi, mana yang masih perlu verifikasi
-
-Kalau project banyak ditulis dengan AI, dua section ini sangat membantu agent berikutnya agar tidak salah menganggap inferensi sebagai fakta.
-
-**Q: Kenapa ada section seperti `Document Role`, `Canonical Terminology`, atau `Assumptions & Open Questions` di beberapa template output?**
-
-Karena AI sering membaca `project-context/` berulang kali saat coding. Section seperti ini membuat dokumen lebih mudah dipindai mesin:
-- `Document Role` → dokumen ini source of truth untuk apa
-- `Canonical Terminology` → istilah yang harus dipakai konsisten
-- `Assumptions & Open Questions` → area yang belum final, supaya AI tidak overbuild
-
-Tujuannya bukan menambah formalitas, tapi mengurangi tebakan agent saat bekerja lintas sesi.
-
-**Q: Apakah saya harus memilih mode kerja `developer` setiap sesi?**
-
-Tidak. Setelah kamu memilih sekali antara mode `direct` atau `plan-first`, pilihan itu disimpan di `.agents/developer-config.json` dan akan dipakai terus di sesi berikutnya. Jika ingin ganti, cukup bilang saat memulai sesi dan AI akan memperbarui preferensinya.
-
-**Q: Bagaimana jika saya tidak mengerti istilah teknis?**
-
-Skill `developer` dirancang untuk menjelaskan keputusan teknis menggunakan **analogi** dari kehidupan sehari-hari. Jika ada yang tidak jelas, AI akan berhenti dan bertanya sebelum melanjutkan.
-
-**Q: Apakah bug-log otomatis diupdate?**
-
-Tidak. Bug hanya dicatat setelah **kamu mengonfirmasi** bahwa bug sudah benar-benar teratasi. AI tidak akan mencatat ke bug-log tanpa izin kamu.
-
----
-
-**Q: Kenapa developer menulis test sebelum kode implementasi?**
-
-Ini adalah pendekatan TDD (Test-Driven Development). Dengan menulis test dulu, AI dipaksa mendefinisikan signature dan perilaku fungsi secara pasti sebelum implementasi dimulai — mencegah perubahan struktur di tengah jalan. Kamu akan melihat task test (`Task N.1`) selalu hadir sebelum task implementasi (`Task N.2`) di Task.md.
-
----
-
-**Q: Apa itu `[SELF-REVIEW]` yang muncul setelah developer coding?**
-
-Setelah setiap task selesai, developer menulis refleksi singkat: 1 potensi security risk, 1 potensi performance bottleneck, dan 1 asumsi yang dibuat dari spec. Tujuannya adalah mengekspos tebakan tersembunyi sebelum masuk ke fase verifikasi (`spec-compliance` + `code-review`).
-
----
-
-## Lisensi
+## 11. Lisensi
 
 MIT License — bebas digunakan, dimodifikasi, dan didistribusikan.
+"""
+
+with open('/home/fedora-firdaus/Dokumen/projek/spec-driven-dev/README.md', 'w', encoding='utf-8') as f:
+    f.write(content)
+
+print(f"Written {len(content)} chars, {content.count(chr(10))} lines")
