@@ -104,6 +104,39 @@ Use this report structure:
 
 Then list findings by severity, followed by the checklist status table.
 
+For each finding, use this structure:
+
+```markdown
+#### [Severity] [ID] [Short Title]
+
+**Where?**
+- [Exact file, symbol, endpoint, query, or execution path]
+
+**Why is this happening?**
+- [Root cause, broken assumption, missing guard, wrong dependency usage, or design flaw]
+
+**What happens if not fixed?**
+- [Concrete impact, failure mode, exploit path, maintenance cost, or user-facing risk]
+
+**What happens if fixed?**
+- [Concrete improvement after the change]
+
+**Recommended fix**
+- [Specific code or design change to make]
+
+**Why this fix?**
+- [Reason this recommendation is preferred over other options]
+```
+
+Rules for writing findings:
+- `Where?` must be specific enough that the user can open the exact place and understand the scope.
+- `Why is this happening?` must explain the real cause, not restate the symptom.
+- `What happens if not fixed?` must describe the real consequence, not generic wording.
+- `What happens if fixed?` must explain the tangible improvement so the user understands the value of the change.
+- `Recommended fix` must be actionable, not vague advice like "improve this" or "handle better".
+- `Why this fix?` must justify the recommendation with correctness, security, maintainability, consistency, or performance reasoning.
+- If no issue is found for a checklist item, do not invent a finding just to fill the format.
+
 Fix priority:
 - `💥 BLOCKER` → fix now
 - `🔴 MAJOR` → fix before next phase
