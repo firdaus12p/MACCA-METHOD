@@ -1,4 +1,4 @@
-content = r"""# MACCA — Method
+# MACCA — Method
 
 **MACCA** adalah sistem pengembangan perangkat lunak berbasis AI yang bekerja dari **spesifikasi tertulis**, bukan tebakan. Sebelum ada satu baris kode pun, semua keputusan penting sudah didokumentasikan. AI membaca dokumen itu sebelum coding, lalu memverifikasi hasilnya setelah coding.
 
@@ -348,7 +348,13 @@ Membaca `.agents/developer-config.json`. Jika `name` atau `project` belum ada, A
   A) Code now   — mulai langsung
   B) Plan first — tulis plan dulu untuk review kamu
   ```
-- **Mode plan-first:** AI membuat file rencana di `project-context/plans/phase-[N]-[slug].md` sebelum coding. Kamu review plannya, ketik `start` untuk mulai.
+- **Mode plan-first:** AI membuat file rencana di `project-context/plans/phase-[N]-[slug].md` dengan header status di bagian atas. Status plan berubah mengikuti lifecycle:
+  ```
+  status: review      ← saat plan baru dibuat (kamu review dulu)
+  status: in-progress ← saat kamu ketik "start"
+  status: code-review ← saat semua task fase selesai
+  status: done        ← saat code-review selesai
+  ```
 
 **Step 2 — Pilih spec yang relevan + terapkan scope**
 
@@ -379,9 +385,10 @@ Untuk setiap task:
 
 **Step 4 — Setelah semua task fase selesai**
 1. Tampilkan ringkasan fase
-2. Jalankan `spec-compliance` otomatis
-3. Jika bersih, jalankan `code-review` otomatis
-4. Tawarkan fase berikutnya
+2. Jika ada plan file untuk fase ini → update status plan: `in-progress` → `code-review`
+3. Jalankan `spec-compliance` otomatis
+4. Jika bersih, jalankan `code-review` otomatis
+5. Tawarkan fase berikutnya
 
 **MCP yang digunakan (jika terdaftar di `availableMCPs`):**
 - `context7` — fetch dokumentasi library versi yang diinstall sebelum coding
@@ -461,6 +468,10 @@ Disimpan sebagai `codeReviewPreferences.fixMode` di `developer-config.json`.
 
 **Format setiap temuan:** Di mana? → Kenapa terjadi? → Jika tidak diperbaiki? → Jika diperbaiki? → Rekomendasi fix → Kenapa fix ini?
 
+**Update plan setelah review selesai** (jika plan file ada untuk fase ini):
+- **Ada plan-level deviation** (library salah, pattern tidak diikuti, scope berubah, approach berbeda dari plan) → tambahkan catatan ke plan + ubah status: `code-review` → `done`
+- **Tidak ada plan deviation** (hanya masalah kualitas kode: naming, formatting, security hardening) → ubah status saja: `code-review` → `done`, tanpa catatan
+
 </details>
 
 ---
@@ -480,7 +491,7 @@ Disimpan sebagai `codeReviewPreferences.fixMode` di `developer-config.json`.
 
 - Dokumen spec di `project-context/` — PRD.md, StyleGuide.md, architecture.md, schema.md, api.md, rules.md, Task.md (hitung `[ ]` vs `[x]`)
 - Developer config di `.agents/developer-config.json` — name, project, scope, workMode, additionalSkills, availableMCPs
-- Plans di `project-context/plans/` — list semua file plan yang sudah dibuat
+- Plans di `project-context/plans/` — list semua file plan beserta statusnya (`review` / `in-progress` / `code-review` / `done`)
 
 **Format output:**
 ```
@@ -500,7 +511,8 @@ Developer Config
   [ ] availableMCPs: not configured
 
 Plans
-  [✓] phase-1-setup.md
+  [✓] phase-1-setup.md       (status: done)
+  [✓] phase-2-auth.md        (status: in-progress)
 
 Status: [ringkasan kondisi]
 Recommended next steps: ...
@@ -936,6 +948,8 @@ File `.agents/developer-config.json` adalah konfigurasi bersama lintas skill. Se
 | **availableMCPs** | MCP yang terdaftar dan bisa digunakan di project ini |
 | **Confidence Level** | Di `spec-init`: High/Medium/Low untuk klaim dari analisis codebase |
 | **Evidence Inputs** | Di `spec-init`: file/sumber yang dipakai sebagai dasar klaim |
+| **Plan status** | Status lifecycle plan file: `review` → `in-progress` → `code-review` → `done` |
+| **Plan deviation** | Penyimpangan implementasi dari keputusan yang ada di plan (library, pattern, scope) — dicatat oleh `code-review` jika ditemukan |
 
 **Traceability ID Scheme:**
 
@@ -1008,7 +1022,16 @@ Tidak. Semua preferensi (scope, workMode, additional skills, MCP, code review mo
 <details>
 <summary>Apa itu mode plan-first dan di mana plan disimpan?</summary>
 
-Saat memilih `plan-first`, AI membuat file rencana di `project-context/plans/phase-[N]-[slug].md` sebelum mulai coding. Kamu review plannya, ketik `start` untuk mulai. Plan diakui oleh `help` (ditampilkan dalam status), `spec-compliance` (verifikasi kesesuaian), dan `add-feature` (update jika fase terdampak).
+Saat memilih `plan-first`, AI membuat file rencana di `project-context/plans/phase-[N]-[slug].md` sebelum mulai coding. Plan punya header status yang diperbarui otomatis mengikuti lifecycle:
+
+| Status | Artinya |
+|--------|---------|
+| `review` | Plan baru dibuat — kamu baca dan review dulu. Ketik `start` jika setuju. |
+| `in-progress` | Coding dimulai setelah kamu ketik `start`. |
+| `code-review` | Semua task fase selesai, sedang direview oleh `code-review`. |
+| `done` | Code-review selesai. Jika ada implementasi yang menyimpang dari plan (library salah, pattern berbeda), AI menambahkan catatan ke plan. Jika tidak ada penyimpangan, status berubah ke `done` tanpa catatan. |
+
+Plan juga diakui oleh `help` (ditampilkan beserta statusnya) dan `add-feature` (update jika fase terdampak).
 
 </details>
 
@@ -1048,9 +1071,3 @@ Developer punya tanggung jawab keamanan dasar: `[FORBIDDEN]` di rules.md dan `[S
 ## 11. Lisensi
 
 MIT License — bebas digunakan, dimodifikasi, dan didistribusikan.
-"""
-
-with open('/home/fedora-firdaus/Dokumen/projek/spec-driven-dev/README.md', 'w', encoding='utf-8') as f:
-    f.write(content)
-
-print(f"Written {len(content)} chars, {content.count(chr(10))} lines")
