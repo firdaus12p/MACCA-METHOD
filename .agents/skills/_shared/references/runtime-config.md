@@ -78,6 +78,7 @@ compatible:
 - `brainstormPreferences`
 - `additionalSkills`
 - `availableMCPs`
+- `codeReviewPreferences.fixMode`
 
 ## additionalSkills Compatibility
 

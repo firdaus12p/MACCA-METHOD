@@ -60,6 +60,27 @@ Do not leave findings as short labels. The user must understand what was found, 
 
 ---
 
+## Fix Mode Setup
+
+Check `developer-config.json` field `codeReviewPreferences.fixMode` first; if exists, use it. Show: `[Fix mode: report-first / fix-then-report] — tell me now if you want to change.`
+
+If missing, ask once:
+
+```text
+Bagaimana kamu ingin code review bekerja?
+
+A) Laporkan dulu — tampilkan semua temuan, tunggu konfirmasi sebelum fixing
+B) Fix langsung   — fix BLOCKER/MAJOR otomatis, laporan lengkap di akhir
+```
+
+Save to `.agents/developer-config.json`:
+```json
+{ "codeReviewPreferences": { "fixMode": "report-first" } }
+```
+or `"fix-then-report"`. Keep all other fields.
+
+---
+
 ## Process (3 Phases)
 
 1. **27-Item Code Quality** — detect common problems

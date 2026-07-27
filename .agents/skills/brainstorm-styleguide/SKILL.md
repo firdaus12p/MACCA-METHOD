@@ -47,7 +47,7 @@ Skill generates **StyleGuide.md** through interactive interview. Prevents random
    - Use `languagePreferences.communication.normalized` for chat.
    - Use `languagePreferences.documents.normalized` for final `project-context/StyleGuide.md`.
    - Apply `brainstormPreferences.discussionMode` and `brainstormPreferences.recommendations` using the shared session policy.
-   - For this skill, ask whether to cover the 7 topics one by one or three at a time.
+   - For this skill: announce there are 7 topics, ask pacing (one-by-one / three-at-a-time / all-at-once) and recommendations preference if not already saved.
 
 4. Interview following chosen mode. Wait for answers.
 

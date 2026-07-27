@@ -56,9 +56,12 @@ Check if `project-context/Task.md` exists.
 
 **Session setup (ask before clarification):**
 
-Run the shared runtime setup first, then ask whether the user wants
-recommendations for the clarification questions if that preference is still
-missing or overridden.
+Run the shared runtime setup first. Announce there are 4 clarification topics, then apply the saved pacing and recommendations preferences. If not yet saved, ask both before starting:
+```
+Sesi ini ada 4 topik klarifikasi.
+1. Pacing: (A) satu per satu  (B) tiga sekaligus  (C) semua sekaligus
+2. Rekomendasi jawaban: AI berikan saran di tiap pertanyaan? (Y/N)
+```
 
 1. **READ all spec documents** in `project-context/`:
    - `project-context/PRD.md` — features, business rules, acceptance criteria

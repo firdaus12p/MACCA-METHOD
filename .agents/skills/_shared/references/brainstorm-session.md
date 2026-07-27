@@ -23,6 +23,8 @@ Supported fields today:
 }
 ```
 
+Accepted values for `discussionMode`: `"one-by-one"`, `"three-at-a-time"`, `"all-at-once"`.
+
 ## Interview Pacing
 
 Brainstorm skills may batch questions when the user explicitly wants faster
@@ -31,9 +33,8 @@ progress. This is different from approval gates in execution skills.
 Allowed pacing strategies:
 
 - `one-by-one` — one topic per turn
-- `three-at-a-time` — legacy batched mode already used by current skills
-- skill-specific faster modes if the skill defines them clearly and keeps the
-  interaction understandable
+- `three-at-a-time` — three topics sent together in one message
+- `all-at-once` — all topics sent in one message; user answers all, then AI generates the document
 
 ### Important Distinction
 
@@ -54,10 +55,20 @@ When a brainstorming skill starts:
 
 1. Read `languagePreferences` using `runtime-config.md`.
 2. Read `brainstormPreferences` if present.
-3. If preferences are missing, ask only the setup questions that are still
-   needed.
-4. If preferences exist, confirm briefly and allow override.
-5. Preserve all unrelated config fields when saving changes.
+3. **Announce the session** before asking anything:
+   - If preferences already saved — show a brief confirmation and allow override:
+     ```
+     Sesi ini ada [N] topik.
+     Preferensi tersimpan: [pacing] | rekomendasi: [aktif/nonaktif]
+     Lanjutkan dengan pengaturan ini? Atau ketik perubahan yang kamu mau.
+     ```
+   - If preferences missing — ask both before starting:
+     ```
+     Sesi ini ada [N] topik. Dua hal sebelum kita mulai:
+     1. Pacing: (A) satu per satu  (B) tiga sekaligus  (C) semua sekaligus
+     2. Rekomendasi jawaban: AI berikan saran jawaban di tiap pertanyaan? (Y/N)
+     ```
+4. Save chosen preferences. Preserve all unrelated config fields when saving changes.
 
 ## Recommended Prompt Pattern
 
