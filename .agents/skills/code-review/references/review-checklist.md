@@ -143,7 +143,12 @@ Rules for writing findings:
 - `Why this fix?` must justify the recommendation with correctness, security, maintainability, consistency, or performance reasoning.
 - If no issue is found for a checklist item, do not invent a finding just to fill the format.
 
-Fix priority:
+Fix priority — honor `fixMode` from Shared Runtime Setup:
+
+**`report-first` (default):**
+Present full report. Display gate prompt from `../_shared/references/runtime-config.md § Fix Mode Contract`. **End response. Do NOT apply any fix in the same response.** Wait for user confirmation in the next message.
+
+**`fix-then-report`:**
 - `💥 BLOCKER` → fix now
 - `🔴 MAJOR` → fix before next phase
 - `⚠️ MINOR` → report and discuss

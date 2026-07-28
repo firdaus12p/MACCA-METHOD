@@ -225,8 +225,11 @@ Then follow `Task.md § Execution Rules` to decide whether to continue automatic
 
 1. Show phase summary.
 2. If a plan file exists for this phase (`project-context/plans/phase-[N]-*.md`), update its status: `in-progress` → `code-review`.
-3. Run `spec-compliance`.
-4. If clean, run `code-review`.
+3. Run `spec-compliance`. It honors fixMode from Shared Runtime Setup.
+   - **`fix-then-report`:** If clean → proceed to step 4. If issues were fixed → re-run spec-compliance before proceeding.
+   - **`report-first`:** If issues found → spec-compliance displays the gate prompt and ends its response. **Do NOT run code-review in the same response.** Wait for user confirmation before continuing.
+4. Run `code-review`. It honors fixMode from Shared Runtime Setup.
+   - **`report-first`:** If issues found → code-review displays the gate prompt and ends its response. Do not offer the next phase in the same response.
 5. If both pass, offer the next phase and wait for confirmation.
 
 ## Step 5 — Project Complete

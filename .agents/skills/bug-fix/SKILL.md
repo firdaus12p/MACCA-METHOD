@@ -13,7 +13,8 @@ Before proceeding:
 
 1. Read `../_shared/references/runtime-config.md`.
 2. Read `../_shared/references/human-loop.md`.
-3. Use `languagePreferences.communication.normalized` for all chat output.
+3. Read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If absent, treat as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`. See § Fix Mode Contract in runtime-config.md for full enforcement rules.
+4. Use `languagePreferences.communication.normalized` for all chat output.
 
 ---
 
@@ -115,6 +116,25 @@ Wait for user agreement on diagnosis before proceeding.
 ---
 
 ## Step 3 — Fix
+
+### Fix Mode Gate
+
+Before applying any code change, check fixMode (read in Shared Runtime Setup):
+
+**`report-first` (default):** Present proposed fix summary:
+
+```
+Proposed fix for [bug title]:
+Root cause: [one sentence]
+Files to change:
+- [path/file] — [what will change]
+```
+
+Display gate prompt from `../_shared/references/runtime-config.md § Fix Mode Contract`. End response. Apply fix only after user confirmation in the next message.
+
+**`fix-then-report`:** Proceed directly to applying the fix below.
+
+### Apply Fix
 
 Apply fix with **minimal change principle:**
 - Fix only the reported bug — nothing else in scope

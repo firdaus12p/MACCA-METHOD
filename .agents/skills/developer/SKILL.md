@@ -13,8 +13,9 @@ Before proceeding:
 
 1. Read `../_shared/references/runtime-config.md`.
 2. Read `../_shared/references/human-loop.md`.
-3. Use `languagePreferences.communication.normalized` for chat.
-4. Use `languagePreferences.documents.normalized` for generated plans and spec-side artifacts.
+3. Read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If absent, treat as `"report-first"`. This governs how spec-compliance and code-review behave after each phase — see § Fix Mode Contract in runtime-config.md.
+4. Use `languagePreferences.communication.normalized` for chat.
+5. Use `languagePreferences.documents.normalized` for generated plans and spec-side artifacts.
 
 ---
 
@@ -54,7 +55,7 @@ Run as `@Firdaus` (Expert Developer). Use the shared persona profile in `../_sha
 - Read only specs needed for this task — not all
 - One phase at a time
 - Mark each task done in Task.md with implementation notes if important decisions made
-- After phase done: automatically run spec-compliance then code-review
+- After phase done: run spec-compliance then code-review — each honors fixMode per the Fix Mode Contract in runtime-config.md
 - Use subagent as needed — library research, codebase exploration, multi-file analysis
 
 **MCP (use if available, skip silently if not):**

@@ -12,7 +12,8 @@ persona_role: "Tech Lead"
 Before proceeding:
 
 1. Read `../_shared/references/runtime-config.md`.
-2. Use `languagePreferences.communication.normalized` for all reports and user-facing review output.
+2. Read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If absent, treat as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`. See § Fix Mode Contract in runtime-config.md for full enforcement rules.
+3. Use `languagePreferences.communication.normalized` for all reports and user-facing review output.
 
 ---
 
@@ -38,26 +39,11 @@ You are a **QA Engineer and Spec Auditor** ensuring zero implementation diverges
 
 ---
 
-## Fix Mode Setup
+## Fix Mode
 
-Check `.agents/developer-config.json` field `codeReviewPreferences.fixMode` first; if exists, use it. Show: `[Fix mode: report-first / fix-then-report] — tell me now if you want to change.`
+Mode was read in Shared Runtime Setup. Enforcement rules (including the mandatory gate prompt) are in `../_shared/references/runtime-config.md § Fix Mode Contract`.
 
-If missing, ask once (use `languagePreferences.communication.normalized`):
-
-```text
-How do you want compliance check to work?
-
-A) Report first — show all findings, wait for confirmation before fixing
-B) Fix directly  — fix BLOCKER/MAJOR automatically, full report at end
-```
-
-Save to `.agents/developer-config.json`:
-```json
-{ "codeReviewPreferences": { "fixMode": "report-first" } }
-```
-or `"fix-then-report"`. Keep all other fields.
-
-> Pilihan ini berlaku juga untuk `code-review` dan `spec-audit`.
+To change: update `codeReviewPreferences.fixMode` in `.agents/developer-config.json`.
 
 ---
 
@@ -282,7 +268,7 @@ Report shown in chat this session. Don't save to file unless user explicitly req
 
 **`report-first`:**
 ```
-💥 BLOCKER / 🔴 MAJOR → Report all findings. Wait for user confirmation before fixing.
+💥 BLOCKER / 🔴 MAJOR → Report all findings. Show gate prompt (see runtime-config.md § Fix Mode Contract). End response. Wait for user confirmation in next message before fixing.
 ⚠️ MINOR / ℹ️ INFO   → Report only.
 ✅ OK                 → Proceed to code-review skill.
 ```

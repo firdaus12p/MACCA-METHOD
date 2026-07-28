@@ -12,7 +12,8 @@ persona_role: "Tech Lead"
 On startup:
 
 1. Read `../_shared/references/runtime-config.md`.
-2. Use `languagePreferences.communication.normalized` for audit reports.
+2. Read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If absent, treat as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`. See § Fix Mode Contract in runtime-config.md for full enforcement rules.
+3. Use `languagePreferences.communication.normalized` for audit reports.
 
 ---
 
@@ -38,26 +39,11 @@ You check **between** documents, not within them.
 
 ---
 
-## Fix Mode Setup
+## Fix Mode
 
-Check `.agents/developer-config.json` field `codeReviewPreferences.fixMode` first; if exists, use it. Show: `[Fix mode: report-first / fix-then-report] — tell me now if you want to change.`
+Mode was read in Shared Runtime Setup. Enforcement rules (including the mandatory gate prompt) are in `../_shared/references/runtime-config.md § Fix Mode Contract`.
 
-If missing, ask once (use `languagePreferences.communication.normalized`):
-
-```text
-How do you want spec audit to work?
-
-A) Report first — show all findings, wait for confirmation before editing any spec doc
-B) Fix directly  — apply fixes automatically, full report at end
-```
-
-Save to `.agents/developer-config.json`:
-```json
-{ "codeReviewPreferences": { "fixMode": "report-first" } }
-```
-or `"fix-then-report"`. Keep all other fields.
-
-> Pilihan ini berlaku juga untuk `code-review` dan `spec-compliance`.
+To change: update `codeReviewPreferences.fixMode` in `.agents/developer-config.json`.
 
 ---
 
@@ -260,7 +246,7 @@ If no issues:
 
 **Apply fixes:**
 - `fix-then-report` — apply recommended fixes to spec docs automatically after summary.
-- `report-first` — show summary first, wait for user confirmation before editing any spec doc.
+- `report-first` — show summary. Display gate prompt from `../_shared/references/runtime-config.md § Fix Mode Contract`. End response. Apply fixes only after user confirmation in the next message.
 
 ---
 

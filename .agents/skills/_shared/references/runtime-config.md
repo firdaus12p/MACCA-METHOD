@@ -6,8 +6,9 @@
 2. Required Reading Order
 3. Language Preferences
 4. Stable Shared Fields
-5. additionalSkills Compatibility
-6. Mutation Rules
+5. Fix Mode Contract
+6. additionalSkills Compatibility
+7. Mutation Rules
 
 ## Purpose
 
@@ -79,6 +80,53 @@ compatible:
 - `additionalSkills`
 - `availableMCPs`
 - `codeReviewPreferences.fixMode`
+
+## Fix Mode Contract
+
+`codeReviewPreferences.fixMode` is a **globally binding setting**. Every skill
+that can modify files (code, spec docs, bug-log) must honor this field before
+making any changes.
+
+### Read and Announce at Startup
+
+Every modification-capable skill must read fixMode as part of its Shared
+Runtime Setup — **before any analysis or action begins**:
+
+1. Read `codeReviewPreferences.fixMode` from `developer-config.json`.
+2. If absent, treat as `"report-first"` — do not ask the user.
+3. Announce at the top of output: `[Fix mode: report-first]` or
+   `[Fix mode: fix-then-report]`.
+
+### Values
+
+| Value | Behavior |
+|-------|----------|
+| `"report-first"` | **Default.** Run all analysis. Present full findings report. Show gate prompt below. **End the response.** Wait for user confirmation in the next message before touching any file. |
+| `"fix-then-report"` | Apply BLOCKER/MAJOR fixes automatically. Present full report at the end. |
+
+### Mandatory Gate Prompt (report-first only)
+
+After presenting all findings, skills must display this block **verbatim**, then
+**end the response immediately**:
+
+```
+---
+[GATE — Fix mode: report-first]
+Semua temuan telah dilaporkan. Tidak ada file yang diubah.
+Balas "ya" / "perbaiki" / "lanjutkan" untuk menerapkan semua perbaikan,
+atau sebutkan temuan mana yang ingin diperbaiki.
+---
+```
+
+**Critical rule:** Do NOT apply any fix, edit any file, run any sub-skill, or
+add follow-up text in the same response. The response ends at the gate prompt.
+Act only after the user's next message confirms.
+
+### Default
+
+If `codeReviewPreferences.fixMode` is missing from `developer-config.json`,
+always treat as `"report-first"`. Do not ask the user — just use the default
+and announce it.
 
 ## additionalSkills Compatibility
 
