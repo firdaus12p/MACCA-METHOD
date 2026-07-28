@@ -45,7 +45,6 @@ For every finding you report, explain it completely using this structure in the 
 3. **What happens if not fixed?** — concrete technical or user-facing risk.
 4. **What happens if fixed?** — concrete improvement in behavior, safety, maintainability, or performance.
 5. **Recommended fix** — the specific change you advise.
-6. **Why this fix?** — why this approach is the best tradeoff versus alternatives.
 
 Do not leave findings as short labels. The user must understand what was found, why it matters, and why the recommendation is appropriate.
 
@@ -63,13 +62,13 @@ Do not leave findings as short labels. The user must understand what was found, 
 
 Check `developer-config.json` field `codeReviewPreferences.fixMode` first; if exists, use it. Show: `[Fix mode: report-first / fix-then-report] — tell me now if you want to change.`
 
-If missing, ask once:
+If missing, ask once (use `languagePreferences.communication.normalized`):
 
 ```text
-Bagaimana kamu ingin code review bekerja?
+How do you want code review to work?
 
-A) Laporkan dulu — tampilkan semua temuan, tunggu konfirmasi sebelum fixing
-B) Fix langsung   — fix BLOCKER/MAJOR otomatis, laporan lengkap di akhir
+A) Report first — show all findings, wait for confirmation before fixing
+B) Fix directly  — fix BLOCKER/MAJOR automatically, full report at end
 ```
 
 Save to `.agents/developer-config.json`:
@@ -77,6 +76,8 @@ Save to `.agents/developer-config.json`:
 { "codeReviewPreferences": { "fixMode": "report-first" } }
 ```
 or `"fix-then-report"`. Keep all other fields.
+
+> Pilihan ini berlaku juga untuk `spec-compliance` dan `spec-audit`.
 
 ---
 

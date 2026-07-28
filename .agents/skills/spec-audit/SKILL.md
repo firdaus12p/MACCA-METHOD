@@ -38,6 +38,29 @@ You check **between** documents, not within them.
 
 ---
 
+## Fix Mode Setup
+
+Check `.agents/developer-config.json` field `codeReviewPreferences.fixMode` first; if exists, use it. Show: `[Fix mode: report-first / fix-then-report] — tell me now if you want to change.`
+
+If missing, ask once (use `languagePreferences.communication.normalized`):
+
+```text
+How do you want spec audit to work?
+
+A) Report first — show all findings, wait for confirmation before editing any spec doc
+B) Fix directly  — apply fixes automatically, full report at end
+```
+
+Save to `.agents/developer-config.json`:
+```json
+{ "codeReviewPreferences": { "fixMode": "report-first" } }
+```
+or `"fix-then-report"`. Keep all other fields.
+
+> Pilihan ini berlaku juga untuk `code-review` dan `spec-compliance`.
+
+---
+
 ## Step 0: Choose Audit Mode
 
 Determine mode from user context:
@@ -234,6 +257,10 @@ If no issues:
 ```
 ✅ All documents in this audit mode are consistent—no conflicts, inconsistencies, or ambiguities found.
 ```
+
+**Apply fixes:**
+- `fix-then-report` — apply recommended fixes to spec docs automatically after summary.
+- `report-first` — show summary first, wait for user confirmation before editing any spec doc.
 
 ---
 

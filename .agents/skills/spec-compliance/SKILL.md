@@ -38,6 +38,29 @@ You are a **QA Engineer and Spec Auditor** ensuring zero implementation diverges
 
 ---
 
+## Fix Mode Setup
+
+Check `.agents/developer-config.json` field `codeReviewPreferences.fixMode` first; if exists, use it. Show: `[Fix mode: report-first / fix-then-report] — tell me now if you want to change.`
+
+If missing, ask once (use `languagePreferences.communication.normalized`):
+
+```text
+How do you want compliance check to work?
+
+A) Report first — show all findings, wait for confirmation before fixing
+B) Fix directly  — fix BLOCKER/MAJOR automatically, full report at end
+```
+
+Save to `.agents/developer-config.json`:
+```json
+{ "codeReviewPreferences": { "fixMode": "report-first" } }
+```
+or `"fix-then-report"`. Keep all other fields.
+
+> Pilihan ini berlaku juga untuk `code-review` dan `spec-audit`.
+
+---
+
 ## Execution
 
 1. Identify all files created/modified in this phase (completed phase tasks)
@@ -248,6 +271,7 @@ Report shown in chat this session. Don't save to file unless user explicitly req
 
 ## Execution Rules
 
+**`fix-then-report`:**
 ```
 💥 BLOCKER → Fix now. After fixing, **re-run spec-compliance** before code-review.
 🔴 MAJOR   → Fix before next phase. After fixing, **re-run spec-compliance**.
@@ -255,6 +279,12 @@ Report shown in chat this session. Don't save to file unless user explicitly req
 ℹ️ INFO    → Light note — backlog, not urgent.
 ✅ OK      → Proceed to code-review skill.
 ```
+
+**`report-first`:**
+```
+💥 BLOCKER / 🔴 MAJOR → Report all findings. Wait for user confirmation before fixing.
+⚠️ MINOR / ℹ️ INFO   → Report only.
+✅ OK                 → Proceed to code-review skill.
 ```
 
 ---
