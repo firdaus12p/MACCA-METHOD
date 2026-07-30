@@ -4,38 +4,34 @@
 
 This file defines shared pause-and-confirm behavior across MACCA skills.
 
-## Two Different Interaction Types
+## Two Distinct Interaction Types
 
-### 1. Interview Pacing
+### 1. Interview Pace
 
-Used by `brainstorm-*` skills to control how many discovery questions are asked
-per turn.
+Used by `brainstorm-*` skills to control how many discovery questions are asked per turn.
 
-### 2. Confirmation Gating
+### 2. Confirmation Gates
 
-Used by execution, audit, and bug-fix skills when a decision is risky,
-destructive, ambiguous, or materially changes scope.
+Used by execution, audit, and bug-fix skills when a decision is risky, destructive, ambiguous, or materially changes scope.
 
-Do not confuse these two patterns.
+Do not mix these two patterns.
 
 ## When Confirmation Is Required
 
-Pause and ask before proceeding when:
+Pause and ask before continuing when:
 
-- there are multiple materially different paths and the specs do not resolve
-  the choice
-- the change is destructive or difficult to undo
-- the user instruction is ambiguous in a way that changes scope or business
-  behavior
+- there are multiple materially different paths and the spec does not resolve the choice
+- the change is destructive or hard to undo
+- the user's instruction is ambiguous in a way that changes scope or business behavior
 - documents conflict and the conflict changes the next action
 
 ## When Confirmation Is Not Required
 
-Proceed without pausing when:
+Continue without pausing when:
 
-- the answer is explicit in the specs or config
+- the answer is already explicit in the spec or config
 - the decision is a low-risk technical implementation detail
-- the change is reversible and does not alter business scope
+- the change is reversible and does not change business scope
 
 ## Shared Prompt Shape
 
@@ -44,7 +40,7 @@ Use this structure when a skill needs confirmation:
 ```text
 I need confirmation before continuing.
 
-[one short issue summary]
+[one brief summary of the issue]
 
 Options:
 1. [recommended default]
@@ -56,5 +52,4 @@ Keep one decision topic per pause.
 
 ## Resume Rule
 
-After the user answers, continue from the exact paused step. Do not restart the
-workflow or ask for the same confirmation again unless the situation changed.
+After the user answers, continue from the exact paused step. Do not restart the workflow or ask for the same confirmation again unless the situation changes.

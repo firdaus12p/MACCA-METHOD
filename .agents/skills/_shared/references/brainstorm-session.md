@@ -2,17 +2,16 @@
 
 ## Purpose
 
-This file defines the shared session setup for all `brainstorm-*` skills.
+This file defines shared session behavior for all `brainstorm-*` skills.
 
-Read `../references/runtime-config.md` first when a brainstorming skill needs
-language preferences or shared config behavior.
+The caller skill must read `runtime-config.md` before this file.
 
 ## Shared Preferences
 
-Brainstorming skills may use `brainstormPreferences` in
-`.agents/developer-config.json` to remember session behavior across runs.
+Brainstorm skills may use `brainstormPreferences` in
+`.agents/developer-config.json` to persist session behavior across sessions.
 
-Supported fields today:
+Currently supported fields:
 
 ```json
 {
@@ -23,59 +22,57 @@ Supported fields today:
 }
 ```
 
-Accepted values for `discussionMode`: `"one-by-one"`, `"three-at-a-time"`, `"all-at-once"`.
+Accepted `discussionMode` values: `"one-by-one"`, `"three-at-a-time"`, `"all-at-once"`.
 
-## Interview Pacing
+## Interview Pace
 
-Brainstorm skills may batch questions when the user explicitly wants faster
-progress. This is different from approval gates in execution skills.
+Brainstorm skills may batch questions when the user explicitly wants faster progress. This is separate from approval gates in execution skills.
 
-Allowed pacing strategies:
+Allowed pace strategies:
 
 - `one-by-one` — one topic per turn
-- `three-at-a-time` — three topics sent together in one message
-- `all-at-once` — all topics sent in one message; user answers all, then AI generates the document
+- `three-at-a-time` — three topics in one message
+- `all-at-once` — all topics in one message; the user answers all of them, then the AI writes the document
 
-### Important Distinction
+### Important Difference
 
-- Interview pacing is for discovery-heavy `brainstorm-*` workflows.
-- Approval and risk confirmations in `developer`, `bug-fix`, `spec-init`, and
-  similar skills should stay focused on one decision topic per pause.
+- Interview pace is for discovery-heavy `brainstorm-*` workflows.
+- Approval and risk confirmation in `developer`, `bug-fix`, `spec-init`, and similar skills must still stay limited to one decision topic per pause.
 
 ## Recommendations Toggle
 
 Use `brainstormPreferences.recommendations` as a persistent preference:
 
-- `true` — research first, then present a recommendation with reasoning
+- `true` — research first, then present recommendations with reasoning
 - `false` — ask questions without recommendations
 
 ## Session Setup Rules
 
 When a brainstorming skill starts:
 
-1. Read `languagePreferences` using `runtime-config.md`.
+1. Read `languagePreferences` via `runtime-config.md`.
 2. Read `brainstormPreferences` if present.
 3. **Announce the session** before asking anything:
-   - If preferences already saved — show a brief confirmation and allow override:
+   - If preferences are already saved — show a short confirmation and allow changes:
      ```
-     Sesi ini ada [N] topik.
-     Preferensi tersimpan: [pacing] | rekomendasi: [aktif/nonaktif]
-     Lanjutkan dengan pengaturan ini? Atau ketik perubahan yang kamu mau.
+     This session has [N] topics.
+     Saved preferences: [pacing] | recommendations: [on/off]
+     Continue with these settings? Or type the changes you want.
      ```
-   - If preferences missing — ask both before starting:
+   - If no preferences are saved — ask both before starting:
      ```
-     Sesi ini ada [N] topik. Dua hal sebelum kita mulai:
-     1. Pacing: (A) satu per satu  (B) tiga sekaligus  (C) semua sekaligus
-     2. Rekomendasi jawaban: AI berikan saran jawaban di tiap pertanyaan? (Y/N)
+     This session has [N] topics. Two things before we start:
+     1. Pace: (A) one by one  (B) three at a time  (C) all at once
+     2. Answer recommendations: should the AI suggest answers for each question? (Y/N)
      ```
-4. Save chosen preferences. Preserve all unrelated config fields when saving changes.
+4. Save the chosen preferences. Preserve all unrelated config fields when writing the update.
 
-## Recommended Prompt Pattern
+## Recommended Prompt Patterns
 
-For pacing:
+For pace:
 
 ```text
-This session has [N] topics. Do you want to cover them one by one or three at a time?
+This session has [N] topics. Do you want to discuss them one by one or three at a time?
 ```
 
 For recommendations:
@@ -84,5 +81,4 @@ For recommendations:
 Should I provide recommendations based on current best practices?
 ```
 
-Use concise questions. The setup exists to speed the session up, not to create
-extra friction.
+Use brief questions. These settings should speed up the session, not add friction.

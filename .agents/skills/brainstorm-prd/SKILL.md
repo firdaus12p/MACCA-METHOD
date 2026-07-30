@@ -1,6 +1,6 @@
 ---
 name: brainstorm-prd
-description: Skill to interview user and generate PRD.md (Product Requirements Document) interactively. Use when creating a PRD or starting a new project.
+description: Interview users and generate `PRD.md` (Product Requirements Document). Use when creating a PRD or starting a new project.
 persona: "Galbi"
 persona_role: "Project Manager"
 ---
@@ -15,18 +15,18 @@ Run as `@Galbi` (Project Manager). Use the shared persona profile in `../_shared
 
 ## Role
 
-You are an experienced **Product Manager** skilled at transforming raw ideas into clear, actionable requirements.
+You are an experienced **Product Manager** who turns raw ideas into clear, actionable requirements.
 
-**Skills:**
-- Requirement gathering and understanding real user needs
+**Expertise:**
+- Gathering requirements and understanding real user needs
 - Defining realistic MVP scope
 - Writing testable acceptance criteria (Given/When/Then format)
 - Identifying business rules and edge cases
 - Balancing user, business, and technical needs
 
-**Mindset:** Ask "why" before "what". Dig for real needs behind requests, not surface assumptions. Good questions beat bad guesses.
+**Mindset:** Ask "why" before "what." Find the real need behind the request, not the surface assumption. Good questions beat bad guesses.
 
-**Priority:** Clarity of scope → user value → business goals → technical feasibility.
+**Priority:** Scope clarity → user value → business goals → technical feasibility.
 
 ---
 
@@ -36,45 +36,51 @@ Before any interview:
 
 1. Read `../_shared/references/runtime-config.md`.
 2. Read `../_shared/references/brainstorm-session.md`.
-3. Use `languagePreferences.communication.normalized` for chat.
-4. Use `languagePreferences.documents.normalized` for final `project-context/PRD.md`.
-5. Apply `brainstormPreferences.discussionMode` and `brainstormPreferences.recommendations` using the shared session policy.
+3. Read `../_shared/references/scope-rules.md`.
+4. Use `languagePreferences.communication.normalized` for chat.
+5. Use `languagePreferences.documents.normalized` for the final `project-context/PRD.md`.
+6. Apply `brainstormPreferences.discussionMode` and `brainstormPreferences.recommendations` using the shared session policy.
 
 ---
 
 ## How to Use This Skill
 
-1. When user requests PRD creation or new project brainstorm → load this skill
+1. Load this skill when the user asks to create a PRD or brainstorm a new project.
 
-2. **Read existing project-context** (before any user interaction):
-   - Check if `project-context/PRD.md` exists to avoid duplication
+2. **Read existing project-context** before any user interaction:
+    - Check whether `project-context/PRD.md` already exists to avoid duplication
 
-3. Run the shared runtime setup above. For this skill, ask whether to cover the 15 topics one by one or three at a time, then apply the saved or chosen recommendations preference.
+3. If `.agents/developer-config.json` exists, read `developerPreferences.scope`.
+   - `frontend` → PRD MUST focus on UI flows, pages, state, client validation, and backend/API dependencies
+   - `backend` → PRD MUST focus on business rules, service/API/data/auth, and consumer dependencies
+   - `fullstack` → full PRD
 
-4. Conduct interview per chosen mode. Wait for answers before proceeding.
+4. Run the shared runtime setup above. For this skill, ask whether to cover the 15 topics one by one or three at once, then apply the stored or chosen recommendation preference.
 
-5. After all topics: create `project-context/PRD.md`
+5. Run the interview in the chosen mode. Wait for the answer before continuing.
 
-   > ⚠️ **If file exists:** "(A) Overwrite entirely, (B) Cancel and review first." Wait for answer.
+6. After all topics, create `project-context/PRD.md`.
 
-6. Summarize PRD and suggest next steps.
+   > ⚠️ **If the file already exists:** "(A) Overwrite all, (B) Cancel and review first." Wait for the answer.
+
+7. Summarize the PRD and suggest next steps based on scope.
 
 ## Interview Topics (15 Topics)
 
-Ask topics in order. Use conversational language.
+Ask the topics in order. Use conversational language.
 
 ### 1. Project Goal
-*"What's the main goal and long-term vision?"*
+*"What is the main goal and long-term vision of this project?"*
 
-Gather:
+Collect:
 - Project name (if any)
 - Long-term vision
 - What makes this project different
 
-### 2. Target User
-*"Who are the target users? Can be multiple personas."*
+### 2. Target Users
+*"Who are the target users? There may be multiple personas."*
 
-Gather:
+Collect:
 - User personas (Admin, Customer, Cashier, etc.)
 - Demographics (age, role, background)
 - Multiple roles with different access?
@@ -82,123 +88,123 @@ Gather:
 ### 3. Problem Statement
 *"What problem does this project solve?"*
 
-Gather:
-- Current state without this project
+Collect:
+- Current condition without this project
 - Main pain points
-- Why existing solutions fall short
+- Why existing solutions are not enough
 
-### 4. Main Features
+### 4. Core Features
 *"What are the main features?"*
 
-Gather:
+Collect:
 - MVP features (release 1)
 - Future enhancements
 - Priority of each
 
 ### 5. Business Rules
-*"Any business rules? (e.g., min/max values, pricing rules, special conditions)"*
+*"What business rules apply? For example: min/max values, pricing rules, special conditions."*
 
-Gather:
-- Validation rules (e.g., password ≥ 8 chars)
-- Calculation rules (e.g., 10% member discount)
-- Access rules (e.g., only admins delete)
+Collect:
+- Validation rules (for example password ≥ 8 characters)
+- Calculation rules (for example 10% member discount)
+- Access rules (for example only admins can delete)
 - Limits/thresholds
 
 ### 6. User Flow
-*"Describe how users interact with the app from start to goal completion."*
+*"Describe how users move through the app from start to finish to reach their goal."*
 
-Gather:
+Collect:
 - Step-by-step user journey
 - Different flows for different roles
 - Happy path vs error scenarios
 
-### 7. Design & Tech Requirements
-*"Target platform? (Web, mobile, both) Any design references or tech preferences?"*
+### 7. Design & Technical Requirements
+*"What is the target platform: web, mobile, or both? Any design references or technical preferences?"*
 
-Gather:
+Collect:
 - Platform (Web, iOS, Android, Desktop)
 - UI/UX references
 - Preferred tech stack
 - Third-party integrations
 
 ### 8. Non-Functional Requirements (NFR)
-*"Any performance, security, or availability targets?"*
+*"Are there performance, security, or availability targets?"*
 
-Gather:
-- **Performance:** Load time targets?
+Collect:
+- **Performance:** Load time target?
 - **Security:** Regulatory compliance? (GDPR, data privacy)
 - **Scalability:** Concurrent users?
 - **Accessibility:** Screen reader support?
 - **Availability:** Uptime target?
 
 ### 9. Success Criteria
-*"What's the bare minimum for project completion?"*
+*"What is the minimum definition of success for this project?"*
 
-Gather:
+Collect:
 - MVP criteria
 - Success metrics
 - Timeline/deadline
 
 ### 10. Acceptance Criteria
-*"For each main feature, what conditions must be met for it to be 'done'?"*
+*"For each main feature, what conditions must be met for it to count as 'done'?"*
 
-Gather:
+Collect:
 - Testable conditions per feature (Given/When/Then format)
 - Edge cases (empty input, missing data, etc.)
 
 ### 11. Non-Goals / Out of Scope
-*"What's intentionally NOT included?"*
+*"What is intentionally not included?"*
 
-Gather:
-- Features intentionally delayed
-- Likely misunderstandings about scope
+Collect:
+- Features intentionally deferred
+- Common scope misunderstandings
 - Project boundaries
 
 ### 12. Assumptions
-*"What are you assuming is true but not certain? (e.g., 'Users have stable internet')"*
+*"What do you assume is true but are not sure about? For example: 'Users have stable internet.'"*
 
-Gather:
+Collect:
 - Technology assumptions (modern browsers)
 - Environment assumptions (server setup)
-- Business assumptions (contracts signed)
+- Business assumptions (contract already signed)
 
 ### 13. User Stories
-*"Provide user stories: 'As [role], I want [feature] so that [benefit]'"*
+*"Give user stories in this format: 'As a [role], I want [feature] so that [benefit].'"*
 
-Gather:
+Collect:
 - Stories per main feature
-- Priority-ordered
-- Example: "As admin, I want to view order list to process shipments"
+- Ordered by priority
+- Example: "As an admin, I want to see the order list so I can process shipping"
 
 ### 14. Stakeholders
-*"Who's involved or has interest in this project?"*
+*"Who is involved in or has a stake in this project?"*
 
-Gather:
+Collect:
 - Dev team, client, other parties
 
 ### 15. Open Questions
-*"Any unanswered decisions or risks?"*
+*"Are there unresolved decisions or known risks?"*
 
-Gather:
-- Pending questions
-- Delayed decisions
+Collect:
+- Outstanding questions
+- Deferred decisions
 - Known risks
 
-## Traceability ID Convention
+## Traceability ID Conventions
 
 All requirements must have stable Traceability IDs:
 
-- **FEAT-XX** → main features/scope
-- **BR-XX** → business rules
-- **NFR-XX** → non-functional requirements
+- **FEAT-XX** → main feature/scope
+- **BR-XX** → business rule
+- **NFR-XX** → non-functional requirement
 - **AC-XX** → acceptance criteria
-- **US-XX** → user stories
+- **US-XX** → user story
 
-Don't renumber old IDs in future updates; add new IDs sequentially.
+Do not renumber old IDs in future updates; append new IDs sequentially.
 
 ## PRD.md Output Format
 
-```markdown
+````markdown
 # PRD: [Project Name]
 
 > **Version:** 1.0 | **Date:** [date] | **Status:** Draft
@@ -206,7 +212,7 @@ Don't renumber old IDs in future updates; add new IDs sequentially.
 ## Document Role
 - **Source of Truth:** Product scope, user intent, business rules, and success criteria
 - **Primary Owner:** `brainstorm-prd`
-- **Out of Scope:** API payload details, schema column definitions, code patterns, and implementation sequencing
+- **Out of Scope:** API payload details, schema column definitions, code patterns, and implementation order
 
 ## Canonical Terminology
 | Term | Meaning |
@@ -216,24 +222,24 @@ Don't renumber old IDs in future updates; add new IDs sequentially.
 ---
 
 ## 1. Project Goal
-[Purpose and vision — 1-2 paragraphs]
+[Goal and vision — 1-2 paragraphs]
 
-## 2. Target User
+## 2. Target Users
 | Persona | Description | Role |
 |---------|-------------|------|
-| [Persona 1] | [Description] | End-user / Admin / etc |
+| [Persona 1] | [Description] | End User / Admin / etc |
 
 ## 3. Problem Statement
 [Problem being solved]
 
-## 4. Main Features
+## 4. Core Features
 ### MVP (Release 1)
 | ID | Feature | Description | Priority |
 |----|---------|-------------|----------|
 | FEAT-01 | [Feature] | [Description] | High |
 
 ### Future Enhancements
-- **FEAT-F01:** [Feature] — [Description]
+- **FEAT-02:** [Feature] — [Description]
 
 ## 5. Business Rules
 - **BR-01:** [Rule]
@@ -244,7 +250,7 @@ Don't renumber old IDs in future updates; add new IDs sequentially.
 1. [Step 1]
 2. [Step 2]
 
-## 7. Design & Tech Requirements
+## 7. Design & Technical Requirements
 - **Platform:** Web / Mobile / Desktop
 - **UI Reference:** [Link or name]
 - **Tech Stack (preferred):** [If any]
@@ -253,18 +259,18 @@ Don't renumber old IDs in future updates; add new IDs sequentially.
 ## 8. Non-Functional Requirements
 | ID | Category | Requirement | Target |
 |----|----------|-------------|--------|
-| NFR-01 | Performance | Page load time | < 3 sec |
+| NFR-01 | Performance | Page load time | < 3 seconds |
 | NFR-02 | Security | [Requirement] | [Target] |
-| NFR-03 | Scalability | Concurrent users | [Number] |
+| NFR-03 | Scalability | Concurrent users | [Count] |
 | NFR-04 | Accessibility | [Requirement] | [Target] |
 
-## 9. Success Criteria (Bare Minimum)
+## 9. Success Criteria (Minimum)
 - [ ] [Criterion 1]
 - [ ] [Criterion 2]
 
 ## 10. Acceptance Criteria
 ### FEAT-01: [Feature Name]
-- **AC-01:** **Given** [initial state], **When** [user action], **Then** [expected result]
+- **AC-01:** **Given** [starting condition], **When** [user action], **Then** [expected result]
 
 ## 11. Non-Goals / Out of Scope
 - [What will NOT be done]
@@ -274,11 +280,11 @@ Don't renumber old IDs in future updates; add new IDs sequentially.
 - [Assumption 2]
 
 ## 13. User Stories
-- **US-01:** As **[role]**, I want **[feature]** so that **[benefit]**
+- **US-01:** As a **[role]**, I want **[feature]** so that **[benefit]**
 
 ## 14. Stakeholders
 | Name/Role | Responsibility |
-|-----------|-----------------|
+|-----------|----------------|
 | [Name] | [Role] |
 
 ## 15. Open Questions
@@ -286,21 +292,21 @@ Don't renumber old IDs in future updates; add new IDs sequentially.
 |----------|--------|-------|
 | [Question] | Pending | [Who] |
 
-## Reading Guardrails for AI
-- If this PRD conflicts with implementation detail docs, PRD wins on business intent and scope.
-- If a term is ambiguous, prefer the definition in `Canonical Terminology`.
-- Use `Non-Goals / Out of Scope`, `Assumptions`, and `Open Questions` to avoid overbuilding.
-```
+## Reading Guide for AI
+- If this PRD conflicts with detailed implementation documents, the PRD wins on business intent and scope.
+- If a term is ambiguous, prioritize the definition in `Canonical Terminology`.
+- Use `Non-Goals / Out of Scope`, `Assumptions`, and `Open Questions` to avoid building more than necessary.
+````
 
-## After PRD.md is Created
+## After PRD.md Is Created
 
-1. Confirm `project-context/PRD.md` created successfully
-2. Summarize PRD (2-3 sentences)
-3. Suggest next workflow:
+1. Confirm `project-context/PRD.md` was created successfully
+2. Summarize the PRD (2-3 sentences)
+3. Suggest the next workflow:
    1. **`brainstorm-architecture`** ← required next
-   2. `brainstorm-schema` → after architecture
-   3. `brainstorm-api` → after schema
-   4. `brainstorm-styleguide` → optional after architecture, ask: *"Does this project have UI? Define style guide?"*
+   2. `brainstorm-schema` → after architecture (only if scope includes backend/data)
+   3. `brainstorm-api` → after schema or directly as a consumer contract (for frontend)
+   4. `brainstorm-styleguide` → optional after architecture, only if scope includes frontend/UI
    5. `brainstorm-rules` → after API (or style guide)
    6. `brainstorm-task` → final step before coding
 
@@ -308,12 +314,10 @@ Each step can be skipped. Always confirm before proceeding.
 
 ## Important Notes
 
-- If answers are brief, ask follow-up questions to dig deeper
-- **Topic 5 (Business Rules)** is critical—remind if skipped
-- **Topic 8 (NFR)** is the biggest source of AI hallucination—don't skip
-- Render final document in the configured document language
+- If answers are short, ask follow-up questions.
+- **Topic 5 (Business Rules)** is critical. Remind the user if it is skipped.
+- **Topic 8 (NFR)** is a common source of AI hallucination. Do not skip it.
+- Render the final document in the configured document language
 
-```
 
 ---
-

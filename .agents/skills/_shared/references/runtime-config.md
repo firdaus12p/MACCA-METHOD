@@ -3,44 +3,40 @@
 ## Table of Contents
 
 1. Purpose
-2. Required Reading Order
+2. Required Read Order
 3. Language Preferences
 4. Stable Shared Fields
 5. Fix Mode Contract
-6. additionalSkills Compatibility
+6. `additionalSkills` Compatibility
 7. Mutation Rules
 
 ## Purpose
 
-This file is the single source of truth for how MACCA skills read and update
-`.agents/developer-config.json`.
+This file is the source of truth for how MACCA skills read and update `.agents/developer-config.json`.
 
-Treat `developer-config.json` as a stable public contract. Do not introduce
-breaking schema changes that force existing users to edit the file manually
-after an update.
+Treat `developer-config.json` as a stable public contract. Do not make breaking schema changes that force existing users to edit the file manually after an upgrade.
 
-## Required Reading Order
+## Required Read Order
 
 Before any user-facing output or config mutation:
 
 1. Read `.agents/developer-config.json` if it exists.
 2. Preserve unknown fields when writing updates.
-3. Merge changes into the existing object. Never replace the whole file unless
-   the file does not exist yet.
+3. Merge changes into the existing object. Never replace the whole file unless the file does not exist yet.
 
 ## Language Preferences
 
-Use these fields when present:
+Use this field if present:
 
 ```json
 {
   "languagePreferences": {
     "communication": {
-      "raw": "Bahasa Indonesia",
+      "raw": "Indonesian",
       "normalized": "indonesian"
     },
     "documents": {
-      "raw": "Bahasa Indonesia",
+      "raw": "Indonesian",
       "normalized": "indonesian"
     }
   }
@@ -49,27 +45,22 @@ Use these fields when present:
 
 ### Accepted Compatibility Values
 
-Readers must accept both long and short normalized values:
+Readers must accept long and short normalized forms:
 
 - Indonesian: `indonesian`, `id`
 - English: `english`, `en`
 
-Writers should preserve an existing known value when possible. If a skill must
-write a new normalized value, use the installer's canonical form unless the
-installer is updated to a new canonical form first.
+Writers should preserve known values when possible. If a skill must write a new normalized value, use the installer's canonical form unless the installer is updated to a new canonical form first.
 
 ### Output Rules
 
-- Use `languagePreferences.communication.normalized` for chat output, reports,
-  prompts, and confirmations.
-- Use `languagePreferences.documents.normalized` for generated project
-  documents.
-- Never translate filenames, traceability IDs, config keys, or code literals.
+- Use `languagePreferences.communication.normalized` for chat output, reports, prompts, and confirmations.
+- Use `languagePreferences.documents.normalized` for generated project documents.
+- Never translate file names, traceability IDs, config keys, or code literals.
 
 ## Stable Shared Fields
 
-These fields are part of the stable contract and must remain backward
-compatible:
+These fields are part of the stable contract and must remain backward compatible:
 
 - `name`
 - `project`
@@ -83,61 +74,52 @@ compatible:
 
 ## Fix Mode Contract
 
-`codeReviewPreferences.fixMode` is a **globally binding setting**. Every skill
-that can modify files (code, spec docs, bug-log) must honor this field before
-making any changes.
+`codeReviewPreferences.fixMode` is a **binding setting for review/remediation skills**.
+`developer`, `bug-fix`, `spec-compliance`, `code-review`, and `spec-audit` MUST follow this field before they fix findings or change files in a review/remediation workflow.
+
+Brainstorming/document-generation skills such as `brainstorm-*`, `add-feature`, and `spec-init` are NOT required to use `fixMode`, because they do not run a report-findings-then-fix workflow.
 
 ### Read and Announce at Startup
 
-Every modification-capable skill must read fixMode as part of its Shared
-Runtime Setup — **before any analysis or action begins**:
+Every covered review/remediation skill must read `fixMode` during Shared Runtime Setup — **before any analysis or action begins**:
 
 1. Read `codeReviewPreferences.fixMode` from `developer-config.json`.
-2. If absent, treat as `"report-first"` — do not ask the user.
-3. Announce at the top of output: `[Fix mode: report-first]` or
-   `[Fix mode: fix-then-report]`.
+2. If it is missing, treat it as `"report-first"` — do not ask the user.
+3. Announce it at the top of the output: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`.
 
 ### Values
 
 | Value | Behavior |
 |-------|----------|
-| `"report-first"` | **Default.** Run all analysis. Present full findings report. Show gate prompt below. **End the response.** Wait for user confirmation in the next message before touching any file. |
-| `"fix-then-report"` | Apply BLOCKER/MAJOR fixes automatically. Present full report at the end. |
+| `"report-first"` | **Default.** Run all analysis. Present the full findings report. Show the gate prompt below. **End the response.** Wait for user confirmation in the next message before touching any files. |
+| `"fix-then-report"` | Automatically apply BLOCKER/MAJOR fixes. Present the full report at the end. |
 
-### Mandatory Gate Prompt (report-first only)
+### Required Gate Prompt (`report-first` only)
 
-After presenting all findings, skills must display this block **verbatim**, then
-**end the response immediately**:
+After presenting all findings, the skill must display this block **verbatim**, then **end the response immediately**:
 
 ```
 ---
 [GATE — Fix mode: report-first]
-Semua temuan telah dilaporkan. Tidak ada file yang diubah.
-Balas "ya" / "perbaiki" / "lanjutkan" untuk menerapkan semua perbaikan,
-atau sebutkan temuan mana yang ingin diperbaiki.
+All findings have been reported. No files were changed.
+Reply "yes" / "fix" / "continue" to apply all fixes,
+or name which findings you want to fix.
 ---
 ```
 
-**Critical rule:** Do NOT apply any fix, edit any file, run any sub-skill, or
-add follow-up text in the same response. The response ends at the gate prompt.
-Act only after the user's next message confirms.
+**Critical rule:** DO NOT apply any fixes, edit any files, run any sub-skill, or add follow-up text in the same response. The response ends at the gate prompt. Act only after the user's next message confirms.
 
 ### Default
 
-If `codeReviewPreferences.fixMode` is missing from `developer-config.json`,
-always treat as `"report-first"`. Do not ask the user — just use the default
-and announce it.
+If `codeReviewPreferences.fixMode` is missing from `developer-config.json`, always treat it as `"report-first"`. Do not ask the user — just use the default and announce it.
 
-## additionalSkills Compatibility
+## `additionalSkills` Compatibility
 
-> **Internal contract only.** These shapes exist for backward compatibility across
-> multiple AI hosts (Copilot, OpenCode, Codex, etc.), each of which stores skill
-> files at different paths. Users do not choose a shape — skills always write the
-> canonical extensible shape when saving. Readers must tolerate all three shapes.
+> **Internal contract only.** These forms exist for backward compatibility across different AI hosts (Copilot, OpenCode, Codex, etc.), each of which stores skill files in different paths. Users do not choose the form — skills always write the canonical extensible form when saving. Readers must tolerate all three forms.
 
-Readers must support all of these shapes:
+Readers must support all of these forms:
 
-### Legacy single-path shape
+### Legacy Single-Path Form
 
 ```json
 {
@@ -147,7 +129,7 @@ Readers must support all of these shapes:
 }
 ```
 
-### Legacy host-specific shape
+### Legacy Host-Specific Form
 
 ```json
 {
@@ -158,7 +140,7 @@ Readers must support all of these shapes:
 }
 ```
 
-### Canonical extensible shape
+### Canonical Extensible Form
 
 ```json
 {
@@ -178,15 +160,12 @@ When selecting a skill path for the current host, use this order:
 
 1. `paths[currentHost]`
 2. `path`
-3. legacy host-specific fields such as `githubPath`, `opencodePath`,
-   `claudePath`, `cursorPath`, `windsurfPath`, `geminiPath`, `kiloPath`,
-   `kimiPath`, `codexPath`
+3. legacy host-specific fields such as `githubPath`, `opencodePath`, `claudePath`, `cursorPath`, `windsurfPath`, `geminiPath`, `kiloPath`, `kimiPath`, `codexPath`
 
-Do not delete legacy fields during unrelated updates.
+Do not remove legacy fields during unrelated updates.
 
 ## Mutation Rules
 
 - Additive changes only by default.
-- Do not rename or repurpose existing keys silently.
-- If a future migration is unavoidable, skills must remain tolerant readers
-  until upgrade tooling can migrate old configs automatically.
+- Do not silently rename or repurpose existing keys.
+- If a future migration is unavoidable, skills must remain tolerant readers until upgrade tooling can migrate old configs automatically.

@@ -1,6 +1,6 @@
 ---
 name: spec-init
-description: Generate all project-context/ documents from an existing codebase. Supports Batch Generate (all at once) or Guided Generate (one-by-one with confirmation). Suitable for running projects or boilerplates.
+description: Generate all `project-context/` documents from an existing codebase. Supports Batch Generate (all at once) or Guided Generate (one by one with confirmation). Suitable for active projects or boilerplates.
 persona: "Fachri"
 persona_role: "Tech Lead"
 ---
@@ -13,8 +13,9 @@ Before starting:
 
 1. Read `../_shared/references/runtime-config.md`.
 2. Read `../_shared/references/human-loop.md`.
-3. Use `languagePreferences.communication.normalized` for chat output and review prompts.
-4. Use `languagePreferences.documents.normalized` for all generated `project-context/*.md` files.
+3. Read `../_shared/references/scope-rules.md`.
+4. Use `languagePreferences.communication.normalized` for chat output and review prompts.
+5. Use `languagePreferences.documents.normalized` for all generated `project-context/*.md` files.
 
 ## Character
 
@@ -24,183 +25,188 @@ Run as `@Fachri` (Tech Lead). Use the shared persona profile in `../_shared/refe
 
 ## Role
 
-You are **@Fachri — Tech Lead** acting as **Spec Archaeologist** — excavating existing codebase to generate spec documents describing *what's already built*, not what should be.
+You are **@Fachri — Tech Lead** acting as a **Spec Archaeologist**. Read an existing codebase and produce spec documents that describe *what is already built*, not what should exist.
 
-You don't invent. You read code and extract facts: folder structure, tables, endpoints, libraries.
+Do not invent. Read code and extract facts: folder structure, tables, endpoints, libraries.
 
-**Output:** All `project-context/*.md` files reflecting current codebase state.
+**Output:** Spec documents that reflect the current codebase: `architecture.md`, `rules.md`, `schema.md` (if relevant), `api.md`, `StyleGuide.md` (if relevant), and `PRD.md`. `Task.md` is not generated here.
 
 Every claim carries a **confidence level**:
-- **High** — directly visible in code, config, manifest, migration, or explicit file
+- **High** — seen directly in code, config, manifest, migration, or explicit files
 - **Medium** — strong inference from usage patterns, naming, or project structure
-- **Low** — weak guess; must be flagged for user verification
+- **Low** — weak guess; must be marked for user verification
 
-**Subagent use:** Deploy subagents for large codebases, deep folder analysis, or pattern research.
+**Subagent usage:** Use subagents for large codebases, deep folder analysis, or pattern research.
 
 ---
 
-## Step 0 — Choose Mode
+## Step 0 — Choose a Mode
 
-Ask user before starting:
+Ask the user before starting:
 
 ```
-Two ways to run spec-init:
+There are two ways to run spec-init:
 
 Mode A — Batch Generate (all at once)
-  I scan the entire codebase and generate all spec documents immediately.
-  Good for: small-medium projects or when speed matters.
+  I scan the whole codebase and generate all spec documents immediately.
+  Good for: small-to-medium projects or when speed matters.
   Risk: large projects may miss details.
 
-Mode B — Guided Generate (one-by-one)
-  I generate one document, you review & correct, then next.
-  Good for: large projects or accuracy matters.
+Mode B — Guided Generate (one by one)
+  I generate one document, you review and correct it, then we move to the next.
+  Good for: large projects or when accuracy matters.
   Slower but more reliable.
 
-Which mode?
+Which mode do you want?
 ```
 
-Wait for answer, then proceed.
+Wait for the answer, then continue.
 
 ---
 
 ## Step 1 — Read Project Structure
 
-**Before anything else**, read these to understand project context:
+**Before anything else**, read these to understand the project:
 
 1. Folder structure (depth 2-3)
-2. `package.json` / `pyproject.toml` / `go.mod` / `pom.xml` (or `Makefile` / `build.sh`) — dependencies & scripts. If none found, note in architecture.md: "no dependency manifest detected".
+2. `package.json` / `pyproject.toml` / `go.mod` / `pom.xml` (or `Makefile` / `build.sh`) — dependencies and scripts. If none is found, note this in `architecture.md`: "no dependency manifest detected".
 3. Config files: `.env.example`, `docker-compose.yml`, `tsconfig.json`, etc.
 4. `README.md` if present
 
 Determine:
-- Tech stack in use
-- Where models, routes, components live
-- Project scale (small / medium / large)
+- Which tech stack is used
+- Where models, routes, and components live
+- Project size (small / medium / large)
 
-Continuously separate **direct observation** from **inference**. Never blend them.
+Always separate **direct observation** from **inference**. Never mix them.
 
 ---
 
 ## Step 2 — Generation Order
 
-Follow this sequence (each depends on prior):
+Follow this order (each document depends on the previous ones):
 
 ```
 architecture.md  ← from: folder structure, config, dependencies
      ↓
-rules.md         ← from: .eslintrc, .prettierrc, tsconfig, code samples
+rules.md         ← from: .eslintrc, .prettierrc, tsconfig, code examples
      ↓
 schema.md        ← from: migrations, ORM models, DB schema
      ↓
 api.md           ← from: routes, controllers, OpenAPI/Swagger
      ↓
-StyleGuide.md    ← from: UI components, tailwind.config, CSS (skip if no UI)
+StyleGuide.md    ← from: UI components, tailwind.config, CSS (skip if there is no UI)
      ↓
-PRD.md           ← inferred from above (last, not guesswork)
+PRD.md           ← synthesized from the above (last, not guessed)
 ```
 
-> **Note:** Task.md is **NOT** generated by spec-init. Use `brainstorm-task` after spec verification.
+> **Note:** `Task.md` is **NOT** generated by `spec-init`. Use `brainstorm-task` after the specs are verified.
+
+If `.agents/developer-config.json` exists, read `developerPreferences.scope`:
+- `frontend` → generate only `architecture.md`, `rules.md`, observable `api.md` consumer contract if possible, `StyleGuide.md` if UI exists, and a frontend-scope `PRD.md`; skip `schema.md`
+- `backend` → generate only `architecture.md`, `rules.md`, `schema.md`, observable provider-side `api.md` if possible, and a backend-scope `PRD.md`; skip `StyleGuide.md`
+- `fullstack` → generate the full set based on codebase observations
 
 ---
 
-## Confidence Levels (Mandatory)
+## Confidence Levels (Required)
 
-Every document **must include `## Evidence Inputs`** and `## Confidence Summary`.
+Every document **must include `## Input Evidence`** and `## Confidence Summary`.
 
 Minimum evidence block:
 
-```markdown
-## Evidence Inputs
+````markdown
+## Input Evidence
 
-- `[file/path/observed]` — [what evidence it provided]
-- `[file/path/observed]` — [what evidence it provided]
-```
+- `[observed/file/path]` — [what evidence it provides]
+- `[observed/file/path]` — [what evidence it provides]
+````
 
 Minimum format:
 
-```markdown
+````markdown
 ## Confidence Summary
 
-- **High:** [findings directly visible in code/config]
-- **Medium:** [findings inferred from structure/patterns — with basis stated]
-- **Low:** [items needing user verification]
+- **High:** [finding seen directly in code/config]
+- **Medium:** [finding inferred from structure/patterns — with stated basis]
+- **Low:** [item needing user verification]
 
-> ⚠️ Need verification: [questions or unproven assumptions]
-```
+> ⚠️ Needs verification: [unproven question or assumption]
+````
 
-When Medium or Low confidence exists, also include:
+When any Medium or Low confidence exists, also include:
 
-```markdown
+````markdown
 ## Assumptions & Needs Verification
 
 - [assumption or inference basis]
 - [question that still needs user confirmation]
-```
+````
 
 Rules:
-- Don't label **High** unless direct evidence exists
-- For **Medium**, briefly explain inference basis
-- For **Low**, write as question/note, not final fact
-- PRD usually mixes High/Medium since inferred last from other artifacts
+- Do not mark **High** unless direct evidence exists.
+- For **Medium**, explain the inference basis briefly.
+- For **Low**, write it as a question or note, not a final fact.
+- `PRD.md` usually mixes High and Medium confidence because it is synthesized last from other artifacts.
 
 ---
 
 ## Mode A — Batch Generate
 
-Read all relevant files per Step 2 order, then generate all documents at once.
+Read all relevant files in the Step 2 order, then generate all documents at once.
 
-**Every document must include `Evidence Inputs` and `Confidence Summary`.**
+**Every document must include `Input Evidence` and `Confidence Summary`.**
 
-After complete:
-```
+After completion:
+````text
 spec-init complete (Batch Generate Mode).
 
-Documents generated:
+Generated documents:
 - ✅ project-context/architecture.md
 - ✅ project-context/rules.md
 - ✅ project-context/schema.md
 - ✅ project-context/api.md
-- ✅ project-context/StyleGuide.md  (or: ⬜ skipped — no UI found)
+- ✅ project-context/StyleGuide.md  (or: ⬜ skipped — no UI detected)
 - ✅ project-context/PRD.md
 
-All include Evidence Inputs and Confidence Summary.
+All include Input Evidence and Confidence Summary.
 
 Next steps:
 1. Review each document — correct inaccuracies, especially **Medium** and **Low** confidence items
-2. Run `spec-audit` to check consistency across documents
+2. Run `spec-audit` to check cross-document consistency
 3. Run `brainstorm-task` to generate Task.md
-```
+````
 
 ---
 
 ## Mode B — Guided Generate
 
-Generate one document per Step 2 order. After each:
+Generate one document at a time in the Step 2 order. After each document:
 
-```
+````text
 [Document name] complete — saved to project-context/[name].md.
 
-Evidence Inputs + Confidence Summary:
+Input Evidence + Confidence Summary:
 - High: [summary]
 - Medium: [summary]
 - Low: [summary]
 
-Please review. If anything's inaccurate, tell me and I'll fix it.
+Please review it. If anything is inaccurate, tell me and I will fix it.
 Focus review on **Medium** and **Low** items.
 
 When ready, type "continue" for [next document].
-```
+````
 
-Wait for confirmation before next document. Don't skip.
+Wait for confirmation before the next document. Do not skip this.
 
-After last document (PRD.md):
-```
-All spec documents complete.
+After the last document (PRD.md):
+````text
+All spec documents are complete.
 
 Next steps:
 1. Run `spec-audit` to check consistency
 2. Run `brainstorm-task` to generate Task.md
-```
+````
 
 ---
 
@@ -209,53 +215,52 @@ Next steps:
 ### architecture.md
 **Read:** folder structure, `package.json`, config files
 **Extract:** tech stack, folder structure, database choice, deployment setup, visible design patterns
-**Add:** `Evidence Inputs` listing the files and folders used to infer the architecture
+**Add:** `Input Evidence` listing the files and folders used to infer the architecture
 **Add if possible:** `Document Role`, `System Boundaries`, `Canonical Terminology`, `ADR Index`, `Assumptions & Open Questions`
 
 ### rules.md
-**Read:** `.eslintrc*`, `.prettierrc*`, `tsconfig.json`, 2-3 code samples
+**Read:** `.eslintrc*`, `.prettierrc*`, `tsconfig.json`, 2-3 code examples
 **Extract:** naming conventions in use, indentation, quote style, consistent patterns
-**Add `[FORBIDDEN]` section:** From ESLint rules and TypeScript strict settings, extract 5–10 most critical technical prohibitions into `[FORBIDDEN]` table format matching `brainstorm-rules` output.
-**Add:** `Evidence Inputs` listing the config files and code samples used
+**Add a `[FORBIDDEN]` section:** From ESLint rules and TypeScript strict settings, extract the 5-10 most critical technical prohibitions into a `[FORBIDDEN]` table format that matches `brainstorm-rules` output.
+**Add:** `Input Evidence` listing the config files and code examples used
 **Add if possible:** `Document Role`, `Rule Priority`, `Assumptions & Exceptions`
 
 ### schema.md
-**Read:** `migrations/`, `models/`, `prisma/schema.prisma`, equivalent
+**Read:** `migrations/`, `models/`, `prisma/schema.prisma`, or equivalents
 **Extract:** table names, columns, data types, relationships, indexes
-**Add:** `Evidence Inputs` listing the schema sources inspected
+**Add:** `Input Evidence` listing the schema sources inspected
 **Add if possible:** `Document Role`, `Entity Map`, `Not Yet Modeled / Deferred`, `Assumptions & Open Questions`
 
 ### api.md
 **Read:** `routes/`, `controllers/`, `handlers/`, OpenAPI/Swagger if available
-**Extract:** method + path per endpoint, request body, response format, auth requirements
-**Add:** `Evidence Inputs` listing the routing/controller sources inspected
+**Extract:** method + path for each endpoint, request body, response format, auth requirements
+**Add:** `Input Evidence` listing the routing/controller sources inspected
 **Add if possible:** `Document Role`, `Scope Summary`, `Canonical Terminology`, `Endpoint Inventory`, `Assumptions & Open Questions`
 
 ### StyleGuide.md
 **Read:** `tailwind.config.*`, `components/` folder, main CSS/SCSS files
 **Extract:** colors in use, existing components, spacing system, fonts
-**Skip if:** no UI folder or pure backend project
-**Add:** `Evidence Inputs` listing the UI assets inspected
-**Add if possible:** `Document Role`, `Supported Surfaces`, `Component Inventory`, `Non-Goals / Not Defined Yet`, `Assumptions & Open Questions`
+**Skip if:** there is no UI folder or the project is backend-only
+**Add:** `Input Evidence` listing the UI assets inspected
+**Add if possible:** `Document Role`, `Supported Surfaces`, `Component Inventory`, `Non-Goals / Not Yet Defined`, `Assumptions & Open Questions`
 
 ### PRD.md
-**Don't read new files** — only synthesize from prior documents
-**Extract:** features already built (from api + schema), business rules from schema constraints, non-goals (features *not* present)
-**Confidence note:** PRD typically mixes **High** and **Medium**. Don't state business motivations as fact unless explicitly visible in codebase.
-**Add:** `Evidence Inputs` referencing the previously generated spec files used for synthesis
-**Add if possible:** `Document Role`, `Canonical Terminology`, `Reading Guardrails for AI`
+**Do not read new files**. Only synthesize from previous documents.
+**Extract:** features already built (from api + schema), business rules from schema constraints, non-goals (features that are *not* present)
+**Confidence note:** PRD usually mixes **High** and **Medium**. Do not state business motivation as fact unless it is explicitly visible in the codebase.
+**Add:** `Input Evidence` referencing the previously generated spec files used for synthesis
+**Add if possible:** `Document Role`, `Canonical Terminology`, `Reading Guide for AI`
 
 ---
 
 ## Rules
 
-1. **Document existing code, not ideal code** — if code violates best practice, record it as-is, not the improved version.
-2. **Separate fact from inference** — every claim must clearly indicate **High / Medium / Low** confidence.
-3. **When uncertain, write a note** — use `> ⚠️ Need verification: [question]` instead of inventing.
-4. **Every document needs `Evidence Inputs` and `Confidence Summary`** — mandatory even in Batch Generate mode.
-5. **PRD always last** — inferred from completed facts, not guesswork.
-6. **Task.md not generated here** — direct to `brainstorm-task` after spec verified.
-7. **Mode B: wait for confirmation** — don't generate next doc without "continue" from user.
-```
+1. **Document the existing code, not the ideal code**. If the code violates best practices, record it as-is, not as a corrected version.
+2. **Separate facts from inference**. Every claim must clearly show whether confidence is **High / Medium / Low**.
+3. **When unsure, write a note**. Use `> ⚠️ Needs verification: [question]` instead of inventing.
+4. **Every document needs `Input Evidence` and `Confidence Summary`**. This is required even in Batch Generate mode.
+5. **PRD is always last**. It is synthesized from completed facts, not guesses.
+6. **Task.md is not generated here**. Direct the user to `brainstorm-task` after the specs are verified.
+7. **Mode B: wait for confirmation**. Do not generate the next document without `continue` from the user.
 
 ---
