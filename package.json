@@ -1,0 +1,35 @@
+{
+    "name": "macca-method",
+    "version": "1.0.0",
+    "description": "CLI installer for MACCA AI spec-driven development skills.",
+    "license": "MIT",
+    "scripts": {
+        "test:install": "bash ./test-install.sh",
+        "test:install:published": "bash ./test-install.sh --published"
+    },
+    "bin": {
+        "macca-method": "bin/macca-method.js"
+    },
+    "files": [
+        "bin/",
+        ".agents/",
+        "README.md",
+        "LICENSE",
+        "skills-lock.json"
+    ],
+    "engines": {
+        "node": ">=18"
+    },
+    "keywords": [
+        "ai",
+        "agents",
+        "skills",
+        "spec-driven-development",
+        "macca"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/firdaus12p/MACCA-METHOD.git"
+    },
+    "homepage": "https://github.com/firdaus12p/MACCA-METHOD#readme"
+}

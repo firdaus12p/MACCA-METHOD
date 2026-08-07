@@ -772,32 +772,53 @@ What happens:
 
 ## 8. Installation & Usage
 
-**Prerequisite:** GitHub Copilot enabled in VS Code (or another supported AI tool).
+**Prerequisites:** Node.js 18+ with `npx`, plus GitHub Copilot in VS Code (or another supported AI tool).
 
 ### Installation
 
-**Linux / Mac**
+Use `macca-method` if you want the full bootstrap: skill files, interactive AI-tool selection, `developer-config.json`, and language preferences.
+
 ```bash
-curl -fsSL https://raw.githubusercontent.com/firdaus12p/MACCA-METHOD/main/install.sh | bash
+npx macca-method install
 ```
 
-**Windows (PowerShell)**
-```powershell
-irm https://raw.githubusercontent.com/firdaus12p/MACCA-METHOD/main/install.ps1 | iex
+The CLI asks you to choose the AI tool, then prompts for the developer name, project name, and language preferences.
+
+For local testing from a repository clone before the npm package is published, run:
+
+```bash
+node bin/macca-method.js install
 ```
 
-The installer shows an interactive selector to choose the AI tool, then asks for the developer name, project name, and language preference.
+You can also do unattended installs, for example:
+
+```bash
+npx macca-method install --tool github-copilot --tool codex --yes
+```
+
+If you only want to install the skills without the MACCA bootstrap files, use the shared `skills` CLI instead.
+
+**Alternative — `skills` CLI**
+
+```bash
+npx skills add firdaus12p/MACCA-METHOD --list
+npx skills add firdaus12p/MACCA-METHOD --skill '*' -a github-copilot
+```
+
+You can swap `github-copilot` with another supported agent such as `claude-code`, `cursor`, `codex`, `opencode`, `windsurf`, or `gemini-cli`.
+
+> `npx skills add` installs the skills only. It does **not** create `.agents/developer-config.json`, `.agents/macca-tools.txt`, or prompt for developer/project/language setup. Use the MACCA installer above if you need that bootstrap.
 
 ### Update to the Latest Version
 
-**Linux / Mac**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/firdaus12p/MACCA-METHOD/main/upgrade.sh | bash
+npx macca-method upgrade
 ```
 
-**Windows (PowerShell)**
-```powershell
-irm https://raw.githubusercontent.com/firdaus12p/MACCA-METHOD/main/upgrade.ps1 | iex
+For local testing from a repository clone before the npm package is published, run:
+
+```bash
+node bin/macca-method.js upgrade
 ```
 
 > `project-context/` and `developer-config.json` are **not touched** during upgrade.
@@ -811,6 +832,8 @@ Use the skill help
 ```
 
 ### Folder Structure
+
+The example below reflects `npx macca-method install`. If you use `npx skills add`, the destination folders follow the `skills` CLI defaults for the selected agent.
 
 ```
 your-project/
