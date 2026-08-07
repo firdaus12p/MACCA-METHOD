@@ -4,8 +4,8 @@
     "description": "CLI installer for MACCA AI spec-driven development skills.",
     "license": "MIT",
     "scripts": {
-        "test:install": "bash ./test-install.sh",
-        "test:install:published": "bash ./test-install.sh --published"
+        "test:install": "node ./scripts/test-install.js",
+        "test:install:published": "node ./scripts/test-install.js --published"
     },
     "bin": {
         "macca-method": "bin/macca-method.js"

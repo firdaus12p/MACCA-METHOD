@@ -272,9 +272,9 @@ function printHelp() {
             "MACCA CLI",
             "",
             "Usage:",
-            "  npx macca-method install [options]",
-            "  npx macca-method upgrade [options]",
-            "  npx macca-method --list-tools",
+            "  npx macca-method@latest install [options]",
+            "  npx macca-method@latest upgrade [options]",
+            "  npx macca-method@latest --list-tools",
             "",
             "Install options:",
             "  -t, --tool <name>                 Repeatable. Also accepts comma-separated values.",
@@ -286,9 +286,9 @@ function printHelp() {
             "      --document-language <value>",
             "",
             "Examples:",
-            "  npx macca-method install",
-            "  npx macca-method install --tool github-copilot --tool codex --yes",
-            "  npx macca-method upgrade",
+            "  npx macca-method@latest install",
+            "  npx macca-method@latest install --tool github-copilot --tool codex --yes",
+            "  npx macca-method@latest upgrade",
             ""
         ].join("\n")
     );

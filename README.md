@@ -778,22 +778,24 @@ What happens:
 
 Use `macca-method` if you want the full bootstrap: skill files, interactive AI-tool selection, `developer-config.json`, and language preferences.
 
+This is the supported cross-platform path for Windows, Linux, and macOS.
+
 ```bash
-npx macca-method install
+npx macca-method@latest install
 ```
 
 The CLI asks you to choose the AI tool, then prompts for the developer name, project name, and language preferences.
 
-For local testing from a repository clone before the npm package is published, run:
+To see the supported AI tool names before installing, run:
 
 ```bash
-node bin/macca-method.js install
+npx macca-method@latest --list-tools
 ```
 
 You can also do unattended installs, for example:
 
 ```bash
-npx macca-method install --tool github-copilot --tool codex --yes
+npx macca-method@latest install --tool github-copilot --tool codex --yes
 ```
 
 If you only want to install the skills without the MACCA bootstrap files, use the shared `skills` CLI instead.
@@ -807,19 +809,17 @@ npx skills add firdaus12p/MACCA-METHOD --skill '*' -a github-copilot
 
 You can swap `github-copilot` with another supported agent such as `claude-code`, `cursor`, `codex`, `opencode`, `windsurf`, or `gemini-cli`.
 
-> `npx skills add` installs the skills only. It does **not** create `.agents/developer-config.json`, `.agents/macca-tools.txt`, or prompt for developer/project/language setup. Use the MACCA installer above if you need that bootstrap.
+> `npx skills add` installs the skills only. It does **not** create `.agents/developer-config.json`, `.agents/macca-tools.txt`, `.agents/macca-managed-skills.txt`, or prompt for developer/project/language setup. Use the MACCA installer above if you need that bootstrap.
 
 ### Update to the Latest Version
 
 ```bash
-npx macca-method upgrade
+npx macca-method@latest upgrade
 ```
 
-For local testing from a repository clone before the npm package is published, run:
+Run this whenever you want to refresh an existing MACCA setup to the newest published skills.
 
-```bash
-node bin/macca-method.js upgrade
-```
+The updater uses the MACCA files inside `.agents/` to know which installed skill folders should be refreshed.
 
 > `project-context/` and `developer-config.json` are **not touched** during upgrade.
 
@@ -833,31 +833,24 @@ Use the skill help
 
 ### Folder Structure
 
-The example below reflects `npx macca-method install`. If you use `npx skills add`, the destination folders follow the `skills` CLI defaults for the selected agent.
+The example below reflects `npx macca-method@latest install`. It creates shared MACCA files in `.agents/`, a `skills-lock.json` file at the project root, and one or more agent-specific skill folders based on the AI tools you selected.
 
 ```
 your-project/
 ├── .agents/
 │   ├── developer-config.json    ← shared config across skills
-│   └── macca-tools.txt          ← tools selected during install
+│   ├── macca-tools.txt          ← tools selected during install
+│   ├── macca-managed-skills.txt ← internal manifest used by MACCA updates
+│   └── skills/                  ← if Codex (OpenAI) is selected
 │
 ├── .github/skills/              ← if GitHub Copilot is selected
-│   ├── add-feature/
-│   ├── brainstorm-api/
-│   ├── brainstorm-architecture/
-│   ├── brainstorm-prd/
-│   ├── brainstorm-rules/
-│   ├── brainstorm-schema/
-│   ├── brainstorm-styleguide/
-│   ├── brainstorm-task/
-│   ├── bug-fix/
-│   ├── code-review/
-│   ├── developer/
-│   ├── help/
-│   ├── rapat/
-│   ├── spec-audit/
-│   ├── spec-compliance/
-│   └── spec-init/
+├── .cursor/skills/              ← if Cursor is selected
+├── .claude/skills/              ← if Claude Code is selected
+├── .windsurf/skills/            ← if Windsurf is selected
+├── .gemini/skills/              ← if Gemini CLI is selected
+├── .opencode/skill/             ← if OpenCode is selected
+├── .kilo/skills/                ← if Kilo Code is selected
+├── skills-lock.json             ← skill manifest/version lock used by MACCA
 │
 ├── project-context/
 │   ├── PRD.md
@@ -873,6 +866,8 @@ your-project/
 │
 └── ... (your project code)
 ```
+
+Each installed skills folder contains `_shared` plus these MACCA skills: `add-feature`, `brainstorm-api`, `brainstorm-architecture`, `brainstorm-prd`, `brainstorm-rules`, `brainstorm-schema`, `brainstorm-styleguide`, `brainstorm-task`, `bug-fix`, `code-review`, `developer`, `help`, `rapat`, `spec-audit`, `spec-compliance`, and `spec-init`.
 
 | AI Tool | Skills Folder |
 |---------|---------------|
