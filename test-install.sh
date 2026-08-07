@@ -47,9 +47,9 @@ echo "  Mode: $MODE"
 cd "$ROOT_DIR"
 
 if [ "$MODE" = "local" ]; then
-  PACK_OUTPUT=$(npm pack --json)
+  PACK_OUTPUT=$(npm pack --json --pack-destination "$TMP_DIR")
   TARBALL_NAME=$(printf '%s' "$PACK_OUTPUT" | resolve_tarball_filename)
-  PACKAGE_SPEC="$ROOT_DIR/$TARBALL_NAME"
+  PACKAGE_SPEC="$TMP_DIR/$TARBALL_NAME"
 fi
 
 mkdir -p "$PROJECT_DIR"
