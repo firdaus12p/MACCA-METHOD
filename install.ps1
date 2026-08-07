@@ -23,7 +23,9 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Copy-Item -Recurse "$TMP_DIR\.agents" . -Force
-Copy-Item "$TMP_DIR\skills-lock.json" . -Force
+if (Test-Path "$TMP_DIR\skills-lock.json") {
+  Copy-Item "$TMP_DIR\skills-lock.json" . -Force
+}
 
 # ─── Helper: copy all skill folders to destination ────────────────────────────
 function Copy-Skills($Dest) {

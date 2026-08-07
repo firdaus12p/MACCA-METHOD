@@ -53,7 +53,9 @@ if ! git clone --depth 1 "$REPO_URL" "$TMP_DIR/macca" --quiet 2>&1; then
 fi
 
 cp -r "$TMP_DIR/macca/.agents/" .
-cp "$TMP_DIR/macca/skills-lock.json" .
+if [ -f "$TMP_DIR/macca/skills-lock.json" ]; then
+  cp "$TMP_DIR/macca/skills-lock.json" .
+fi
 
 # ─── Copy skills to a tool's folder ─────────────────────────────────────────────
 copy_skills() {

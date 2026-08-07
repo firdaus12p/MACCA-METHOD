@@ -88,7 +88,9 @@ if [ "$HAS_CODEX" = false ]; then
 fi
 
 # ─── Update skills-lock.json ──────────────────────────────────────────────────
-cp "$TMP_DIR/macca/skills-lock.json" .
+if [ -f "$TMP_DIR/macca/skills-lock.json" ]; then
+  cp "$TMP_DIR/macca/skills-lock.json" .
+fi
 
 # ─── Restore user configs ─────────────────────────────────────────────────────
 mkdir -p .agents

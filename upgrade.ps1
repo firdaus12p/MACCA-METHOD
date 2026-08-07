@@ -81,7 +81,9 @@ if (-not $HasCodex -and (Test-Path ".agents\skills")) {
 }
 
 # ─── Update skills-lock.json ──────────────────────────────────────────────────
-Copy-Item "$TMP_DIR\skills-lock.json" . -Force
+if (Test-Path "$TMP_DIR\skills-lock.json") {
+  Copy-Item "$TMP_DIR\skills-lock.json" . -Force
+}
 
 # ─── Restore user configs ─────────────────────────────────────────────────────
 New-Item -ItemType Directory -Force -Path ".agents" | Out-Null
