@@ -62,8 +62,9 @@ MACCA uses **skills** — structured instructions given to AI to perform specifi
 ┌──────────────────────────────────────────────────────┐
 │                  EXECUTION PHASE                     │
 │                                                      │
-│             developer (per Task.md phase)            │
-│                 ↓ (after each phase)                 │
+│         developer (per Task.md phase)                │
+│         quick-dev (single focused task)              │
+│                 ↓ (after each)                       │
 │          spec-compliance → code-review               │
 └──────────────────────────────────────────────────────┘
 ```
@@ -401,6 +402,75 @@ For each task:
 ---
 
 <details>
+<summary><strong>quick-dev</strong> — Execute a single focused task directly, without phase ceremony</summary>
+
+**Persona:** @Firdaus — Expert Developer
+
+**Called when:** A small, targeted change is needed (color fix, layout tweak, copy edit, minor logic adjustment) where reading Task.md phases and creating plan files is unnecessary overhead. Full quality gates still run.
+
+**Not for:** new features, database migrations, new API endpoints, or changes touching more than 5 files — use `developer` instead.
+
+**Full workflow:**
+
+**Step 0 — Identity**
+Same as `developer`. Reads `.agents/developer-config.json`, greets by name and project.
+
+**Step 0b & 0c — Additional Skills, MCP, Scope**
+Same as `developer`. Reads from config if already set — does not ask again.
+
+**Step 1 — Pre-flight summary** *(unique to quick-dev)*
+
+Before any code is written, AI shows:
+```
+Quick Dev — Pre-flight
+───────────────────────
+Task   : [concise interpretation]
+Specs  : [specs to read]
+Files  :
+  ~ [path/file]   (modify)
+Assumptions (will proceed unless corrected):
+  [~] [assumption]
+Need confirmation before proceeding:   ← omit if none
+  [?] [blocking question]
+```
+- Non-blocking ambiguities go under "Assumptions", not as questions
+- Missing specs (e.g. no `StyleGuide.md` but task touches UI) are flagged here
+- Waits for user confirmation before proceeding
+
+**Step 2 — Read relevant specs**
+Same table as `developer` — reads only what the task needs.
+
+**Step 3 — Execute**
+Same as `developer` Step 3 (understand → clarify → I/O contract → code → [SELF-REVIEW] → validate). YAGNI Ladder is mandatory.
+
+**Step 4 — Update Task.md**
+
+| Condition | Action |
+|---|---|
+| Related item found, `[ ]` | Mark `[x]`, add brief note |
+| Related item found, `[x]` | Add sub-note about the refinement |
+| No related item | Append to active phase as `[x]` with tag `(quick-fix: YYYY-MM-DD)` |
+
+**Step 5 — Quality gates**
+Runs full `spec-compliance` then `code-review`. Both follow `fixMode` from config.
+
+**Step 6 — Final report**
+```
+Quick Dev — Done
+─────────────────
+Task      : [description]
+Files     : [changed files]
+Validated : [check and result]
+Assumptions used: [~] ...
+Remaining ambiguities:   ← omit if none
+  [!] ...
+```
+
+</details>
+
+---
+
+<details>
 <summary><strong>spec-compliance</strong> — Verify code against all spec documents</summary>
 
 **Persona:** @Fachri — Tech Lead
@@ -644,7 +714,7 @@ Mode B — Guided Generate: one document → you review → confirm → continue
 | **@Galbi** | Project Manager | `brainstorm-prd`, `brainstorm-task`, `add-feature`, `help`, `rapat` |
 | **@Fachri** | Tech Lead | `brainstorm-architecture`, `brainstorm-api`, `brainstorm-schema`, `brainstorm-rules`, `spec-init`, `spec-audit`, `spec-compliance`, `code-review` |
 | **@Akram** | UI/UX Designer | `brainstorm-styleguide` |
-| **@Firdaus** | Expert Developer | `developer` |
+| **@Firdaus** | Expert Developer | `developer`, `quick-dev` |
 | **@Ikhsan** | Debugger | `bug-fix` |
 
 > **Persona Rule:** Do not swap the persona assigned to a skill. Its instructions, tone, and responsibilities are designed for that role.
@@ -693,6 +763,7 @@ Step 7: Start coding
   → Per task: code → validate → [SELF-REVIEW]
   → Per phase: spec-compliance → code-review → next phase
   → If all tasks are complete but small technical changes, hardening, optimization, or maintenance remain: keep using `developer` (post-task / maintenance mode)
+  → For small targeted fixes (color, layout, copy, minor logic): use `quick-dev` directly instead of going through a full phase
 ```
 
 > Not sure where to start? Call `help`.
