@@ -1,8 +1,10 @@
 ---
 name: brainstorm-styleguide
 description: Interview users and generate `StyleGuide.md` (UI/UX Design System). Use after the PRD or when defining the application's appearance.
-persona: "Akram"
-persona_role: "UI/UX Designer"
+compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
+metadata:
+  persona: "Akram"
+  persona-role: "UI/UX Designer"
 ---
 
 # Brainstorm StyleGuide

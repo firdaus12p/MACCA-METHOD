@@ -1,8 +1,10 @@
 ---
 name: spec-compliance
-description: Verify that code matches all project spec documents (PRD.md, architecture.md, schema.md, api.md, rules.md, StyleGuide.md, Task.md). Run after each phase completes, before code-review.
-persona: "Fachri"
-persona_role: "Tech Lead"
+description: Verifies that code matches all applicable project specs and applies approved compliance fixes. Use after each phase before code-review, on explicit compliance requests, and when the user replies yes, fix, continue, or finding IDs to this skill's report-first gate.
+compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
+metadata:
+  persona: "Fachri"
+  persona-role: "Tech Lead"
 ---
 
 # Spec Compliance
@@ -12,8 +14,10 @@ persona_role: "Tech Lead"
 Before continuing:
 
 1. Read `../_shared/references/runtime-config.md`.
-2. Read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If it is missing, treat it as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`. See § Fix Mode Contract in runtime-config.md for the full enforcement rules.
-3. Use `languagePreferences.communication.normalized` for all user-facing reports and review output.
+2. Read `../_shared/references/human-loop.md`.
+3. If this message answers this skill's active report-first gate, resume directly under the Approval Resume Protocol. Do not rerun startup or compliance analysis.
+4. Otherwise, read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If it is missing, treat it as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`.
+5. Use `languagePreferences.communication.normalized` for all user-facing reports and review output.
 
 ---
 
@@ -101,11 +105,11 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 
 **Read:** `project-context/schema.md`
 
-- [ ] Table/column names match exactly in queries/ORM - no invented names
-- [ ] Naming conventions are followed (`schema.md § Global Conventions`) - snake_case, singular/plural
-- [ ] Relationships are correct - FKs, cascade delete as defined
-- [ ] Soft delete is respected - if using `deleted_at`, do not hard delete
-- [ ] Audit fields exist: `created_at`, `updated_at` on relevant models
+- [ ] Persisted entity and field names match the datastore-native contract; no invented names
+- [ ] Naming, identifier, validation, retention, and consistency conventions follow `schema.md`
+- [ ] Relationships/data placement match the selected model: keys, references, embedding, edges, streams, or equivalent
+- [ ] Delete, retention, archival, and projection behavior matches the contract where applicable
+- [ ] Required audit/version fields or event metadata exist where the selected model defines them
 - [ ] PII is handled safely - never logged, never exposed in responses
 - [ ] If a table has `Trace to`, its usage aligns with the referenced requirement
 
@@ -122,15 +126,13 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 
 **Read:** `project-context/api.md`
 
-- [ ] Endpoint paths match the contract exactly - no typos, no version mismatch
-- [ ] HTTP methods are correct
-- [ ] Request body field names/types match the `api.md` schema
-- [ ] Response format (success/error) matches the standard in `api.md`
-- [ ] Error codes come only from `api.md § Error Catalog`
-- [ ] Pagination follows the `api.md` pattern where applicable
-- [ ] Auth headers exist/are correct per `api.md § Authentication`
-- [ ] If endpoints have `API-*` IDs, the implementation is traceable to the requirement
-- [ ] If a new endpoint is not yet recorded in `api.md` but is listed in `## Approved Scope Delta`, do not mark it as a rogue endpoint for the active phase. Note that a formal spec update is still pending.
+- [ ] Operation identity matches the selected protocol: REST method/path, GraphQL operation, RPC procedure, or event channel/topic
+- [ ] Input arguments/payload fields and types match `api.md`
+- [ ] Success result and error semantics match the protocol-native contract
+- [ ] Pagination/filtering or subscription/delivery behavior follows `api.md` where applicable
+- [ ] Authentication, authorization, idempotency, and replay controls match the contract
+- [ ] `API-*` operations remain traceable to requirements
+- [ ] A new operation listed in `## Approved Scope Delta` is temporary approved scope, not a rogue operation; note pending formal spec sync
 
 **Example findings:**
 ```
@@ -260,6 +262,11 @@ The report is shown in this session chat. Do not save it to a file unless the us
 | developer-config.json (scope) | ✅ OK | — |
 ### Detailed Findings
 [list findings per item - use the 4-point format below]
+
+### Fix Manifest
+| Finding | Target | Intended change | Validation |
+|---|---|---|---|
+| [ID] | `[path]` | [bounded change] | [compliance check/test] |
 ```
 
 **Format for each finding - MUST use these 4 points. MUST NOT show code:**
@@ -295,8 +302,8 @@ The report is shown in this session chat. Do not save it to a file unless the us
 
 **`report-first`:**
 ```
-💥 BLOCKER / 🔴 MAJOR -> Report all findings. Show the gate prompt (see runtime-config.md § Fix Mode Contract). End the response. Wait for user confirmation in the next message before fixing.
-⚠️ MINOR / ℹ️ INFO   -> Only report.
+💥 BLOCKER / 🔴 MAJOR / ⚠️ actionable MINOR -> Report all findings and the fix manifest. Show one gate. On approval, edit the approved manifest directly, validate, and rerun only affected compliance checks without another gate.
+ℹ️ INFO / non-actionable note -> Report only; do not include it in the fix manifest.
 ✅ OK                 -> Continue to the code-review skill.
 ```
 

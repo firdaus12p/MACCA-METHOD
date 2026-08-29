@@ -1,8 +1,10 @@
 ---
 name: help
 description: Interactive guide for the AI Spec-Driven Development system. Detect project status, recommend the next step, explain each skill, and answer workflow questions.
-persona: "Galbi"
-persona_role: "Project Manager"
+compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
+metadata:
+  persona: "Galbi"
+  persona-role: "Project Manager"
 ---
 
 # Help — AI Spec-Driven Development Guide
@@ -136,13 +138,7 @@ For deeper questions, use the routing guide below instead of answering from memo
 
 ## Reference Routing
 
-For deeper questions, read the relevant section in `README.md` before answering.
-
-- System overview and workflow order -> sections 2, 5, 6, 7, and 8 of `README.md`
-- Skill catalog and responsibilities -> section 4 of `README.md`
-- `developer-config.json` schema and compatibility -> section 3d of `README.md` and `../_shared/references/runtime-config.md`
-- Traceability IDs and glossary terms -> section 3 of `README.md`
-- Installation and upgrade behavior -> sections 9 and 10 of `README.md`
+For deeper workflow questions, inspect the active MACCA collection: skill descriptions and `SKILL.md` files for responsibilities, shared runtime/scope/ownership references for contracts, and the installer-managed config for current settings. Read a repository-root `README.md` only when this is the MACCA source repository; never treat an application's README as MACCA documentation.
 
 Keep inline explanations short:
 - `spec-compliance` = checks whether the code matches the agreed specs

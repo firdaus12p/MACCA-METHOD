@@ -1,8 +1,10 @@
 ---
 name: developer
 description: Executes Task.md work phase by phase. Reads only relevant specs, writes minimal code, updates Task.md, and runs spec-compliance plus code-review after each phase. Use for implementation, maintenance changes, or post-task technical work.
-persona: "Firdaus"
-persona_role: "Expert Developer"
+compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
+metadata:
+  persona: "Firdaus"
+  persona-role: "Expert Developer"
 ---
 
 # Developer

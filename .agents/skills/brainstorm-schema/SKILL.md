@@ -1,8 +1,10 @@
 ---
 name: brainstorm-schema
 description: Interview users and generate `schema.md` (Data Model / Database Schema). Use after `architecture.md` is complete.
-persona: "Fachri"
-persona_role: "Tech Lead"
+compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
+metadata:
+  persona: "Fachri"
+  persona-role: "Tech Lead"
 ---
 
 # Brainstorm Schema
@@ -53,7 +55,7 @@ Before any interview:
 
 3. If `.agents/developer-config.json` exists and `developerPreferences.scope = "frontend"`, DO NOT create `schema.md`. Explain that database and schema work is outside the current scope, and that backend dependencies should be documented only through the `api.md` consumer contract.
 
-4. Run the shared runtime setup above. For this skill, ask whether to cover the 5 global topics one by one or three at once, then apply the stored or chosen recommendation preference.
+4. Run the shared runtime setup above and apply all three pacing modes from the shared session policy. If preferences are saved, announce and proceed without another confirmation.
 
 5. Run the interview in the chosen mode. Wait for answers.
 
@@ -65,54 +67,68 @@ Before any interview:
 
 ## Interview Topics (5 Topics — All Required)
 
-Ask all five topics using the chosen pacing mode for global topics.
+Ask all five topics using the chosen pacing mode. First classify the persistence model from `architecture.md` as relational, document, key-value, graph, event store, or mixed. Adapt terminology and output to that model.
 
 ### 1. Database Conventions
 *"Before tables, let's align on conventions. Any preferences?"*
 
 Collect:
-- **ID strategy:** UUID, auto-increment, CUID?
-- **Table naming:** plural snake_case (`users`, `products`) or singular?
-- **Audit fields:** Should all tables have `created_at`, `updated_at`? Set by app or DB trigger?
-- **Soft delete:** Use `deleted_at` (soft delete) or hard delete?
+- **Identity strategy:** primary key, document ID, aggregate/stream ID, graph ID, or key format?
+- **Naming:** datastore-native naming for tables, collections, keys, node labels, streams, and fields?
+- **Audit/version metadata:** timestamps, version/revision, event metadata, or none?
+- **Deletion/retention:** hard delete, soft delete, tombstone, archival, compaction, or immutable events?
 - **Timestamp:** UTC or local timezone?
 - **Retention:** How long is data stored? Any anonymization or archival schedule?
 
-### 2. Table List
-*"What tables or collections are needed?"*
+### 2. Entity/Storage List
+*"What tables, collections, aggregates, nodes, or stores are needed?"*
 
-Collect:
-- All table names
-- Short description of each table's purpose
-- Any junction/pivot tables for many-to-many relationships?
+Collect by persistence model:
+- **Relational:** tables and junction tables
+- **Document:** collections, document roots, and embedded subdocuments
+- **Key-value:** key spaces, key format, and value shape
+- **Graph:** node labels, edge types, and key properties
+- **Event store:** aggregates, stream names, event types, and projections
+- **All modes:** purpose, ownership boundary, and source requirement for each structure
 
-### 3. Columns & Data Types
-*"For each table, list the columns and data types."*
+### 3. Fields & Data Types
+*"For each data structure, list fields and datastore-native data types."*
 
-Collect per table:
-- Column names and types (VARCHAR, INTEGER, UUID, TEXT, BOOLEAN, TIMESTAMP, DECIMAL, ENUM, JSONB)
-- Constraints (NOT NULL, UNIQUE, DEFAULT, PRIMARY KEY)
+Collect per datastore-native structure:
+- Field names and datastore-native types
+- Validation/constraints appropriate to the selected model
 - Which columns contain sensitive data/PII?
 - For sensitive columns: hash, encrypt, mask, or plain text?
 - Any intentionally denormalized columns (intentionally duplicated)?
 
-### 4. Relationships
-*"What relationships exist between the tables: one-to-one, one-to-many, many-to-many?"*
+### 4. Relationships and Data Placement
+*"What relationships exist, and should related data use foreign keys, references, embedding, edges, or another datastore-native pattern?"*
 
 Collect:
-- Relationship type
-- Which table stores the foreign key?
-- Delete rules (CASCADE, SET NULL, RESTRICT)?
+- **Relational:** cardinality, foreign-key owner, and cascade/set-null/restrict behavior
+- **Document:** embedding vs references, document growth, and update atomicity
+- **Key-value:** key composition, lookup direction, and secondary-index needs
+- **Graph:** edge direction/cardinality and traversal boundaries
+- **Event store:** aggregate boundaries, stream correlation, projection consistency, and event evolution
+- **All modes:** delete/retention behavior and cross-structure consistency
 
 ### 5. Indexes & Performance
-*"Which columns are often used in `WHERE`, `ORDER BY`, or `JOIN` clauses? What should be indexed?"*
+*"Which access patterns, filters, sorts, traversals, stream reads, or lookups must be efficient? What datastore-native indexes or projections support them?"*
 
 Collect:
-- Columns used in WHERE/ORDER BY
-- Columns used in JOIN
-- Large tables that need composite indexes
+- Required reads/writes and expected scale
+- Datastore-native indexes, projections, partitioning, traversal, or caching needed for those access patterns
+- Consistency and latency expectations that constrain the design
 
 ## schema.md Output Format
+
+Select one datastore-specific shape before writing:
+- Relational: tables, columns, keys, constraints, relationships, indexes
+- Document: collections, document shape, required/optional fields, embedded vs referenced documents, validation rules, indexes
+- Key-value/graph/event store: keys/nodes/events, value or payload shape, consistency, retention, traversal/query/index strategy
+- Mixed: separate bounded sections per datastore and document synchronization/ownership boundaries
+
+The relational template below is an example only. Do not emit SQL types, foreign keys, or `gen_random_uuid()` for a non-relational datastore.
 
 ````markdown
 # Database Schema

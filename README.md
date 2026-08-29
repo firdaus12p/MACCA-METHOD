@@ -295,7 +295,7 @@ These choices are saved and reused in future sessions.
 **Important behavior:**
 - Tasks are **not created from guesses** — all tasks are derived from the spec documents
 - Every task has concrete, verifiable `Acceptance Criteria`
-- Test tasks always appear *before* implementation tasks (TDD order)
+- Testing order follows `rules.md`: test-first when explicitly selected, otherwise test-with-change or the project's approved workflow
 - Every task has a `Traceability ID` that links it to requirements in the specs
 
 </details>
@@ -323,7 +323,7 @@ Read `.agents/developer-config.json`. If `name` or `project` is missing, AI asks
 *Additional Skills:*
 - If `additionalSkills` already exists in config → use it directly
 - If not → AI asks once: *"Are there any additional skills for this project?"*
-- For every named skill, AI **first searches the workspace itself** (`.agents/skills/`, `.github/skills/`, `.opencode/skill/`). It only asks you for the path if the skill is not found.
+- For every named skill, AI **first searches the workspace itself** (`.agents/skills/`, `.github/skills/`, `.opencode/skills/`). It only asks you for the path if the skill is not found.
 - When working on a relevant task, AI **must read** `SKILL.md` from that skill before writing code.
 
 *MCP (Model Context Protocol):*
@@ -375,7 +375,7 @@ For each task:
 1. Understand the task and acceptance criteria
 2. Check the ladder: does it need to be built? Does it already exist in the codebase? Is it in the standard library? (YAGNI)
 3. Write an I/O contract for non-trivial functions
-4. Write tests first, then implementation (TDD)
+4. Follow the testing workflow in `rules.md`: test-first only when selected, otherwise test-with-change or the approved project policy
 5. After finishing, write `[SELF-REVIEW]`:
    ```
    1. Security risk: [1 potential issue — or "none identified"]
@@ -869,18 +869,7 @@ You can also do unattended installs, for example:
 npx macca-method@latest install --tool github-copilot --tool codex --yes
 ```
 
-If you only want to install the skills without the MACCA bootstrap files, use the shared `skills` CLI instead.
-
-**Alternative — `skills` CLI**
-
-```bash
-npx skills add firdaus12p/MACCA-METHOD --list
-npx skills add firdaus12p/MACCA-METHOD --skill '*' -a github-copilot
-```
-
-You can swap `github-copilot` with another supported agent such as `claude-code`, `cursor`, `codex`, `opencode`, `windsurf`, or `gemini-cli`.
-
-> `npx skills add` installs the skills only. It does **not** create `.agents/developer-config.json`, `.agents/macca-tools.txt`, `.agents/macca-managed-skills.txt`, or prompt for developer/project/language setup. Use the MACCA installer above if you need that bootstrap.
+Use the MACCA installer for this release. The skills currently depend on the sibling `_shared` collection and `.agents/developer-config.json`; installing individual skill folders with a generic skill installer is not supported until self-contained build artifacts are published.
 
 ### Update to the Latest Version
 
@@ -891,6 +880,8 @@ npx macca-method@latest upgrade
 Run this whenever you want to refresh an existing MACCA setup to the newest published skills.
 
 The updater uses the MACCA files inside `.agents/` to know which installed skill folders should be refreshed.
+
+> Safety note: current releases add ownership markers. If an older unmarked installation collides with a managed skill name, the installer stops instead of overwriting it. Move or remove only the confirmed old MACCA copy, then rerun install/upgrade. Unmarked directories are never treated as owned from an editable manifest alone.
 
 > `project-context/` and `developer-config.json` are **not touched** during upgrade.
 
@@ -904,7 +895,7 @@ Use the skill help
 
 ### Folder Structure
 
-The example below reflects `npx macca-method@latest install`. It creates shared MACCA files in `.agents/`, a `skills-lock.json` file at the project root, and one or more agent-specific skill folders based on the AI tools you selected.
+The example below reflects `npx macca-method@latest install`. It creates shared MACCA files in `.agents/`, a namespaced MACCA lock, and one or more agent-specific skill folders based on the AI tools you selected.
 
 ```
 your-project/
@@ -912,16 +903,16 @@ your-project/
 │   ├── developer-config.json    ← shared config across skills
 │   ├── macca-tools.txt          ← tools selected during install
 │   ├── macca-managed-skills.txt ← internal manifest used by MACCA updates
-│   └── skills/                  ← if Codex (OpenAI) is selected
+│   ├── macca-lock.json          ← MACCA package/version manifest
+│   └── skills/                  ← if Codex or Kimi is selected
 │
 ├── .github/skills/              ← if GitHub Copilot is selected
 ├── .cursor/skills/              ← if Cursor is selected
 ├── .claude/skills/              ← if Claude Code is selected
 ├── .windsurf/skills/            ← if Windsurf is selected
 ├── .gemini/skills/              ← if Gemini CLI is selected
-├── .opencode/skill/             ← if OpenCode is selected
+├── .opencode/skills/            ← if OpenCode is selected
 ├── .kilo/skills/                ← if Kilo Code is selected
-├── skills-lock.json             ← skill manifest/version lock used by MACCA
 │
 ├── project-context/
 │   ├── PRD.md
@@ -938,7 +929,7 @@ your-project/
 └── ... (your project code)
 ```
 
-Each installed skills folder contains `_shared` plus these MACCA skills: `add-feature`, `brainstorm-api`, `brainstorm-architecture`, `brainstorm-prd`, `brainstorm-rules`, `brainstorm-schema`, `brainstorm-styleguide`, `brainstorm-task`, `bug-fix`, `code-review`, `developer`, `help`, `rapat`, `spec-audit`, `spec-compliance`, and `spec-init`.
+Each installed skills folder contains `_shared` plus these MACCA skills: `add-feature`, `brainstorm-api`, `brainstorm-architecture`, `brainstorm-prd`, `brainstorm-rules`, `brainstorm-schema`, `brainstorm-styleguide`, `brainstorm-task`, `bug-fix`, `code-review`, `developer`, `help`, `quick-dev`, `rapat`, `spec-audit`, `spec-compliance`, and `spec-init`.
 
 | AI Tool | Skills Folder |
 |---------|---------------|
@@ -947,10 +938,10 @@ Each installed skills folder contains `_shared` plus these MACCA skills: `add-fe
 | Claude Code | `.claude/skills/` |
 | Windsurf | `.windsurf/skills/` |
 | Gemini CLI | `.gemini/skills/` |
-| OpenCode | `.opencode/skill/` |
+| OpenCode | `.opencode/skills/` |
 | Kilo Code | `.kilo/skills/` |
 | Codex (OpenAI) | `.agents/skills/` |
-| Kimi CLI | `~/.config/agents/skills/` (global) |
+| Kimi CLI | `.agents/skills/` |
 
 ---
 
@@ -992,7 +983,7 @@ The `.agents/developer-config.json` file is shared config across skills. All ski
       "purpose": "Use when writing Laravel code",
       "paths": {
         "copilot": ".github/skills/laravel-best-practices/SKILL.md",
-        "opencode": ".opencode/skill/laravel-best-practices/SKILL.md",
+        "opencode": ".opencode/skills/laravel-best-practices/SKILL.md",
         "codex": ".agents/skills/laravel-best-practices/SKILL.md"
       }
     }
@@ -1089,9 +1080,9 @@ After each task is complete, the developer writes a short reflection: 1 potentia
 </details>
 
 <details>
-<summary>Why does developer write tests before implementation?</summary>
+<summary>When does developer write tests before implementation?</summary>
 
-This is the TDD approach. By writing tests first, AI defines function behavior precisely before implementation — preventing structural changes midway through. Test tasks always appear before implementation tasks in `Task.md`.
+When `rules.md` selects TDD/test-first, the developer writes the failing test before implementation so behavior is explicit. Other projects may use test-with-change or another approved workflow; `Task.md`, `developer`, and `code-review` all follow that selected policy.
 
 </details>
 

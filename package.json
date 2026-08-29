@@ -1,9 +1,10 @@
 {
     "name": "macca-method",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "CLI installer for MACCA AI spec-driven development skills.",
     "license": "MIT",
     "scripts": {
+        "validate": "node --check ./bin/macca-method.js && node --check ./scripts/test-install.js && node --check ./scripts/run-skill-validator.js && node ./scripts/run-skill-validator.js && npm run test:install && npm pack --dry-run",
         "test:install": "node ./scripts/test-install.js",
         "test:install:published": "node ./scripts/test-install.js --published"
     },
@@ -13,9 +14,12 @@
     "files": [
         "bin/",
         ".agents/",
+        "scripts/test-install.js",
+        "scripts/run-skill-validator.js",
+        "aturan-pembuatan-skills.md",
+        "image-macca-method.webp",
         "README.md",
-        "LICENSE",
-        "skills-lock.json"
+        "LICENSE"
     ],
     "engines": {
         "node": ">=18"

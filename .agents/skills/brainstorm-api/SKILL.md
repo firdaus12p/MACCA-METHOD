@@ -1,8 +1,10 @@
 ---
 name: brainstorm-api
-description: Interview users and generate `api.md` (Endpoint Documentation / API Contract). Use after `schema.md` is complete to document all API endpoints.
-persona: "Fachri"
-persona_role: "Tech Lead"
+description: Interviews users and generates `api.md` for REST, GraphQL, RPC/tRPC, event-driven, or mixed contracts. Use after applicable architecture/data decisions, or after architecture for a frontend consumer contract.
+compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
+metadata:
+  persona: "Fachri"
+  persona-role: "Tech Lead"
 ---
 
 # Brainstorm API
@@ -63,7 +65,7 @@ Before any interview:
     - **provider contract mode** → document endpoints as backend implementation contracts, including relevant data/auth/service dependencies.
     - **full contract mode** → combine consumer + provider views as the project requires.
 
-5. Run the shared runtime setup above. For this skill, ask whether to cover the 5 global topics one by one or three at once, then apply the stored or chosen recommendation preference.
+5. Run the shared runtime setup above and apply all three pacing modes from the shared session policy. If preferences are saved, announce and proceed without another confirmation.
 
 6. Run the interview in the chosen mode. Wait for answers.
 
@@ -75,22 +77,29 @@ Before any interview:
 
 ## Interview Topics (5 Topics)
 
-Ask all five topics. Wait for the answer before moving on.
+Ask all five topics using the selected batch size. First determine the API style from `architecture.md`: REST, GraphQL, tRPC/RPC, event-driven, or mixed. Use protocol-neutral terms until that choice is known.
 
-### 1. Base URL, Versioning, Auth & Contract Status
-*"What is the base URL? Is versioning in the URL? How do users authenticate? Is the contract confirmed, proposed, or mock-only?"*
+Protocol mapping:
+- REST: method, path, HTTP status, body/query/path parameters
+- GraphQL: operation type/name, arguments, selection/result type, errors
+- tRPC/RPC: procedure name/type, input/output schema, typed errors
+- Event-driven: channel/topic, producer/consumer, payload schema, delivery/idempotency rules
+- Mixed: separate sections per protocol; do not force one protocol's fields onto another
+
+### 1. Entry Point, Versioning, Auth & Contract Status
+*"What is the API entry point and protocol? How is compatibility/versioning handled? How do users authenticate? Is the contract confirmed, proposed, or mock-only?"*
 
 Collect:
-- Base URL (dev: `http://localhost:3000/api/v1`, prod: `https://api.domain.com/v1`)
-- Versioning strategy (URI path `/v1/` or header `api-version`)
-- Auth header (Bearer token, Cookie, API Key)
+- Entry point appropriate to the selected protocol (base URL, GraphQL endpoint, RPC router, channel/broker)
+- Compatibility/versioning strategy appropriate to the protocol
+- Authentication/identity transport appropriate to the protocol
 - Does cookie/session auth need CSRF protection?
 - Token lifetime, refresh, rotation, logout behavior
 - Standard response wrapper format (for example `{ success, data, message, meta }`)
 - Contract status by area: `confirmed`, `proposed`, `mock-only`, `backend-owned`, `pending backend confirmation`
 
 ### 2. Error Catalog
-*"What is the error response format? Which HTTP status codes are used?"*
+*"What is the error format for the selected protocol? For REST, which HTTP status codes are used; for typed protocols, which error codes/types are exposed?"*
 
 Collect:
 - Consistent error response structure
@@ -105,38 +114,35 @@ Collect:
   - `500` Internal Server Error
 - Application-level error codes in the response body? (for example `{ "code": "USER_NOT_FOUND" }`)
 
-### 3. Endpoint List by Resource
-*"What endpoints are needed? List them by resource or module."*
+### 3. Operation List by Resource
+*"What operations are needed? List endpoints, queries/mutations, procedures, or events by resource/module."*
 
 Collect per resource:
-- Are standard CRUD endpoints needed? `GET /` (list), `GET /:id`, `POST /`, `PUT /:id`, `PATCH /:id`, `DELETE /:id`
-- Custom non-CRUD endpoints (for example `POST /auth/login`, `POST /orders/:id/cancel`)
-- Which endpoints require authentication?
-- Authorization/ownership rules per endpoint?
+- Which protocol-native operations are needed: REST actions, GraphQL queries/mutations/subscriptions, RPC procedures, or produced/consumed events?
+- Which operations require authentication?
+- Authorization/ownership rules per operation?
 
 ### 4. Request & Response Details
-*"For each endpoint, what data is sent and returned? Include real examples."*
+*"For each operation, what input is accepted and what result or event is produced? Include protocol-native examples."*
 
-Collect per endpoint:
-- **Request:** JSON body, path params (`:id`), query params (`?page=1&limit=20`)
-- **Success Response:** Schema + real JSON example
-- **Error Response:** Schema for each relevant error code
-- Field constraints (required/optional, type, validation)
-- Security notes: CSRF, idempotency, signed webhooks, upload limits, ownership checks
+Collect by selected protocol:
+- **REST:** method/path, body/path/query/header inputs, success/error response and status
+- **GraphQL:** operation name/type, arguments, selection/result type, union/error behavior
+- **RPC/tRPC:** procedure type/name, typed input/output, typed errors
+- **Event-driven:** channel/topic, producer/consumer, payload, key/order, delivery and retry semantics
+- **All modes:** field constraints, authorization/ownership, idempotency/replay, upload/payload limits, and real examples
 
 ### 5. Pagination, Filtering, Rate Limiting & Abuse Protection
-*"For list endpoints, how do pagination and filtering work? How are sensitive endpoints protected?"*
+*"How do collection/stream access, flow control, and abuse protection work for the selected protocol?"*
 
-Collect:
-- **Pagination:** Offset-based (`?page=1&limit=20`) or cursor-based (`?after=cursor_id`)?
-- **Response envelope:** How are list data + metadata structured? (`total`, `page`, `hasNext`, etc.)
-- **Filtering:** Query params for filtering (for example `?status=active&category=books`)
-- **Sorting:** `?sort=created_at&order=desc`
-- **Rate Limiting:** Limit per minute/hour? Response headers?
-- **Sensitive endpoints:** Which need extra protection (login, password reset, upload, webhook, payment)?
-- **Idempotency/Replay Protection:** Which endpoints need it?
+Collect by selected protocol:
+- **REST/GraphQL/RPC:** cursor/offset pagination where applicable, filtering, sorting, query complexity/depth, batching, and rate/concurrency limits
+- **Event-driven:** partition/key strategy, ordering, backpressure, delivery guarantee, retry/dead-letter policy, deduplication, and consumer limits
+- **All modes:** sensitive operations, quotas, idempotency/replay protection, and how clients observe limit errors
 
 ## api.md Output Format
+
+Render only sections that fit the selected protocol. The REST-shaped examples below are not mandatory for GraphQL, tRPC/RPC, or event contracts. For those modes, replace endpoint inventories and HTTP status tables with the protocol mapping above while preserving IDs, auth, examples, security, assumptions, and traceability.
 
 ````markdown
 # API Documentation

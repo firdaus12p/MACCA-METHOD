@@ -1,8 +1,10 @@
 ---
 name: spec-init
 description: Generate all `project-context/` documents from an existing codebase. Supports Batch Generate (all at once) or Guided Generate (one by one with confirmation). Suitable for active projects or boilerplates.
-persona: "Fachri"
-persona_role: "Tech Lead"
+compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
+metadata:
+  persona: "Fachri"
+  persona-role: "Tech Lead"
 ---
 
 # Spec Init
@@ -41,6 +43,8 @@ Every claim carries a **confidence level**:
 ---
 
 ## Step 0 — Choose a Mode
+
+Before asking for a mode, inventory the target files in `project-context/`. Never overwrite an existing document implicitly. If any target exists, ask one decision for this run: preserve and skip existing files, regenerate named files, or cancel and review. List every file that would be replaced. This approval applies only to the named files.
 
 Ask the user before starting:
 
@@ -227,7 +231,7 @@ Next steps:
 
 ### schema.md
 **Read:** `migrations/`, `models/`, `prisma/schema.prisma`, or equivalents
-**Extract:** table names, columns, data types, relationships, indexes
+**Extract:** datastore-native entities (tables, collections, aggregates, nodes, streams, or keys), fields/payloads, types, relationships, validation, retention, and indexes/projections
 **Add:** `Input Evidence` listing the schema sources inspected
 **Add if possible:** `Document Role`, `Entity Map`, `Not Yet Modeled / Deferred`, `Assumptions & Open Questions`
 
@@ -246,7 +250,7 @@ Next steps:
 
 ### PRD.md
 **Do not read new files**. Only synthesize from previous documents.
-**Extract:** features already built (from api + schema), business rules from schema constraints, non-goals (features that are *not* present)
+**Extract:** features already built (from API, UI, and schema evidence) and business rules supported by direct constraints or behavior. Treat absent capabilities as `not observed`, `unknown`, or `deferred`; absence is not evidence of an intentional non-goal.
 **Confidence note:** PRD usually mixes **High** and **Medium**. Do not state business motivation as fact unless it is explicitly visible in the codebase.
 **Add:** `Input Evidence` referencing the previously generated spec files used for synthesis
 **Add if possible:** `Document Role`, `Canonical Terminology`, `Reading Guide for AI`

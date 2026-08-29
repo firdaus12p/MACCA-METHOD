@@ -52,4 +52,6 @@ Keep one decision topic per pause.
 
 ## Resume Rule
 
-After the user answers, continue from the exact paused step. Do not restart the workflow or ask for the same confirmation again unless the situation changes.
+After the user answers, continue from the exact paused step. Do not restart the workflow or ask for the same confirmation again unless the situation materially changes.
+
+An answer to an active gate takes precedence over normal skill startup and routing. For a report-first gate, exact `yes`, `fix`, or `continue` and finding-ID subsets follow the Approval Resume Protocol in `runtime-config.md`. Do not send them through identity setup, preflight, or a second confirmation.

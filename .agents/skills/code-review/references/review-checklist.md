@@ -6,7 +6,8 @@
 2. Phase 2 - Essential Security
 3. Self-Review Before Reporting
 4. Phase 3 - Report & Fix
-5. Key Points
+5. Post-Fix Validation
+6. Key Points
 
 ## Phase 1 - 27 Code Quality Points (All Required)
 
@@ -22,7 +23,7 @@ Check CR-01 through CR-27 without skipping. Continue to Phase 2 only after all 2
 
 ### Level 2: MAJOR
 
-- **CR-06 Duplicate Functions** - grep first before accepting a new helper
+- **CR-06 Duplicate Functions** - search the codebase with the host's available symbol, graph, or content-search tool before accepting a new helper
 - **CR-07 Unused Code** - imports, variables, functions
 - **CR-08 Duplicate / Redundant Code Blocks** - consolidate repeated logic
 - **CR-09 Stale Code Not Removed** - commented code, TODOs, replaced paths
@@ -33,7 +34,7 @@ Check CR-01 through CR-27 without skipping. Continue to Phase 2 only after all 2
 - **CR-14 Memory Leaks** - listeners, timers, subscriptions, connections
 - **CR-15 Security Ignored** - sensitive surfaces were not reviewed deeply enough
 - **CR-16 Missing API Rate Limits** - no handling around repeated external API calls
-- **CR-17 No Tests (TDD Violation)** - missing tests for new logic
+- **CR-17 Missing Required Tests** - new logic lacks the tests required by `rules.md`; call it a TDD violation only when test-first is explicitly required
 
 ### Level 3: MINOR
 
@@ -78,7 +79,7 @@ Check all of these:
   - **Django**: `ALLOWED_HOSTS` is set for production; `CSRF_TRUSTED_ORIGINS` is configured; `SECRET_KEY` is not hardcoded or exposed; `DEBUG=False` is enforced in production settings
   - **Express / Fastify / NestJS**: `helmet` is configured; CORS is limited to known origins (no wildcards in production); `body-parser` size limits are set; raw `req.body` is not passed directly into queries or shell commands
   - **Rails**: strong parameters are enforced for all mass assignment; CSRF protection is not disabled; secrets are stored in `credentials.yml.enc`, not plain text
-- **SEC-10 Dependency Vulnerabilities** - note if packages used in this phase have known CVEs. Mark MAJOR for critical/high severity in direct dependencies. Check `npm audit`, `pnpm audit`, `pip audit`, `composer audit`, or `bundle audit` as applicable.
+- **SEC-10 Dependency Vulnerabilities** - note known CVEs in packages used in this phase. Run the applicable installed audit command only when network policy permits; never install audit tooling during review. Mark critical/high issues in direct dependencies as MAJOR.
 
 ## Self-Review Before Reporting
 
@@ -110,6 +111,17 @@ Use this report structure:
 
 Then list findings by severity, followed by the checklist status table.
 
+Before a report-first gate, retain this fix manifest for actionable findings:
+
+```markdown
+### Fix Manifest
+| Finding | Target | Intended change | Validation |
+|---|---|---|---|
+| [ID] | `[path]` | [bounded change] | [targeted check] |
+```
+
+If the workflow will update a phase plan status or append Code Review Notes, include that plan file and mutation in the manifest. Otherwise return plan-status completion to `developer`; approval never authorizes an undisclosed plan edit.
+
 For each finding, use EXACTLY this structure. MUST NOT show code in any point:
 
 ```markdown
@@ -139,13 +151,23 @@ Finding rules:
 Fix priority - follow `fixMode` from Shared Runtime Setup:
 
 **`report-first` (default):**
-Present the full report. Show the gate prompt from `../_shared/references/runtime-config.md § Fix Mode Contract`. **End the response. DO NOT apply any fixes in the same response.** Wait for user confirmation in the next message.
+Present the full report and fix manifest. Show the gate prompt from the shared runtime contract loaded by the parent skill. **End the response. DO NOT apply any fixes in the same response.** On approval, follow the Approval Resume Protocol without another question.
 
 **`fix-then-report`:**
 - `💥 BLOCKER` -> fix now
 - `🔴 MAJOR` -> fix before the next phase
 - `⚠️ MINOR` -> report and discuss
 - `ℹ️ INFO` -> backlog
+
+## Post-Fix Validation
+
+Before updating plan status or claiming completion:
+
+1. Run the narrowest relevant tests and available type/lint/build checks.
+2. Recheck the approved findings and directly affected CR/SEC items only.
+3. If validation fails, repair within approved scope and validate one more time.
+4. Report every approved ID as `resolved`, `partial`, or `unresolved`, with command/check evidence.
+5. Do not start a fresh unbounded finding pass. Newly noticed unrelated work is reported separately and is not auto-fixed.
 
 ## Plan Status Update (run after all fixes are done)
 

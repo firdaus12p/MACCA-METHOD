@@ -1,8 +1,10 @@
 ---
 name: brainstorm-task
-description: Generate `Task.md` (Work Plan) from completed spec documents. Run after `PRD.md`, `architecture.md`, `schema.md`, `api.md`, and `rules.md` are complete.
-persona: "Galbi"
-persona_role: "Project Manager"
+description: Generates `Task.md` from the completed specs applicable to the project's declared scope. Use after `architecture.md` and all relevant product, data, API, UI, and coding-rule documents are ready, or when adding an approved phase to an existing plan.
+compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
+metadata:
+  persona: "Galbi"
+  persona-role: "Project Manager"
 ---
 
 # Brainstorm Task
@@ -13,9 +15,10 @@ Before starting:
 
 1. Read `../_shared/references/runtime-config.md`.
 2. Read `../_shared/references/brainstorm-session.md`.
-3. Use `languagePreferences.communication.normalized` for chat.
-4. Use `languagePreferences.documents.normalized` for the final `project-context/Task.md`.
-5. Apply `brainstormPreferences.recommendations` using the shared session policy.
+3. Read `../_shared/references/scope-rules.md`.
+4. Use `languagePreferences.communication.normalized` for chat.
+5. Use `languagePreferences.documents.normalized` for the final `project-context/Task.md`.
+6. Apply `brainstormPreferences.recommendations` using the shared session policy.
 
 ## Character
 
@@ -51,7 +54,7 @@ This skill generates **Task.md**: a work plan derived from existing spec documen
 **Detect mode before starting:**
 Check whether `project-context/Task.md` already exists.
 - **Does not exist yet** → follow the steps below (New Generate Mode).
-- **Already exists** (usually called from `add-feature`) → enter **Add Phase Mode**: skip clarification topics 1 and 3 (already defined in the old `Task.md`), ask only topic 2 (granularity), then **append new phases/tasks below the existing content** without overwriting the `Task.md` header.
+- **Already exists** (usually called from `add-feature`) → enter **Add Phase Mode**: skip clarification topics 1 and 3, ask only topic 2, append the approved phases/tasks, and update header counts/date, Progress Overview, dependencies, and Traceability Matrix. Preserve unrelated existing phases and IDs.
 
 **Scope rules:**
 - `frontend` → generate frontend tasks only
@@ -119,7 +122,7 @@ Files: `PRD.md`, `architecture.md`, `schema.md`, `api.md`, `rules.md`, `StyleGui
 
 **architecture.md is required** — if it does not exist, **STOP** and ask the user to run `brainstorm-architecture` first.
 
-If other documents are missing, **inform the user** (do not ask first):
+If another document required by the declared scope is missing, inform the user and obtain one continuation decision:
 > *"I checked: `project-context/[filename]` was not found. It is recommended to complete it first so tasks are more accurate. Continue with the available documents?"*
 
 ## Deep Analysis (Before Creating Tasks)
@@ -129,11 +132,11 @@ Before writing `Task.md`, analyze internally:
 1. Read `PRD.md` → list all MVP features → this is the task scope
 2. Read `StyleGuide.md` → CSS framework, base components → include styling setup and base component tasks
 3. Read `architecture.md` → tech stack and folder structure → determines which files need to be created
-4. Read `schema.md` → all tables → each table needs a migration + model/schema file
-5. Read `api.md` → all endpoints → each endpoint needs route + controller + service
+4. Read `schema.md` → map each datastore-native entity/collection/aggregate/stream to the migrations, validation, model, projection, or infrastructure tasks its architecture actually requires
+5. Read `api.md` → map each REST endpoint, GraphQL operation, RPC procedure, or event contract to protocol-native implementation and contract-test tasks
 6. Read `rules.md` → coding standards → include tasks for ESLint, Prettier, tsconfig setup?
 7. Identify task dependencies (database before model, model before service, service before controller)
-8. **TDD:** Every implementation task (service, endpoint, component) must be preceded by a test task. Format: Task N.1 = write test, Task N.2 = implement (dependency: N.2 depends on N.1 being complete).
+8. **Testing workflow:** Follow the policy in `rules.md`. If it requires test-first/TDD, precede implementation with a test task. Otherwise pair each behavior change with the test/verification task required by the approved rules. Do not force TDD against project policy.
 9. If the specs mention security controls, create explicit security tasks — do not leave them implicit. Examples: auth guards, ownership checks, input validation, secure cookie config, rate limiting, CSRF protection, audit logs, data masking.
 10. Create a **traceability matrix**: every main requirement (`FEAT-*`, `BR-*`, `NFR-*`, `API-*`, `DATA-*`) must have at least one task that references it.
 
@@ -269,7 +272,7 @@ Wait for user confirmation before creating Task.md.
 - **Tasks MUST be derived from existing specs**. Do not brainstorm from scratch again.
 - Every task must have **testable acceptance criteria**, not just a description.
 - Mark **task dependencies** clearly. AI cannot skip tasks.
-- **TDD:** Implementation tasks are preceded by test tasks (N.1 write test, N.2 implement; N.2 depends on N.1).
+- **Testing:** Task order follows the approved testing workflow in `rules.md`; test-first is required only when that policy requires it.
 - If the specs mention security controls, create explicit security tasks. Do not assume they "happen automatically."
 - Every task must have **Traceability IDs** that reference real upstream requirements or artifacts.
 - A **Traceability Matrix** is required for auditability.

@@ -1,8 +1,10 @@
 ---
 name: add-feature
 description: Skill for adding new features to running projects. Read current specs, identify all affected documents, update every impacted spec, then add a phase and tasks to Task.md.
-persona: "Galbi"
-persona_role: "Project Manager"
+compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
+metadata:
+  persona: "Galbi"
+  persona-role: "Project Manager"
 ---
 
 # Add Feature
@@ -13,7 +15,8 @@ At startup:
 
 1. Read `../_shared/references/runtime-config.md`.
 2. Read `../_shared/references/output-ownership.md`.
-3. Use `languagePreferences.communication.normalized` for feature analysis and reports.
+3. Read `../_shared/references/scope-rules.md`.
+4. Use `languagePreferences.communication.normalized` for feature analysis and reports.
 
 ---
 
@@ -114,7 +117,7 @@ For each **IMPACTED** document, update it in this order:
 7. `project-context/plans/` — if a plan file exists for the affected phase (for example `plans/phase-2-checkout.md`), update it to reflect the new scope. Add a section: `## Feature Addition: [feature name]` with a short description of the approach change. Do not overwrite existing plan content.
 
 ### Update Principles:
-- **Add, do not overwrite** — append to the relevant section; do not change existing content unless there is a conflict
+- **Preserve unrelated content and IDs** — make the smallest targeted edit needed to keep each affected document internally consistent; update an existing statement when the approved feature changes it
 - **Match the existing style** — follow the current document format and tone
 - **Make additions clear** — place them logically; no special tags are needed
 - **Preserve old IDs** — assign new IDs for new items using the existing pattern
@@ -185,6 +188,6 @@ To start building, call `developer`.
 1. **Read all specs before impact analysis** — no assumptions
 2. **Every impacted spec MUST be updated** — no exceptions
 3. **Get user approval after impact analysis** — before making changes
-4. **Only add** — do not overwrite unless there is a real conflict
+4. **Preserve unrelated content** — update stale affected statements instead of appending contradictions
 5. **Update Task.md last** — via `brainstorm-task` after all specs are done
 6. **Acceptance criteria must be testable** — not vague descriptions

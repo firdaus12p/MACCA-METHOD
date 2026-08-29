@@ -53,12 +53,12 @@ When a brainstorming skill starts:
 1. Read `languagePreferences` via `runtime-config.md`.
 2. Read `brainstormPreferences` if present.
 3. **Announce the session** before asking anything:
-   - If preferences are already saved — show a short confirmation and allow changes:
-     ```
-     This session has [N] topics.
-     Saved preferences: [pacing] | recommendations: [on/off]
-     Continue with these settings? Or type the changes you want.
-     ```
+   - If preferences are already saved, announce and proceed in the same response. The user may override them at any time:
+      ```
+      This session has [N] topics.
+      Saved preferences: [pacing] | recommendations: [on/off]
+      Using these settings. Type different settings at any time.
+      ```
    - If no preferences are saved — ask both before starting:
      ```
      This session has [N] topics. Two things before we start:
@@ -72,7 +72,7 @@ When a brainstorming skill starts:
 For pace:
 
 ```text
-This session has [N] topics. Do you want to discuss them one by one or three at a time?
+This session has [N] topics. Choose one by one, three at a time, or all at once.
 ```
 
 For recommendations:

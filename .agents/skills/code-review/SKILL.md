@@ -1,8 +1,10 @@
 ---
 name: code-review
-description: Review code quality and security after each phase. Run after spec-compliance. Uses a 27-point code-quality checklist and essential security checks.
-persona: "Fachri"
-persona_role: "Tech Lead"
+description: Reviews code quality and security using a 27-point checklist and essential security checks, then applies and validates approved findings. Use after spec-compliance, before a commit or PR, on explicit review requests, and when the user replies yes, fix, continue, or finding IDs to this skill's report-first gate.
+compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
+metadata:
+  persona: "Fachri"
+  persona-role: "Tech Lead"
 ---
 
 # Code Review
@@ -12,8 +14,10 @@ persona_role: "Tech Lead"
 Before continuing:
 
 1. Read `../_shared/references/runtime-config.md`.
-2. Read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If it is missing, treat it as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`. See the Fix Mode Contract in `runtime-config.md` for full enforcement rules.
-3. Use `languagePreferences.communication.normalized` for all review output.
+2. Read `../_shared/references/human-loop.md`.
+3. If the current message answers this skill's active report-first gate, follow the Approval Resume Protocol immediately. Do not repeat setup announcements, context reads, or review.
+4. Otherwise, read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If it is missing, treat it as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`.
+5. Use `languagePreferences.communication.normalized` for all review output.
 
 ---
 
@@ -61,6 +65,18 @@ MUST use EXACTLY these 4 points for every finding. MUST NOT add or remove points
 Mode is read in Shared Runtime Setup. Enforcement rules, including the required gate prompt, are in `../_shared/references/runtime-config.md § Fix Mode Contract`.
 
 To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-config.json`.
+
+### Resume After Approval
+
+When the user answers the active gate with `yes`, `fix`, `continue`, or finding IDs:
+
+1. Select the approved findings from the immediately preceding report.
+2. Apply their recorded fixes directly; do not ask what to fix again.
+3. Run targeted tests, type/lint/build checks as applicable.
+4. Recheck only the approved findings and directly affected CR/SEC checks.
+5. Report each finding as `resolved`, `partial`, or `unresolved` and include validation evidence.
+
+Ask again only for a material workspace change, conflicting findings, or newly destructive/out-of-scope work.
 
 ---
 

@@ -7,8 +7,9 @@
 3. Language Preferences
 4. Stable Shared Fields
 5. Fix Mode Contract
-6. `additionalSkills` Compatibility
-7. Mutation Rules
+6. Approval Resume Protocol
+7. `additionalSkills` Compatibility
+8. Mutation Rules
 
 ## Purpose
 
@@ -92,7 +93,7 @@ Every covered review/remediation skill must read `fixMode` during Shared Runtime
 | Value | Behavior |
 |-------|----------|
 | `"report-first"` | **Default.** Run all analysis. Present the full findings report. Show the gate prompt below. **End the response.** Wait for user confirmation in the next message before touching any files. |
-| `"fix-then-report"` | Automatically apply BLOCKER/MAJOR fixes. Present the full report at the end. |
+| `"fix-then-report"` | Automatically apply actionable BLOCKER/MAJOR fixes, validate them, and present the full report at the end. A document-audit skill edits documents only when the invocation requested corrections. |
 
 ### Required Gate Prompt (`report-first` only)
 
@@ -108,6 +109,24 @@ or name which findings you want to fix.
 ```
 
 **Critical rule:** DO NOT apply any fixes, edit any files, run any sub-skill, or add follow-up text in the same response. The response ends at the gate prompt. Act only after the user's next message confirms.
+
+Before the gate, retain a fix manifest for every actionable finding: finding ID, target file, intended change, and validation. It may be shown as a compact report table or kept in the current conversation state when the host reliably preserves it.
+
+## Approval Resume Protocol
+
+This protocol has precedence over ordinary skill routing, startup, identity, onboarding, preflight, and work-mode prompts.
+
+When the immediately preceding assistant response ended with the report-first gate:
+
+1. Normalize the next user message by trimming whitespace and comparing case-insensitively.
+2. Exact `yes`, `fix`, or `continue` approves all actionable findings in that immediately preceding report, including MINOR findings with a concrete recommended fix. It does not approve unrelated cleanup or new findings.
+3. A response naming finding IDs approves only those IDs.
+4. Resume directly at file changes. Do not repeat analysis, report generation, startup announcements, preflight, or the same gate.
+5. Ask one new question only if the worktree changed materially, the approved target no longer exists, findings conflict, or implementation would become destructive or exceed the disclosed scope.
+6. After editing, run the narrowest relevant tests/checks and a bounded verdict pass against the approved finding IDs. Mark each `resolved`, `partial`, or `unresolved`; do not start an unbounded new review.
+7. If validation fails, repair within the approved scope and validate once more. If still failing, stop and report evidence instead of claiming completion.
+
+`quick-dev` and other implementation routers MUST NOT intercept approval replies while a report-first gate is active.
 
 ### Default
 
@@ -134,7 +153,7 @@ Readers must support all of these forms:
 ```json
 {
   "name": "frontend-react-best-practices",
-  "opencodePath": ".opencode/skill/frontend-react-best-practices/SKILL.md",
+    "opencodePath": ".opencode/skills/frontend-react-best-practices/SKILL.md",
   "githubPath": ".github/skills/frontend-react-best-practices/SKILL.md",
   "purpose": "Use when working on React UI code."
 }
@@ -148,7 +167,7 @@ Readers must support all of these forms:
   "purpose": "Use when working on React UI code.",
   "paths": {
     "copilot": ".github/skills/frontend-react-best-practices/SKILL.md",
-    "opencode": ".opencode/skill/frontend-react-best-practices/SKILL.md",
+    "opencode": ".opencode/skills/frontend-react-best-practices/SKILL.md",
     "codex": ".agents/skills/frontend-react-best-practices/SKILL.md"
   }
 }

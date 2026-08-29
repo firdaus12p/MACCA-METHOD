@@ -1,8 +1,10 @@
 ---
 name: quick-dev
-description: Execute a single focused task directly from user instruction — no phase reading, no plan file. Shows a pre-flight summary, resolves ambiguities upfront, codes, updates Task.md, and runs full spec-compliance + code-review. Use for small targeted changes (color fixes, layout tweaks, copy edits, minor logic adjustments) where the developer phase ceremony is unnecessary overhead. Do NOT use for new features, migrations, or multi-file refactors.
-persona: "Firdaus"
-persona_role: "Expert Developer"
+description: Executes one small, focused implementation task, records it in Task.md, and runs spec-compliance plus code-review. Use for targeted layout, copy, styling, or minor logic changes. Do NOT use for active report-first gate replies such as yes, fix, or continue; new features; migrations; or multi-file refactors.
+compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
+metadata:
+  persona: "Firdaus"
+  persona-role: "Expert Developer"
 ---
 
 # Quick Dev
@@ -13,9 +15,10 @@ Before any output:
 
 1. Read `../_shared/references/runtime-config.md`.
 2. Read `../_shared/references/human-loop.md`.
-3. Read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If missing, treat as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`.
-4. Use `languagePreferences.communication.normalized` for chat.
-5. Use `languagePreferences.documents.normalized` for generated artifacts.
+3. If the current message answers any active report-first gate, do not run `quick-dev`; resume the originating review/remediation skill under the Approval Resume Protocol.
+4. Otherwise, read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If missing, treat as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`.
+5. Use `languagePreferences.communication.normalized` for chat.
+6. Use `languagePreferences.documents.normalized` for generated artifacts.
 
 ---
 
@@ -119,7 +122,7 @@ Need confirmation before proceeding:         ← omit entire block if none
 - Omit "Need confirmation" block entirely if there are no blocking ambiguities.
 - Non-blocking ambiguities go under "Assumptions" as `[~]` — not as questions.
 - If a needed spec is missing (e.g. no `StyleGuide.md` but task touches UI), note it under Specs as `StyleGuide.md — missing, UI compliance cannot be verified`.
-- Wait for the user to confirm or correct before proceeding to Step 2.
+- If a blocking question exists, wait for its answer. Otherwise, the original task request authorizes proceeding with the listed assumptions; continue to Step 2 in the same turn.
 
 ---
 
@@ -151,6 +154,10 @@ Scan `[FORBIDDEN]` in `rules.md` before any coding.
 
 ---
 
+## Step 2b — Record an Approved Scope Delta Before Coding
+
+If the task is outside `project-context/`, follow the approval flow from `developer` Step 3a before editing code. After approval, create or update the lightweight `Task.md` entry immediately with `status: in-progress` and the delta details. If `Task.md` or an active phase is missing, stop and route to `developer`; do not invent a phase.
+
 ## Step 3 — Execute
 
 Read `../developer/references/execution-workflow.md` and follow **Step 3 only** (3a through 3e):
@@ -162,13 +169,13 @@ Read `../developer/references/execution-workflow.md` and follow **Step 3 only** 
 - **3c.5** — [SELF-REVIEW].
 - **3c.6** — Validate.
 
-**Scope delta — no plan file:** if the task touches something outside `project-context/`, follow the same approved scope delta flow as `developer` Step 3a, but record the delta directly in the `Task.md` entry created in Step 4 (not in a plan file).
+The approved scope delta must already exist before this step. Never defer its record until after coding.
 
 ---
 
 ## Step 4 — Update Task.md
 
-Do a lightweight scan of `Task.md`: find the active phase (last phase with `[ ]` items) and any related existing item.
+Do a lightweight scan of `Task.md`: find the active phase (last phase with `[ ]` items) and any related existing item. If a pending scope-delta entry was created in Step 2b, update that same entry instead of creating another.
 
 | Condition | Action |
 |---|---|

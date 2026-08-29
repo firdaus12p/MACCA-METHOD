@@ -1,8 +1,10 @@
 ---
 name: brainstorm-rules
 description: Interview users and generate `rules.md` (Coding Standards / Code Constitution). Use before coding to define coding rules and AI behavior guidance.
-persona: "Fachri"
-persona_role: "Tech Lead"
+compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
+metadata:
+  persona: "Fachri"
+  persona-role: "Tech Lead"
 ---
 
 # Brainstorm Rules
@@ -45,6 +47,7 @@ This skill generates **rules.md**: a "code constitution" so AI works consistentl
 3. **Shared Runtime Setup** — before the interview:
   - Read `../_shared/references/runtime-config.md`.
   - Read `../_shared/references/brainstorm-session.md`.
+  - Read `../_shared/references/scope-rules.md`.
   - Use `languagePreferences.communication.normalized` for chat.
   - Use `languagePreferences.documents.normalized` for the final `project-context/rules.md`.
   - Apply `brainstormPreferences.discussionMode` and `brainstormPreferences.recommendations` using the shared session policy.
@@ -144,6 +147,8 @@ This skill generates **rules.md**: a "code constitution" so AI works consistentl
 
 ## Output Format (rules.md)
 
+Generate only rules supported by `architecture.md`, existing tooling, or explicit user decisions. Every TypeScript, React, SQL, JWT, ESLint, Prettier, npm, or TDD item below is an example to adapt or omit, not a universal default. Do not invent tool versions or require packages that the project did not select.
+
 ````markdown
 # Coding Standards (Rules)
 
@@ -155,7 +160,7 @@ This skill generates **rules.md**: a "code constitution" so AI works consistentl
 ---
 
 ## 1. AI Persona & Tech Stack
-> You are an expert developer in: [TypeScript, React, Next.js 14 App Router, Prisma, PostgreSQL, TanStack Query, Zustand].
+> You are an expert developer in: [stack confirmed by architecture and user].
 
 **Prioritize:**
 - [Preferred patterns]
@@ -168,58 +173,38 @@ This skill generates **rules.md**: a "code constitution" so AI works consistentl
 ## 2. Naming Conventions
 | Type | Convention | Example |
 |------|------------|---------|
-| Variables & Functions | camelCase | `getUserData`, `isLoading` |
-| React Components | PascalCase | `UserCard`, `LoginForm` |
-| Files & Folders | kebab-case | `user-card.tsx`, `auth/` |
-| Global Constants | UPPER_CASE | `MAX_RETRIES`, `API_URL` |
-| Event Handlers | `handle` prefix | `handleSubmit`, `handleClick` |
-| Boolean | `is/has/can` prefix | `isLoading`, `hasError` |
-| Database Tables | snake_case, plural | `users`, `product_categories` |
+| [Project symbol type] | [confirmed convention] | [stack-native example] |
+| Files & Folders | [confirmed convention] | [example] |
+| Persisted entities/fields | [datastore-native convention] | [example] |
 
 ---
 
 ## 3. Code Style & Quality
-- **TypeScript:** Strict mode enabled. Avoid `any` and `enum` (use `as const`).
-- **Console.log:** Forbidden in production. Use a proper logger.
-- **Error Handling:** `try-catch` required for async operations. Use early returns (guard clauses).
-- **Else after return:** FORBIDDEN — use the early return pattern.
-- **Import order:** builtin → external → internal → relative → types
+- **Language-specific rules:** [rules confirmed for the selected language; omit inapplicable TypeScript examples]
+- **Production diagnostics:** [confirmed logging/telemetry rule]
+- **Error Handling:** [stack-native strategy confirmed by the project]
+- **Control flow:** [confirmed readability rule]
+- **Import/dependency order:** [confirmed convention if applicable]
 - **Max function length:** [X lines]
 - **Comments:** [JSDoc required / minimal]
 - **Dependency ladder:** Reuse existing code first, then standard library, native platform, installed dependencies, and only then add new dependencies.
 - **Intentional simplification:** Mark with a `tradeoff:` comment that states the ceiling and upgrade trigger.
 - **Never simplify:** trust-boundary validation, data-loss protection, accessibility basics, or explicitly requested behavior.
 
-```typescript
-// ✅ CORRECT — early return
-function processUser(user: User | null) {
-  if (!user) return null;
-  if (!user.isActive) return null;
-  return doSomething(user);
-}
-
-// ❌ WRONG — deep nesting
-function processUser(user: User | null) {
-  if (user) {
-    if (user.isActive) {
-      return doSomething(user);
-    }
-  }
-}
-```
+Add a language-specific example only when it communicates a confirmed rule better than prose.
 
 ---
 
 ## 4. Security Rules
 > **MANDATORY:** Before writing code involving user input, auth, file upload, or database access — check at least these 4 items and explain them briefly: input validation, secret/token protection, safe queries, and access control.
 
-- **Token Storage:** Store JWTs in **httpOnly cookies**, NOT localStorage.
-- **Input Sanitization:** Validate and sanitize all input before processing (use Zod/Joi).
-- **Environment Variables:** Never hardcode secrets. All env vars must exist in `.env.example`.
-- **Query Security:** Always use parameterized queries or an ORM. NEVER concatenate user input into SQL.
-- **XSS:** Avoid `dangerouslySetInnerHTML`. If required, sanitize with DOMPurify.
-- **CORS:** Approved origins: [origin list]. Never use `*` in production.
-- **Dependencies:** Run `npm audit` before every release. Block HIGH severity.
+- **Token/Session Storage:** [project-specific decision; do not assume JWT or browser cookies]
+- **Input Validation:** Validate untrusted input with [existing project mechanism].
+- **Secret/Configuration Storage:** [project/platform-specific mechanism]
+- **Injection Prevention:** [safe query, shell, template, and parser rules relevant to this stack]
+- **Client Rendering Security:** [XSS/content rule only if the project renders untrusted content]
+- **Cross-Origin/Network Policy:** [only if the project exposes a network surface]
+- **Dependencies:** Run the project's available dependency audit before release when network policy permits. Block [agreed threshold].
 
 ---
 
@@ -240,7 +225,7 @@ function processUser(user: User | null) {
 ---
 
 ## 6. Git Workflow
-**Conventional Commits** — required for all commits.
+**Commit format:** [confirmed workflow; omit this table if Conventional Commits was not selected].
 
 | Type | When |
 |------|------|
@@ -264,12 +249,12 @@ function processUser(user: User | null) {
 ---
 
 ## 7. Linter, Formatter & Testing
-- **ESLint:** v9 (flat config — `eslint.config.js`). Rules: `eslint:recommended`, `@typescript-eslint/recommended`.
-- **Prettier:** `semi: false`, `singleQuote: true`, `tabWidth: 2`, `printWidth: 80`.
-- **.editorconfig:** `charset=utf-8`, `end_of_line=lf`, `insert_final_newline=true`.
-- **Test Framework:** [Jest / Vitest / Playwright]
+- **Linter:** [existing tool/version/config; omit if none].
+- **Formatter:** [existing tool/options; omit if none].
+- **Editor settings:** [existing settings; omit if none].
+- **Test Framework:** [existing project framework]
 - **Minimum Coverage:** [X%]
-- **Test Requirement:** Yes — every new function/endpoint must have tests (TDD: write the test before implementation).
+- **Test Requirement:** [project policy: test-first, test-with-change, or another explicit workflow].
 
 ---
 
@@ -279,12 +264,8 @@ function processUser(user: User | null) {
 
 | # | Forbidden | Why |
 |---|-----------|-----|
-| F-01 | NEVER use `any` (TypeScript) | Destroys type safety |
-| F-02 | NEVER hardcode secrets, URLs, or config — use env vars | Security & portability |
-| F-03 | NEVER concatenate user input into SQL/query — use parameterized queries/ORM | SQL Injection |
-| F-04 | NEVER store tokens in localStorage — use httpOnly cookies | XSS vulnerability |
-| F-05 | NEVER use `console.log` / `print` in production code | Info leaks, noise |
-| [F-06+] | [Project-specific prohibition from topics 1–7] | [Reason] |
+| F-01 | Never hardcode or expose secrets | Security |
+| F-02+ | [Confirmed stack/project-specific prohibition] | [Reason] |
 
 ## Assumptions & Exceptions
 - [Assumption about team workflow or tooling]

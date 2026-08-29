@@ -1,8 +1,10 @@
 ---
 name: bug-fix
-description: Diagnose, fix, and document bugs. Check `bug-log.md` first to recognize similar patterns. Record to the bug log only after the user confirms the fix is correct.
-persona: "Ikhsan"
-persona_role: "Debugger"
+description: Diagnoses, fixes, validates, and documents bugs, checking `bug-log.md` for recurring patterns. Use for bug reports, runtime errors, regressions, and to resume an approved bug fix after a report-first gate. Records the bug only after the user confirms the fix works.
+compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
+metadata:
+  persona: "Ikhsan"
+  persona-role: "Debugger"
 ---
 
 # Bug Fix
@@ -13,8 +15,9 @@ Before continuing:
 
 1. Read `../_shared/references/runtime-config.md`.
 2. Read `../_shared/references/human-loop.md`.
-3. Read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If it is missing, treat it as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`. See § Fix Mode Contract in runtime-config.md for the full enforcement rules.
-4. Use `languagePreferences.communication.normalized` for all chat output.
+3. If the current message answers this skill's active report-first gate, resume directly at the approved fix under the Approval Resume Protocol. Do not repeat diagnosis or ask again.
+4. Otherwise, read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If it is missing, treat it as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`.
+5. Use `languagePreferences.communication.normalized` for all chat output.
 
 ---
 
@@ -69,9 +72,9 @@ Compare the reported bug with existing entries:
 > "This looks like **BUG-[ID]** that we fixed before.
 > The root cause was: [short explanation]
 > The applied fix was: [short explanation]
-> I will apply the same fix. OK?"
+> I can reuse the proven fix after checking that the current code still has the same root cause."
 
-Wait for confirmation before going to Step 3.
+Continue to Step 2 long enough to verify the current root cause, then use the single gate in Step 2d.
 
 **B. Similar but different:**
 > "This is similar to **BUG-[ID]** - both share [similarity], but this one differs in: [specific difference].
@@ -100,6 +103,7 @@ Before reading code, use every available aid:
 - Files named by the user
 - Files directly called
 - If the bug sits behind shared code, MUST check all callers of that shared code - one root fix beats many per-caller guards
+- Search for the same bug pattern across the codebase now, before the gate. Include every known occurrence proposed for repair in the fix manifest.
 - Relevant specs (`project-context/architecture.md`, `schema.md`, etc.) if the bug spans multiple layers
 
 ### 2c. Explain the diagnosis to the user
@@ -117,36 +121,24 @@ MUST use EXACTLY these 3 points. MUST NOT show code - explain only in working lo
 [Explain what needs to change in the logic and flow, not syntax. Speak as if explaining how the app works.]
 ```
 
-### 2d. Confirm before fixing
-Wait for the user's approval of the diagnosis before continuing.
+### 2d. Single Fix Gate
+
+Include the root cause, proposed files, bounded changes, and validation in the same diagnosis response.
+
+- In `report-first`, show the shared gate once and end the response. The next `yes`, `fix`, or `continue` resumes directly at **Apply the Fix**.
+- In `fix-then-report`, continue directly to **Apply the Fix**.
+- Do not add another proposed-fix confirmation in Step 3.
 
 ---
 
 ## Step 3 - Fix
-
-### Fix Mode Gate
-
-Before applying any code change, check fixMode (read in Shared Runtime Setup):
-
-**`report-first` (default):** Present a summary of the proposed fix:
-
-```
-Proposed fix for [bug title]:
-Root cause: [one sentence]
-Files to change:
-- [path/file] - [what will change]
-```
-
-Show the gate prompt from `../_shared/references/runtime-config.md § Fix Mode Contract`. End the response. Apply the fix only after user confirmation in the next message.
-
-**`fix-then-report`:** Continue directly to the fix implementation below.
 
 ### Apply the Fix
 
 Apply the fix with the **minimal-change principle:**
 - Fix only the reported bug - nothing else in scope
 - Use the most direct fix, not a workaround
-- Target: change <=2 files. If it needs >3 files, ask the user first
+- Target: change <=2 files. If it needs 3 or more files, ask before expanding the disclosed scope
 - No new dependencies unless truly necessary
 - No refactoring or cleanup - that is separate work
 
@@ -172,26 +164,9 @@ Internal check before spec-compliance:
 2. Are other files affected but unchanged?
 3. Does the change stay within the bug scope?
 
-### Check the Same Pattern Elsewhere
+### Recheck Approved Scope
 
-MUST do this after applying the fix - before continuing to verification:
-
-Search the whole codebase for the same bug pattern elsewhere. Use MCP or a subagent if needed.
-
-- If the same pattern is found elsewhere:
-  ```
-  ⚠️ The same pattern was also found in:
-  - [file/page name] - [briefly explain the situation without code]
-
-  Should I fix all of them now, or only the reported one first?
-  1) Fix all now -> recommended
-  2) Fix only the reported one first, the rest later
-  ```
-  Wait for the answer before continuing.
-
-- If none is found: continue to Step 4.
-
-If unsure, review the code again before verification.
+After applying the fix, recheck only the approved targets and directly affected callers. Same-pattern discovery was completed before the gate. Ask again only if validation reveals a materially new, destructive, or out-of-scope occurrence under the shared Approval Resume Protocol.
 
 ---
 
@@ -201,11 +176,11 @@ After the fix is applied:
 
 ### 4a. Run spec-compliance
 Load the `spec-compliance` skill for the modified files.
-If issues exist: fix them first.
+If issues exist, follow its configured `fixMode`. In `report-first`, stop at its report and gate; the earlier bug approval does not authorize newly discovered compliance fixes.
 
 ### 4b. Run code-review
 Load the `code-review` skill for the same files.
-If critical issues exist (high severity): fix them first.
+If issues exist, follow its configured `fixMode`. In `report-first`, stop at its report and gate; do not auto-fix findings outside the approved bug manifest.
 
 ---
 

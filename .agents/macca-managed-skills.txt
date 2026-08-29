@@ -11,6 +11,7 @@ bug-fix
 code-review
 developer
 help
+quick-dev
 rapat
 spec-audit
 spec-compliance

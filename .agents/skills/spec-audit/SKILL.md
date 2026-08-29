@@ -1,8 +1,10 @@
 ---
 name: spec-audit
-description: Skill for checking consistency between `project-context/` documents or within the MACCA framework documents themselves. Detects cross-document conflicts, inconsistencies, and ambiguities, not internal writing quality. Reports where the issue is, why it matters, and the exact fix with reasoning.
-persona: "Fachri"
-persona_role: "Tech Lead"
+description: Audits cross-document consistency in project specs or the MACCA framework and applies explicitly requested corrections. Use for spec alignment, framework drift, and when the user replies yes, fix, continue, or finding IDs to this skill's correction gate.
+compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
+metadata:
+  persona: "Fachri"
+  persona-role: "Tech Lead"
 ---
 
 # Spec Audit
@@ -12,8 +14,10 @@ persona_role: "Tech Lead"
 At startup:
 
 1. Read `../_shared/references/runtime-config.md`.
-2. Read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If it is missing, treat it as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`. See § Fix Mode Contract in runtime-config.md for the full enforcement rules.
-3. Use `languagePreferences.communication.normalized` for audit reports.
+2. Read `../_shared/references/human-loop.md`.
+3. If this message answers this skill's active correction gate, resume directly under the Approval Resume Protocol. Do not rerun startup or the audit.
+4. Otherwise, read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If it is missing, treat it as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`.
+5. Use `languagePreferences.communication.normalized` for audit reports.
 
 ---
 
@@ -92,12 +96,7 @@ Read everything that exists. Note ID patterns if they are used.
 
 ### Framework Mode
 
-Read:
-- `README.md` - workflow, skill list, structure
-- `.agents/skills/*/SKILL.md` - per-skill behavior contracts
-- `.agents/skills/_shared/references/*.md` - shared cross-skill contracts
-- `.agents/skills/*/references/*.md` - reference files with workflow/checklist detail
-- Installation/upgrade scripts if the audit touches them
+Resolve the active skill's installation root first. Read the `SKILL.md`, `_shared/references/`, and skill-local `references/` files under that root. If auditing the MACCA source repository, also read its MACCA README and installer/upgrade scripts. Do not assume `.agents/skills/` exists in a Copilot-only or OpenCode-only installation, and do not treat the user's application README as MACCA documentation.
 
 Read `README.md`, relevant `SKILL.md` files, and relevant reference files. Note instruction conflicts, duplication, workflow inconsistencies, and shared-contract drift.
 
@@ -112,12 +111,12 @@ Read `README.md`, relevant `SKILL.md` files, and relevant reference files. Note 
 - Do the PRD constraints fit the chosen tech stack?
 
 **SA-02: PRD ↔ schema**
-- Does every PRD entity have a schema table?
-- Do schema constraints (e.g. "stock ≥ 0") reflect PRD business rules?
+- Does every persisted PRD entity have a datastore-native representation (table, collection, aggregate, node, stream, or equivalent)?
+- Do validation, relationship, consistency, and retention rules reflect PRD business rules?
 
 **SA-03: PRD ↔ api**
-- Does every PRD feature have supporting endpoints?
-- Does `api.md` contain endpoints for PRD non-goals?
+- Does every integration-facing PRD feature have supporting operations (endpoint, query/mutation, procedure, event, or equivalent)?
+- Does `api.md` contain operations for PRD non-goals?
 
 **SA-04: PRD ↔ Task.md**
 - Is every PRD feature mapped to >=1 task?
@@ -125,7 +124,7 @@ Read `README.md`, relevant `SKILL.md` files, and relevant reference files. Note 
 - Do PRD IDs (`FEAT-*`, `BR-*`) appear in Task.md traceability?
 
 **SA-05: schema ↔ api**
-- Does every request/response field in `api.md` exist in the schema?
+- Does every persisted input/output field in `api.md` map to the data contract where appropriate?
 - Do response types match schema types?
 - If schema/api traceability is used, does it reference real PRD IDs?
 
@@ -242,6 +241,11 @@ Findings:
 [List of findings]
 
 Clean: [list of SA-XX / SA-FXX with no issues]
+
+Fix Manifest (only when corrections were requested):
+| Finding | Target document | Exact correction | Validation pair |
+|---|---|---|---|
+| [ID] | `[path]` | [bounded correction] | `[doc A] ↔ [doc B]` |
 ```
 
 If there are no issues:
@@ -250,8 +254,9 @@ If there are no issues:
 ```
 
 **Apply fixes:**
-- `fix-then-report` - apply the recommended fixes only if the user task explicitly asks for document corrections.
-- `report-first` - show the summary. Show the gate prompt from `../_shared/references/runtime-config.md § Fix Mode Contract`. End the response. Apply fixes only after user confirmation in the next message.
+- Audit-only invocation: report only, regardless of `fixMode`; do not offer a mutation gate unless the user requests corrections.
+- Correction requested + `fix-then-report`: apply actionable corrections, validate all affected document pairs, then report.
+- Correction requested + `report-first`: show the summary and shared gate. On approval, resume directly under the Approval Resume Protocol.
 
 ---
 

@@ -29,11 +29,11 @@ For each skill named by the user:
 1. **Search the workspace first** in this order:
    - `.agents/skills/{name}/SKILL.md`
    - `.github/skills/{name}/SKILL.md`
-   - `.opencode/skill/{name}/SKILL.md`
+   - `.opencode/skills/{name}/SKILL.md`
    - Any file named `{name}.md` or `SKILL.md` inside a folder matching the skill name
 2. **If found:** fill the path automatically and tell the user: `"Found {path}. Using it."`
 3. **If not found:** ask once per skill: `"I could not find SKILL.md for **{name}**. Where is it? (for example .agents/skills/name/SKILL.md) - or type 'skip' to register it without a path for now."`
-4. Save it to `.agents/developer-config.json` using the canonical `paths` format from `../_shared/references/runtime-config.md`. Still read legacy fields such as `path`, `githubPath`, and `opencodePath`.
+4. Save it to `.agents/developer-config.json` using the canonical `paths` format defined by the shared runtime contract loaded by the parent skill. Still read legacy fields such as `path`, `githubPath`, and `opencodePath`.
 5. **Coding rule:** When writing code relevant to a listed skill, read that skill's `SKILL.md` first. This is mandatory. If a relevant skill has no path, note that it cannot be auto-loaded.
 
 ### Available MCPs
@@ -223,7 +223,7 @@ MUST NOT code something that is outside the specs without explicit user confirma
 
 ### 3b. Clarify (if ambiguous)
 
-Stop. Do not code yet. Ask one concrete question using the shared confirmation style from `../_shared/references/human-loop.md`.
+Stop. Do not code yet. Ask one concrete question using the human-loop policy loaded by the parent skill.
 
 ### 3b.5 - I/O Contract (for non-trivial functions)
 
@@ -254,12 +254,9 @@ MUST NOT skip step 1 or 2 if they are available and relevant.
 Detect the task type:
 - **Test task**: write the test, then jump to validation
 - **Implementation with existing test dependency**: use the existing test first
-- **Standalone implementation**: follow TDD order
+- **Standalone implementation**: follow the testing workflow selected in `project-context/rules.md`; if absent, add the narrowest useful test with the change when practical
 
-For standalone implementation:
-1. Write the test first
-2. Write the implementation
-3. Verify logically that the test should pass
+When `rules.md` requires test-first/TDD, write the failing test before implementation. When it requires test-with-change or another workflow, follow that policy. Never report a TDD violation unless test-first is explicitly required.
 
 ### 3c.5 - [SELF-REVIEW]
 

@@ -1,8 +1,10 @@
 ---
 name: brainstorm-prd
 description: Interview users and generate `PRD.md` (Product Requirements Document). Use when creating a PRD or starting a new project.
-persona: "Galbi"
-persona_role: "Project Manager"
+compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
+metadata:
+  persona: "Galbi"
+  persona-role: "Project Manager"
 ---
 
 # Brainstorm PRD
@@ -55,7 +57,7 @@ Before any interview:
    - `backend` → PRD MUST focus on business rules, service/API/data/auth, and consumer dependencies
    - `fullstack` → full PRD
 
-4. Run the shared runtime setup above. For this skill, ask whether to cover the 15 topics one by one or three at once, then apply the stored or chosen recommendation preference.
+4. Run the shared runtime setup above and apply all three pacing modes from the shared session policy. If preferences are saved, announce and proceed without another confirmation.
 
 5. Run the interview in the chosen mode. Wait for the answer before continuing.
 

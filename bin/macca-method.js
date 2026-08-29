@@ -3,7 +3,7 @@
 "use strict";
 
 const fs = require("node:fs");
-const os = require("node:os");
+const crypto = require("node:crypto");
 const path = require("node:path");
 const readline = require("node:readline");
 
@@ -11,7 +11,10 @@ const PACKAGE_ROOT = path.resolve(__dirname, "..");
 const SOURCE_AGENTS_DIR = path.join(PACKAGE_ROOT, ".agents");
 const SOURCE_SKILLS_DIR = path.join(SOURCE_AGENTS_DIR, "skills");
 const SOURCE_MANAGED_SKILLS_FILE = path.join(SOURCE_AGENTS_DIR, "macca-managed-skills.txt");
-const SOURCE_LOCK_FILE = path.join(PACKAGE_ROOT, "skills-lock.json");
+const SOURCE_LOCK_FILE = path.join(SOURCE_AGENTS_DIR, "macca-lock.json");
+const OWNERSHIP_MARKER = ".macca-owned.json";
+const TRANSACTION_FILE = "macca-transaction.json";
+const STATE_FILE = "macca-state.json";
 
 const TOOL_DEFINITIONS = [
     {
@@ -53,8 +56,8 @@ const TOOL_DEFINITIONS = [
         key: "opencode",
         aliases: [],
         label: "OpenCode",
-        destination: (targetDir) => path.join(targetDir, ".opencode", "skill"),
-        displayDestination: ".opencode/skill/"
+        destination: (targetDir) => path.join(targetDir, ".opencode", "skills"),
+        displayDestination: ".opencode/skills/"
     },
     {
         key: "kilo",
@@ -74,14 +77,8 @@ const TOOL_DEFINITIONS = [
         key: "kimi",
         aliases: ["kimi-cli"],
         label: "Kimi CLI",
-        destination: () => {
-            if (process.platform === "win32") {
-                return path.join(process.env.APPDATA || path.join(os.homedir(), "AppData", "Roaming"), "agents", "skills");
-            }
-
-            return path.join(os.homedir(), ".config", "agents", "skills");
-        },
-        displayDestination: process.platform === "win32" ? "%APPDATA%\\agents\\skills\\" : "~/.config/agents/skills/"
+        destination: (targetDir) => path.join(targetDir, ".agents", "skills"),
+        displayDestination: ".agents/skills/"
     }
 ];
 
@@ -105,13 +102,13 @@ function main() {
             return;
         }
 
-        if (args.help || command === "help") {
-            printHelp();
+        if (args.listTools) {
+            printToolList();
             return;
         }
 
-        if (args.listTools) {
-            printToolList();
+        if (args.help || command === "help") {
+            printHelp();
             return;
         }
 
@@ -262,7 +259,7 @@ function ensurePackagedFiles() {
     }
 
     if (!fs.existsSync(SOURCE_LOCK_FILE)) {
-        throw new Error("skills-lock.json is missing from the package.");
+        throw new Error(".agents/macca-lock.json is missing from the package.");
     }
 }
 
@@ -329,14 +326,38 @@ function unique(values) {
 function getSourceManagedSkills() {
     const managedSkills = readNonEmptyLines(SOURCE_MANAGED_SKILLS_FILE);
     if (managedSkills.length > 0) {
-        return managedSkills;
+        return validateManagedSkillNames(managedSkills, "packaged managed-skill manifest");
     }
 
-    return fs
+    return validateManagedSkillNames(fs
         .readdirSync(SOURCE_SKILLS_DIR, { withFileTypes: true })
         .filter((entry) => entry.isDirectory())
         .map((entry) => entry.name)
-        .sort();
+        .sort(), "packaged skills directory");
+}
+
+function validateManagedSkillNames(skillNames, sourceLabel) {
+    const validName = /^(?:_[a-z0-9]+|[a-z0-9]+(?:-[a-z0-9]+)*)$/;
+
+    for (const skillName of skillNames) {
+        if (!validName.test(skillName) || skillName.includes("..") || path.basename(skillName) !== skillName) {
+            throw new Error(`Unsafe skill name in ${sourceLabel}: ${skillName}`);
+        }
+    }
+
+    return unique(skillNames);
+}
+
+function resolveOwnedSkillPath(destination, skillName) {
+    validateManagedSkillNames([skillName], "managed-skill manifest");
+    const root = path.resolve(destination);
+    const target = path.resolve(root, skillName);
+
+    if (!target.startsWith(`${root}${path.sep}`)) {
+        throw new Error(`Refusing path outside skill destination: ${skillName}`);
+    }
+
+    return target;
 }
 
 function normalizeLanguage(value) {
@@ -366,6 +387,27 @@ function ensureDirectory(directoryPath) {
     fs.mkdirSync(directoryPath, { recursive: true });
 }
 
+function assertSafeProjectPath(targetDir, destination) {
+    const targetRoot = path.resolve(targetDir);
+    const resolvedDestination = path.resolve(destination);
+    if (resolvedDestination !== targetRoot && !resolvedDestination.startsWith(`${targetRoot}${path.sep}`)) {
+        throw new Error(`Refusing destination outside target project: ${destination}`);
+    }
+
+    if (fs.existsSync(targetRoot) && fs.lstatSync(targetRoot).isSymbolicLink()) {
+        throw new Error(`Refusing symlinked target project: ${targetRoot}`);
+    }
+
+    const relative = path.relative(targetRoot, resolvedDestination);
+    let current = targetRoot;
+    for (const segment of relative.split(path.sep).filter(Boolean)) {
+        current = path.join(current, segment);
+        if (fs.existsSync(current) && fs.lstatSync(current).isSymbolicLink()) {
+            throw new Error(`Refusing symlinked skill destination component: ${current}`);
+        }
+    }
+}
+
 function writeTextFile(filePath, content) {
     ensureDirectory(path.dirname(filePath));
     fs.writeFileSync(filePath, content, "utf8");
@@ -376,10 +418,416 @@ function copyFile(sourcePath, targetPath) {
     fs.copyFileSync(sourcePath, targetPath);
 }
 
-function copyDirectory(sourcePath, targetPath) {
-    ensureDirectory(path.dirname(targetPath));
-    fs.rmSync(targetPath, { recursive: true, force: true });
-    fs.cpSync(sourcePath, targetPath, { recursive: true });
+function hashFile(filePath) {
+    return crypto.createHash("sha256").update(fs.readFileSync(filePath)).digest("hex");
+}
+
+function hashText(content) {
+    return crypto.createHash("sha256").update(content).digest("hex");
+}
+
+function getDirectoryFileHashes(directoryPath) {
+    const hashes = {};
+
+    function walk(currentPath, relativePath = "") {
+        const entries = fs.readdirSync(currentPath, { withFileTypes: true })
+            .filter((entry) => entry.name !== OWNERSHIP_MARKER)
+            .sort((left, right) => left.name.localeCompare(right.name));
+
+        for (const entry of entries) {
+            const entryPath = path.join(currentPath, entry.name);
+            const entryRelativePath = path.join(relativePath, entry.name).split(path.sep).join("/");
+            if (entry.isSymbolicLink()) {
+                throw new Error(`Refusing symlink inside managed skill: ${entryPath}`);
+            }
+            if (entry.isDirectory()) {
+                walk(entryPath, entryRelativePath);
+            } else if (entry.isFile()) {
+                hashes[entryRelativePath] = hashFile(entryPath);
+            } else {
+                throw new Error(`Unsupported file type inside managed skill: ${entryPath}`);
+            }
+        }
+    }
+
+    walk(directoryPath);
+    return hashes;
+}
+
+function hashDirectory(directoryPath) {
+    return hashText(JSON.stringify(getDirectoryFileHashes(directoryPath)));
+}
+
+function buildInstalledLock(managedSkills) {
+    const lock = JSON.parse(fs.readFileSync(SOURCE_LOCK_FILE, "utf8"));
+    lock.hashAlgorithm = "sha256";
+    lock.payloadFiles = {};
+    for (const skillName of managedSkills) {
+        lock.payloadFiles[skillName] = getDirectoryFileHashes(path.join(SOURCE_SKILLS_DIR, skillName));
+    }
+    return `${JSON.stringify(lock, null, 2)}\n`;
+}
+
+function readOwnershipMarker(targetPath, expectedSkill = path.basename(targetPath)) {
+    const markerPath = path.join(targetPath, OWNERSHIP_MARKER);
+    if (!fs.existsSync(markerPath)) {
+        return null;
+    }
+
+    try {
+        const marker = JSON.parse(fs.readFileSync(markerPath, "utf8"));
+        if (marker.owner !== "macca-method" || marker.skill !== expectedSkill) {
+            return null;
+        }
+        return marker;
+    } catch {
+        return null;
+    }
+}
+
+function isMaccaOwned(targetPath) {
+    return readOwnershipMarker(targetPath) !== null;
+}
+
+function assertManagedDirectoryUnchanged(targetPath) {
+    const marker = readOwnershipMarker(targetPath);
+    if (!marker) {
+        throw new Error(`Refusing to overwrite unowned skill directory: ${targetPath}`);
+    }
+    if (!marker.payloadHash || marker.payloadHash !== hashDirectory(targetPath)) {
+        throw new Error(`Refusing to overwrite locally modified managed skill: ${targetPath}`);
+    }
+}
+
+function readJsonObject(filePath, label) {
+    try {
+        const value = JSON.parse(fs.readFileSync(filePath, "utf8"));
+        if (!value || typeof value !== "object" || Array.isArray(value)) {
+            throw new Error("root value must be an object");
+        }
+        return value;
+    } catch (error) {
+        throw new Error(`Invalid ${label} at ${filePath}: ${error.message}`);
+    }
+}
+
+function assertManagedFilesUnchanged(agentsDirectory) {
+    const statePath = path.join(agentsDirectory, STATE_FILE);
+    if (!fs.existsSync(statePath)) {
+        return;
+    }
+    const state = readJsonObject(statePath, "MACCA state");
+    for (const [fileName, expectedHash] of Object.entries(state.files || {})) {
+        const filePath = path.join(agentsDirectory, fileName);
+        if (!fs.existsSync(filePath) || hashFile(filePath) !== expectedHash) {
+            throw new Error(`Refusing to overwrite locally modified MACCA metadata: ${filePath}`);
+        }
+    }
+}
+
+function buildStateContent(files) {
+    const hashes = {};
+    for (const [fileName, content] of Object.entries(files)) {
+        hashes[fileName] = hashText(content);
+    }
+    return `${JSON.stringify({ version: 1, hashAlgorithm: "sha256", files: hashes }, null, 2)}\n`;
+}
+
+function writeJsonAtomic(filePath, value) {
+    const temporaryPath = `${filePath}.tmp-${process.pid}`;
+    fs.writeFileSync(temporaryPath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+    fs.renameSync(temporaryPath, filePath);
+}
+
+function removeManagedPath(targetPath, kind) {
+    fs.rmSync(targetPath, { recursive: kind === "directory", force: true });
+}
+
+function assertTransactionPayload(entry, transactionId, candidatePath) {
+    if (!fs.existsSync(candidatePath)) {
+        return;
+    }
+    if (entry.kind === "directory") {
+        const marker = readOwnershipMarker(candidatePath, path.basename(entry.targetPath));
+        if (!marker || marker.transactionId !== transactionId) {
+            throw new Error(`Refusing recovery of directory without matching transaction evidence: ${candidatePath}`);
+        }
+        return;
+    }
+    if (!entry.stagedHash || hashFile(candidatePath) !== entry.stagedHash) {
+        throw new Error(`Refusing recovery of file without matching transaction hash: ${candidatePath}`);
+    }
+}
+
+function assertTransactionBackup(entry) {
+    if (!fs.existsSync(entry.backupPath)) {
+        return;
+    }
+    if (entry.kind === "directory") {
+        const marker = readOwnershipMarker(entry.backupPath, path.basename(entry.targetPath));
+        if (!marker || !marker.payloadHash || marker.payloadHash !== hashDirectory(entry.backupPath)) {
+            throw new Error(`Refusing recovery from unowned or modified backup directory: ${entry.backupPath}`);
+        }
+    }
+}
+
+function validateTransactionEntries(targetDir, journal) {
+    if (journal.version !== 1 || !["committing", "committed"].includes(journal.phase)) {
+        throw new Error("Unsupported MACCA transaction journal version or phase");
+    }
+    if (typeof journal.transactionId !== "string" || !/^\d+-\d+-[a-f0-9]+$/.test(journal.transactionId)) {
+        throw new Error("Invalid MACCA transaction ID");
+    }
+    if (!Array.isArray(journal.entries)) {
+        throw new Error("Invalid MACCA transaction journal entries");
+    }
+
+    const metadataTargets = new Set([
+        "macca-managed-skills.txt",
+        "macca-lock.json",
+        "macca-tools.txt",
+        "developer-config.json",
+        STATE_FILE
+    ].map((fileName) => path.resolve(targetDir, ".agents", fileName)));
+    const skillParents = new Set(
+        TOOL_DEFINITIONS.map((tool) => path.resolve(tool.destination(targetDir)))
+    );
+    const seenPaths = new Set();
+
+    for (const entry of journal.entries) {
+        if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+            throw new Error("Invalid MACCA transaction journal entry");
+        }
+        if (entry.kind !== "directory" && entry.kind !== "file") {
+            throw new Error(`Invalid transaction entry kind: ${entry.kind}`);
+        }
+        if (typeof entry.targetPath !== "string" || typeof entry.backupPath !== "string") {
+            throw new Error("Transaction entry paths must be strings");
+        }
+        if (entry.stagingPath !== null && typeof entry.stagingPath !== "string") {
+            throw new Error("Transaction staging path must be a string or null");
+        }
+        if (typeof entry.hadTarget !== "boolean") {
+            throw new Error("Transaction hadTarget must be boolean");
+        }
+        if (entry.stagingPath !== null && (typeof entry.stagedHash !== "string" || !/^[a-f0-9]{64}$/.test(entry.stagedHash))) {
+            throw new Error("Transaction staged payload hash is missing or invalid");
+        }
+
+        const targetPath = path.resolve(entry.targetPath);
+        const parent = path.dirname(targetPath);
+        const targetName = path.basename(targetPath);
+        const isValidFile = entry.kind === "file" && metadataTargets.has(targetPath);
+        const isValidSkill = entry.kind === "directory"
+            && skillParents.has(parent)
+            && /^(?:_[a-z0-9]+|[a-z0-9]+(?:-[a-z0-9]+)*)$/.test(targetName);
+        if (!isValidFile && !isValidSkill) {
+            throw new Error(`Transaction target is not a managed MACCA path: ${targetPath}`);
+        }
+
+        const backupPath = path.resolve(entry.backupPath);
+        const expectedBackupPath = path.join(parent, `.${targetName}.macca-backup-${journal.transactionId}`);
+        if (backupPath !== expectedBackupPath) {
+            throw new Error(`Invalid MACCA transaction backup path: ${backupPath}`);
+        }
+        if (entry.stagingPath !== null) {
+            const stagingPath = path.resolve(entry.stagingPath);
+            const expectedStagingPath = path.join(parent, `.${targetName}.macca-stage-${journal.transactionId}`);
+            if (stagingPath !== expectedStagingPath) {
+                throw new Error(`Invalid MACCA transaction staging path: ${stagingPath}`);
+            }
+        }
+
+        for (const candidate of [targetPath, backupPath, entry.stagingPath && path.resolve(entry.stagingPath)].filter(Boolean)) {
+            assertSafeProjectPath(targetDir, candidate);
+            if (seenPaths.has(candidate)) {
+                throw new Error(`Duplicate path in MACCA transaction journal: ${candidate}`);
+            }
+            seenPaths.add(candidate);
+        }
+    }
+
+    return journal.entries;
+}
+
+function recoverInterruptedTransaction(targetDir) {
+    const journalPath = path.join(targetDir, ".agents", TRANSACTION_FILE);
+    assertSafeProjectPath(targetDir, journalPath);
+    if (!fs.existsSync(journalPath)) {
+        return;
+    }
+
+    const journal = readJsonObject(journalPath, "MACCA transaction journal");
+    const entries = validateTransactionEntries(targetDir, journal);
+    for (const entry of entries) {
+        assertTransactionBackup(entry);
+        if (journal.phase === "committed" || fs.existsSync(entry.backupPath) || !entry.hadTarget) {
+            assertTransactionPayload(entry, journal.transactionId, entry.targetPath);
+        }
+        if (entry.stagingPath && fs.existsSync(entry.stagingPath)) {
+            assertTransactionPayload(entry, journal.transactionId, entry.stagingPath);
+        }
+    }
+    if (journal.phase === "committed") {
+        for (const entry of entries) {
+            removeManagedPath(entry.backupPath, entry.kind);
+            if (entry.stagingPath) removeManagedPath(entry.stagingPath, entry.kind);
+        }
+    } else {
+        for (const entry of [...entries].reverse()) {
+            if (fs.existsSync(entry.backupPath)) {
+                removeManagedPath(entry.targetPath, entry.kind);
+                fs.renameSync(entry.backupPath, entry.targetPath);
+            } else if (!entry.hadTarget) {
+                removeManagedPath(entry.targetPath, entry.kind);
+            }
+            if (entry.stagingPath) removeManagedPath(entry.stagingPath, entry.kind);
+        }
+    }
+    fs.rmSync(journalPath, { force: true });
+}
+
+function getUniqueDestinations(targetDir, tools) {
+    const destinations = new Map();
+    for (const toolKey of tools) {
+        const tool = TOOL_BY_KEY.get(toolKey);
+        if (!tool) {
+            throw new Error(`Unsupported tool: ${toolKey}`);
+        }
+        const destination = tool.destination(targetDir);
+        assertSafeProjectPath(targetDir, destination);
+        destinations.set(path.resolve(destination), destination);
+    }
+    return [...destinations.values()];
+}
+
+function applySkillTransaction(entries, targetDir) {
+    const suffix = `${process.pid}-${Date.now()}-${crypto.randomBytes(8).toString("hex")}`;
+    const prepared = [];
+    const committed = [];
+    const journalPath = path.join(targetDir, ".agents", TRANSACTION_FILE);
+
+    for (const entry of entries) {
+        const { targetPath, sourcePath, content, kind = "directory", allowLegacyOwned = false } = entry;
+        const targetName = path.basename(targetPath);
+        const parent = path.dirname(targetPath);
+        if (fs.existsSync(targetPath)) {
+            const stat = fs.lstatSync(targetPath);
+            if (stat.isSymbolicLink()) {
+                throw new Error(`Refusing to replace symlinked managed path: ${targetPath}`);
+            }
+            if (kind === "directory" && !stat.isDirectory()) {
+                throw new Error(`Skill destination is not a directory: ${targetPath}`);
+            }
+            if (kind === "file" && !stat.isFile()) {
+                throw new Error(`Managed file destination is not a file: ${targetPath}`);
+            }
+            if (kind === "directory" && sourcePath && !isMaccaOwned(targetPath) && !allowLegacyOwned) {
+                throw new Error(`Refusing to overwrite unowned skill directory: ${targetPath}`);
+            }
+            if (kind === "directory" && sourcePath) {
+                assertManagedDirectoryUnchanged(targetPath);
+            }
+        }
+        prepared.push({
+            ...entry,
+            kind,
+            hadTarget: fs.existsSync(targetPath),
+            stagingPath: sourcePath || content !== undefined
+                ? path.join(parent, `.${targetName}.macca-stage-${suffix}`)
+                : null,
+            backupPath: path.join(parent, `.${targetName}.macca-backup-${suffix}`)
+        });
+    }
+
+    try {
+        for (const entry of prepared) {
+            ensureDirectory(path.dirname(entry.targetPath));
+            if (!entry.sourcePath && entry.content === undefined) {
+                continue;
+            }
+            if (entry.kind === "file") {
+                if (entry.sourcePath) {
+                    fs.copyFileSync(entry.sourcePath, entry.stagingPath);
+                } else {
+                    fs.writeFileSync(entry.stagingPath, entry.content, "utf8");
+                }
+            } else {
+                fs.cpSync(entry.sourcePath, entry.stagingPath, { recursive: true });
+                const payloadHash = hashDirectory(entry.stagingPath);
+                writeTextFile(
+                    path.join(entry.stagingPath, OWNERSHIP_MARKER),
+                    `${JSON.stringify({
+                        owner: "macca-method",
+                        skill: path.basename(entry.targetPath),
+                        hashAlgorithm: "sha256",
+                        payloadHash,
+                        transactionId: suffix
+                    }, null, 2)}\n`
+                );
+            }
+            entry.stagedHash = entry.kind === "file"
+                ? hashFile(entry.stagingPath)
+                : hashDirectory(entry.stagingPath);
+        }
+
+        writeJsonAtomic(journalPath, {
+            version: 1,
+            phase: "committing",
+            transactionId: suffix,
+            entries: prepared.map(({ targetPath, stagingPath, backupPath, kind, hadTarget, stagedHash }) => ({
+                targetPath,
+                stagingPath,
+                backupPath,
+                kind,
+                hadTarget,
+                stagedHash: stagingPath ? stagedHash : null
+            }))
+        });
+
+        for (const entry of prepared) {
+            if (entry.hadTarget) {
+                fs.renameSync(entry.targetPath, entry.backupPath);
+            }
+            committed.push(entry);
+            if (entry.sourcePath || entry.content !== undefined) {
+                fs.renameSync(entry.stagingPath, entry.targetPath);
+            }
+        }
+        writeJsonAtomic(journalPath, {
+            version: 1,
+            phase: "committed",
+            transactionId: suffix,
+            entries: prepared.map(({ targetPath, stagingPath, backupPath, kind, hadTarget, stagedHash }) => ({
+                targetPath,
+                stagingPath,
+                backupPath,
+                kind,
+                hadTarget,
+                stagedHash: stagingPath ? stagedHash : null
+            }))
+        });
+    } catch (error) {
+        for (const entry of [...committed].reverse()) {
+            fs.rmSync(entry.targetPath, { recursive: entry.kind === "directory", force: true });
+            if (entry.hadTarget && fs.existsSync(entry.backupPath)) {
+                fs.renameSync(entry.backupPath, entry.targetPath);
+            }
+        }
+        fs.rmSync(journalPath, { force: true });
+        throw error;
+    } finally {
+        for (const entry of prepared) {
+            if (entry.stagingPath) {
+                fs.rmSync(entry.stagingPath, { recursive: entry.kind === "directory", force: true });
+            }
+        }
+    }
+
+    for (const entry of committed) {
+        fs.rmSync(entry.backupPath, { recursive: entry.kind === "directory", force: true });
+    }
+    fs.rmSync(journalPath, { force: true });
 }
 
 function normalizeToolList(values) {
@@ -407,20 +855,57 @@ function normalizeToolList(values) {
 }
 
 function buildDeveloperConfig(options) {
-    return {
-        name: options.name,
-        project: options.project,
-        languagePreferences: {
-            communication: {
+    const config = {};
+    if (options.name !== undefined) config.name = options.name;
+    if (options.project !== undefined) config.project = options.project;
+    if (options.communicationLanguage !== undefined || options.documentLanguage !== undefined) {
+        config.languagePreferences = {};
+        if (options.communicationLanguage !== undefined) {
+            config.languagePreferences.communication = {
                 raw: options.communicationLanguage,
                 normalized: normalizeLanguage(options.communicationLanguage)
-            },
-            documents: {
+            };
+        }
+        if (options.documentLanguage !== undefined) {
+            config.languagePreferences.documents = {
                 raw: options.documentLanguage,
                 normalized: normalizeLanguage(options.documentLanguage)
-            }
+            };
         }
-    };
+    }
+    return config;
+}
+
+function mergeObjects(existing, update) {
+    if (!existing || typeof existing !== "object" || Array.isArray(existing)) {
+        return update;
+    }
+
+    const merged = { ...existing };
+    for (const [key, value] of Object.entries(update)) {
+        if (value && typeof value === "object" && !Array.isArray(value)) {
+            merged[key] = mergeObjects(existing[key], value);
+        } else {
+            merged[key] = value;
+        }
+    }
+    return merged;
+}
+
+function readDeveloperConfig(filePath) {
+    if (!fs.existsSync(filePath)) {
+        return {};
+    }
+
+    try {
+        const value = JSON.parse(fs.readFileSync(filePath, "utf8"));
+        if (!value || typeof value !== "object" || Array.isArray(value)) {
+            throw new Error("root value must be an object");
+        }
+        return value;
+    } catch (error) {
+        throw new Error(`Cannot preserve malformed ${filePath}: ${error.message}`);
+    }
 }
 
 function createPrompt() {
@@ -531,77 +1016,108 @@ function applyInstall(targetDir, tools, metadata) {
     const managedSkills = getSourceManagedSkills();
     const agentsDirectory = path.join(targetDir, ".agents");
     ensureDirectory(targetDir);
-    ensureDirectory(agentsDirectory);
-
-    if (fs.existsSync(SOURCE_MANAGED_SKILLS_FILE)) {
-        copyFile(SOURCE_MANAGED_SKILLS_FILE, path.join(agentsDirectory, "macca-managed-skills.txt"));
-    } else {
-        writeTextFile(path.join(agentsDirectory, "macca-managed-skills.txt"), `${managedSkills.join("\n")}\n`);
+    assertSafeProjectPath(targetDir, agentsDirectory);
+    for (const fileName of ["macca-managed-skills.txt", "macca-tools.txt", "developer-config.json", "macca-lock.json", STATE_FILE]) {
+        assertSafeProjectPath(targetDir, path.join(agentsDirectory, fileName));
     }
-
-    copyFile(SOURCE_LOCK_FILE, path.join(targetDir, "skills-lock.json"));
-
-    for (const toolKey of tools) {
-        const tool = TOOL_BY_KEY.get(toolKey);
-        const destination = tool.destination(targetDir);
-        ensureDirectory(destination);
-
+    assertManagedFilesUnchanged(agentsDirectory);
+    const previousManagedSkills = validateManagedSkillNames(
+        readNonEmptyLines(path.join(agentsDirectory, "macca-managed-skills.txt")),
+        ".agents/macca-managed-skills.txt"
+    );
+    const entries = [];
+    for (const destination of getUniqueDestinations(targetDir, tools)) {
         for (const skillName of managedSkills) {
-            copyDirectory(path.join(SOURCE_SKILLS_DIR, skillName), path.join(destination, skillName));
+            entries.push({
+                sourcePath: path.join(SOURCE_SKILLS_DIR, skillName),
+                targetPath: resolveOwnedSkillPath(destination, skillName),
+                allowLegacyOwned: false
+            });
         }
     }
-
-    if (!tools.includes("codex")) {
-        fs.rmSync(path.join(agentsDirectory, "skills"), { recursive: true, force: true });
-    }
-
-    writeTextFile(path.join(agentsDirectory, "macca-tools.txt"), `${tools.join("\n")}\n`);
-    writeTextFile(
-        path.join(agentsDirectory, "developer-config.json"),
-        `${JSON.stringify(buildDeveloperConfig(metadata), null, 2)}\n`
+    const configPath = path.join(agentsDirectory, "developer-config.json");
+    const config = mergeObjects(readDeveloperConfig(configPath), buildDeveloperConfig(metadata));
+    const managedContent = fs.existsSync(SOURCE_MANAGED_SKILLS_FILE)
+        ? fs.readFileSync(SOURCE_MANAGED_SKILLS_FILE, "utf8")
+        : `${managedSkills.join("\n")}\n`;
+    const lockContent = buildInstalledLock(managedSkills);
+    const toolsContent = `${tools.join("\n")}\n`;
+    const stateContent = buildStateContent({
+        "macca-managed-skills.txt": managedContent,
+        "macca-lock.json": lockContent,
+        "macca-tools.txt": toolsContent
+    });
+    entries.push(
+        {
+            kind: "file",
+            content: managedContent,
+            targetPath: path.join(agentsDirectory, "macca-managed-skills.txt")
+        },
+        { kind: "file", content: lockContent, targetPath: path.join(agentsDirectory, "macca-lock.json") },
+        { kind: "file", content: toolsContent, targetPath: path.join(agentsDirectory, "macca-tools.txt") },
+        { kind: "file", content: `${JSON.stringify(config, null, 2)}\n`, targetPath: configPath },
+        { kind: "file", content: stateContent, targetPath: path.join(agentsDirectory, STATE_FILE) }
     );
+    applySkillTransaction(entries, targetDir);
 }
 
 function applyUpgrade(targetDir) {
     const agentsDirectory = path.join(targetDir, ".agents");
+    assertSafeProjectPath(targetDir, agentsDirectory);
+    for (const fileName of ["macca-managed-skills.txt", "macca-tools.txt", "developer-config.json", "macca-lock.json", STATE_FILE]) {
+        assertSafeProjectPath(targetDir, path.join(agentsDirectory, fileName));
+    }
+    assertManagedFilesUnchanged(agentsDirectory);
     const tools = readNonEmptyLines(path.join(agentsDirectory, "macca-tools.txt"));
     if (tools.length === 0) {
         throw new Error(".agents/macca-tools.txt was not found. Run install first so MACCA knows which tools to update.");
     }
 
-    const previousManagedSkills = readNonEmptyLines(path.join(agentsDirectory, "macca-managed-skills.txt"));
+    const previousManagedSkills = validateManagedSkillNames(
+        readNonEmptyLines(path.join(agentsDirectory, "macca-managed-skills.txt")),
+        ".agents/macca-managed-skills.txt"
+    );
     const nextManagedSkills = getSourceManagedSkills();
-    const skillsToClean = unique([...previousManagedSkills, ...nextManagedSkills]);
-
-    for (const toolKey of tools) {
-        const tool = TOOL_BY_KEY.get(toolKey);
-        if (!tool) {
-            throw new Error(`Unsupported tool in .agents/macca-tools.txt: ${toolKey}`);
-        }
-
-        const destination = tool.destination(targetDir);
-        ensureDirectory(destination);
-
-        for (const skillName of skillsToClean) {
-            fs.rmSync(path.join(destination, skillName), { recursive: true, force: true });
-        }
-
+    const entries = [];
+    for (const destination of getUniqueDestinations(targetDir, tools)) {
         for (const skillName of nextManagedSkills) {
-            copyDirectory(path.join(SOURCE_SKILLS_DIR, skillName), path.join(destination, skillName));
+            entries.push({
+                sourcePath: path.join(SOURCE_SKILLS_DIR, skillName),
+                targetPath: resolveOwnedSkillPath(destination, skillName),
+                allowLegacyOwned: false
+            });
+        }
+
+        for (const skillName of previousManagedSkills.filter((name) => !nextManagedSkills.includes(name))) {
+            const oldPath = resolveOwnedSkillPath(destination, skillName);
+            if (fs.existsSync(oldPath) && isMaccaOwned(oldPath)) {
+                assertManagedDirectoryUnchanged(oldPath);
+                entries.push({ sourcePath: null, targetPath: oldPath });
+            } else if (fs.existsSync(oldPath)) {
+                process.stderr.write(`Preserving unmarked legacy skill directory: ${oldPath}\n`);
+            }
         }
     }
-
-    if (!tools.includes("codex")) {
-        fs.rmSync(path.join(agentsDirectory, "skills"), { recursive: true, force: true });
-    }
-
-    if (fs.existsSync(SOURCE_MANAGED_SKILLS_FILE)) {
-        copyFile(SOURCE_MANAGED_SKILLS_FILE, path.join(agentsDirectory, "macca-managed-skills.txt"));
-    } else {
-        writeTextFile(path.join(agentsDirectory, "macca-managed-skills.txt"), `${nextManagedSkills.join("\n")}\n`);
-    }
-
-    copyFile(SOURCE_LOCK_FILE, path.join(targetDir, "skills-lock.json"));
+    const managedContent = fs.existsSync(SOURCE_MANAGED_SKILLS_FILE)
+        ? fs.readFileSync(SOURCE_MANAGED_SKILLS_FILE, "utf8")
+        : `${nextManagedSkills.join("\n")}\n`;
+    const lockContent = buildInstalledLock(nextManagedSkills);
+    const toolsContent = `${tools.join("\n")}\n`;
+    const stateContent = buildStateContent({
+        "macca-managed-skills.txt": managedContent,
+        "macca-lock.json": lockContent,
+        "macca-tools.txt": toolsContent
+    });
+    entries.push(
+        {
+            kind: "file",
+            content: managedContent,
+            targetPath: path.join(agentsDirectory, "macca-managed-skills.txt")
+        },
+        { kind: "file", content: lockContent, targetPath: path.join(agentsDirectory, "macca-lock.json") },
+        { kind: "file", content: stateContent, targetPath: path.join(agentsDirectory, STATE_FILE) }
+    );
+    applySkillTransaction(entries, targetDir);
 }
 
 function printInstallSummary(action, tools) {
@@ -619,16 +1135,38 @@ async function runInstall(args) {
         tools = args.yes ? ["codex"] : await promptForTools();
     }
 
+    const targetDir = resolveTargetDirectory(args.directory);
+    ensureDirectory(targetDir);
+    assertSafeProjectPath(targetDir, path.join(targetDir, ".agents"));
+    recoverInterruptedTransaction(targetDir);
+    const existingTools = readNonEmptyLines(path.join(targetDir, ".agents", "macca-tools.txt"));
+    tools = unique([...existingTools, ...tools]);
+    const configPath = path.join(targetDir, ".agents", "developer-config.json");
+    const existingConfig = readDeveloperConfig(configPath);
+    const hasExistingConfig = fs.existsSync(configPath);
     const metadata = args.yes
         ? {
-            name: args.name || "",
-            project: args.project || "",
-            communicationLanguage: args.communicationLanguage || "Bahasa Indonesia",
-            documentLanguage: args.documentLanguage || "Bahasa Indonesia"
+            name: args.name !== undefined ? args.name : (hasExistingConfig ? undefined : ""),
+            project: args.project !== undefined ? args.project : (hasExistingConfig ? undefined : ""),
+            communicationLanguage: args.communicationLanguage !== undefined
+                ? args.communicationLanguage
+                : (hasExistingConfig ? undefined : "Bahasa Indonesia"),
+            documentLanguage: args.documentLanguage !== undefined
+                ? args.documentLanguage
+                : (hasExistingConfig ? undefined : "Bahasa Indonesia")
         }
-        : await promptForMetadata(args);
+        : await promptForMetadata({
+            ...args,
+            name: args.name !== undefined ? args.name : existingConfig.name,
+            project: args.project !== undefined ? args.project : existingConfig.project,
+            communicationLanguage: args.communicationLanguage !== undefined
+                ? args.communicationLanguage
+                : existingConfig.languagePreferences?.communication?.raw,
+            documentLanguage: args.documentLanguage !== undefined
+                ? args.documentLanguage
+                : existingConfig.languagePreferences?.documents?.raw
+        });
 
-    const targetDir = resolveTargetDirectory(args.directory);
     applyInstall(targetDir, tools, metadata);
 
     printInstallSummary("installed", tools);
@@ -637,6 +1175,8 @@ async function runInstall(args) {
 
 function runUpgrade(args) {
     const targetDir = resolveTargetDirectory(args.directory);
+    assertSafeProjectPath(targetDir, path.join(targetDir, ".agents"));
+    recoverInterruptedTransaction(targetDir);
     const tools = readNonEmptyLines(path.join(targetDir, ".agents", "macca-tools.txt"));
     applyUpgrade(targetDir);
     printInstallSummary("updated", tools);

@@ -1,8 +1,10 @@
 ---
 name: rapat
 description: Skill for running team discussion sessions. Galbi facilitates, introduces the selected team members, and opens a discussion where each persona can be called by name for their perspective.
-persona: "Galbi"
-persona_role: "Project Manager"
+compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
+metadata:
+  persona: "Galbi"
+  persona-role: "Project Manager"
 ---
 
 # Team Meeting

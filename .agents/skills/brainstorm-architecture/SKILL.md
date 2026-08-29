@@ -1,8 +1,10 @@
 ---
 name: brainstorm-architecture
 description: Interview users and generate `architecture.md` (System Architecture). Use after `PRD.md` is complete to define the tech stack, structure, and architecture decisions.
-persona: "Fachri"
-persona_role: "Tech Lead"
+compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
+metadata:
+  persona: "Fachri"
+  persona-role: "Tech Lead"
 ---
 
 # Brainstorm Architecture
@@ -55,7 +57,7 @@ Before any interview:
     - `backend` → architecture.md MUST focus on backend architecture, service/data/auth, and consumer dependencies only
     - `fullstack` → full architecture.md
 
-4. Run the shared runtime setup above. For this skill, ask whether to cover the 10 topics one by one or three at once, then apply the stored or chosen recommendation preference.
+4. Run the shared runtime setup above and apply all three pacing modes from the shared session policy. If preferences are saved, announce and proceed without another confirmation.
 
 5. Run the interview in the chosen mode. Wait for answers.
 
@@ -67,7 +69,7 @@ Before any interview:
 
 ## Interview Topics (10 Topics)
 
-Ask the topics in order. Wait for the answer before moving on.
+Ask the topics in order and wait after each selected batch, not after every topic when batching is enabled.
 
 ### 1. System Context
 *"What systems and external services interact with this project?"*
