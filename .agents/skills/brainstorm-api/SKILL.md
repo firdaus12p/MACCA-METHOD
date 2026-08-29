@@ -1,6 +1,6 @@
 ---
 name: brainstorm-api
-description: Interviews users and generates `api.md` for REST, GraphQL, RPC/tRPC, event-driven, or mixed contracts. Use after applicable architecture/data decisions, or after architecture for a frontend consumer contract.
+description: Interviews users and generates `api.md` for REST, GraphQL, RPC/tRPC, event-driven, or mixed contracts, including lifecycle and reliability. Use only when the user explicitly requests an API contract after applicable architecture/data decisions.
 compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
 metadata:
   persona: "Fachri"
@@ -36,12 +36,13 @@ You are **@Fachri — Tech Lead**, a **Senior API Architect** who designs clear,
 
 Before any interview:
 
-1. Read `../_shared/references/runtime-config.md`.
-2. Read `../_shared/references/brainstorm-session.md`.
-3. Read `../_shared/references/scope-rules.md`.
+1. Read `../_shared/references/language-config.md`.
+2. Read `../_shared/references/config-mutation.md`.
+3. Read `../_shared/references/brainstorm-session.md`.
+4. Read `../_shared/references/scope-rules.md`.
 4. Use `languagePreferences.communication.normalized` for chat.
 5. Use `languagePreferences.documents.normalized` for the final `project-context/api.md`.
-6. Apply `brainstormPreferences.discussionMode` and `brainstormPreferences.recommendations` using the shared session policy.
+6. Apply `brainstormPreferences.discussionMode`, `recommendations`, and `discoveryDepth` using the shared session policy.
 
 ---
 
@@ -92,6 +93,7 @@ Protocol mapping:
 Collect:
 - Entry point appropriate to the selected protocol (base URL, GraphQL endpoint, RPC router, channel/broker)
 - Compatibility/versioning strategy appropriate to the protocol
+- Deprecation policy for external consumers: support window, notice channel, replacement operation, and sunset criteria
 - Authentication/identity transport appropriate to the protocol
 - Does cookie/session auth need CSRF protection?
 - Token lifetime, refresh, rotation, logout behavior
@@ -113,6 +115,7 @@ Collect:
   - `429` Too Many Requests — rate limit reached
   - `500` Internal Server Error
 - Application-level error codes in the response body? (for example `{ "code": "USER_NOT_FOUND" }`)
+- Retry classification: retryable or terminal, client action, timeout interaction, backoff, and `Retry-After`/protocol equivalent
 
 ### 3. Operation List by Resource
 *"What operations are needed? List endpoints, queries/mutations, procedures, or events by resource/module."*
@@ -139,168 +142,14 @@ Collect by selected protocol:
 - **REST/GraphQL/RPC:** cursor/offset pagination where applicable, filtering, sorting, query complexity/depth, batching, and rate/concurrency limits
 - **Event-driven:** partition/key strategy, ordering, backpressure, delivery guarantee, retry/dead-letter policy, deduplication, and consumer limits
 - **All modes:** sensitive operations, quotas, idempotency/replay protection, and how clients observe limit errors
+- API-specific SLOs inherited from PRD NFRs: latency, availability, timeout, and error target where relevant
+- Contract-test invariants/examples required to verify consumer/provider compatibility
 
-## api.md Output Format
+## api.md Output
 
-Render only sections that fit the selected protocol. The REST-shaped examples below are not mandatory for GraphQL, tRPC/RPC, or event contracts. For those modes, replace endpoint inventories and HTTP status tables with the protocol mapping above while preserving IDs, auth, examples, security, assumptions, and traceability.
+After discovery is complete and immediately before generating `project-context/api.md`, read `assets/api.template.md`.
 
-````markdown
-# API Documentation
-
-## Document Role
-- **Source of Truth:** External API contract for this project
-- **Primary Owner:** `brainstorm-api`
-- **Out of Scope:** Internal service architecture, DB migration details, and UI copy
-
-## Scope Summary
-| Area | Status | Notes |
-|------|--------|-------|
-| [resource / module] | Covered / Planned / Deferred | [short note] |
-
-## Canonical Terminology
-| Term | Meaning |
-|------|---------|
-| [term] | [exact meaning used in this API contract] |
-
-## Environments
-| Environment | Base URL |
-|-------------|----------|
-| Development | `http://localhost:3000/api/v1` |
-| Staging | `https://staging-api.domain.com/v1` |
-| Production | `https://api.domain.com/v1` |
-
-## Versioning
-- **Strategy:** URI path `/v1/` / Header `api-version: 1`
-- **Current Version:** v1
-
-## Authentication
-- **Method:** Bearer Token (JWT)
-- **Header:** `Authorization: Bearer <token>`
-- **Login Endpoint:** `POST /auth/login`
-- **Refresh Endpoint:** `POST /auth/refresh`
-
-## Security Controls
-- **CSRF Protection:** Yes / No / Not applicable — [when it applies]
-- **Ownership/Authorization Rules:** [access control summary]
-- **Sensitive Endpoints:** [login / password reset / upload / webhook / payment / admin actions]
-- **Idempotency/Replay Protection:** [which endpoints need it and how]
-- **Webhook Verification/Signing:** [if external integrations exist]
-
-## Standard Response Format
-```json
-{
-  "success": true,
-  "data": {},
-  "message": "string (optional)",
-  "meta": {
-    "page": 1,
-    "limit": 20,
-    "total": 100,
-    "hasNext": true
-  }
-}
-```
-
-## Error Catalog
-| HTTP Code | Internal Code | Meaning |
-|-----------|---------------|---------|
-| 400 | `VALIDATION_ERROR` | Invalid input; details in the `errors` field |
-| 401 | `UNAUTHORIZED` | Missing or expired token |
-| 403 | `FORBIDDEN` | No permission for this resource |
-| 404 | `NOT_FOUND` | Resource does not exist |
-| 409 | `CONFLICT` | Duplicate data (for example email already registered) |
-| 422 | `UNPROCESSABLE` | Business logic validation failed |
-| 429 | `RATE_LIMIT` | Too many requests; check the `Retry-After` header |
-| 500 | `SERVER_ERROR` | Internal server error |
-
-**Error Response Format:**
-```json
-{
-  "success": false,
-  "message": "User-friendly error message",
-  "code": "INTERNAL_CODE",
-  "errors": [
-    { "field": "email", "message": "Invalid email format" }
-  ]
-}
-```
-
-## Pagination
-- **Type:** Offset-based / Cursor-based
-- **Default:** `limit=20`, `page=1`
-- **Max Limit:** `100`
-
-## Rate Limiting
-- **Limit:** [X requests per minute]
-- **Headers:** `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
-
-## Endpoint Inventory
-| ID | Method | Path | Auth | Trace to |
-|----|--------|------|------|----------|
-| API-01 | GET | `/[resource]` | Required / Public | `FEAT-01` |
-| API-02 | POST | `/[resource]` | Required | `FEAT-01` |
-
----
-
-## Resource: [Resource Name]
-**Trace to:** [FEAT-01 / AC-01]
-
-### API-01 — GET /[resource]
-**Description:** Get a list of [resource]
-**Auth:** Required / Public
-**Authorization:** [role / ownership rule]
-
-**Query Params:**
-| Param | Type | Default | Description |
-|-------|------|---------|-------------|
-| page | number | 1 | Page number |
-| limit | number | 20 | Items per page |
-| [filter] | string | - | Filter by [field] |
-
-**200 Response:**
-```json
-{
-  "success": true,
-  "data": [{ "id": "uuid", "...": "..." }],
-  "meta": { "page": 1, "limit": 20, "total": 100, "hasNext": true }
-}
-```
-
----
-
-### API-02 — POST /[resource]
-**Description:** Create a new [resource]
-**Auth:** Required
-**Authorization:** [role / ownership rule]
-
-**Request Body:**
-```json
-{
-  "field": "string | required",
-  "field2": "number | optional"
-}
-```
-
-**201 Response:**
-```json
-{
-  "success": true,
-  "data": { "id": "uuid", "...": "..." }
-}
-```
-
-**Possible Errors:** `400` (validation), `409` (duplicate), `401` (not logged in)
-
-**Security Notes:** [CSRF / idempotency / upload limits / ownership checks / none]
-
----
-
-*[Repeat for each endpoint]*
-
-## Assumptions & Open Questions
-- [Unresolved API assumption or question]
-- [Decision still pending confirmation]
-````
+Adapt only sections that are applicable and preserve every required contract from the interview. Do not load the template during early discovery.
 
 ## After api.md Is Created
 

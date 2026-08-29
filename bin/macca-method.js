@@ -4,6 +4,7 @@
 
 const fs = require("node:fs");
 const crypto = require("node:crypto");
+const os = require("node:os");
 const path = require("node:path");
 const readline = require("node:readline");
 
@@ -12,6 +13,7 @@ const SOURCE_AGENTS_DIR = path.join(PACKAGE_ROOT, ".agents");
 const SOURCE_SKILLS_DIR = path.join(SOURCE_AGENTS_DIR, "skills");
 const SOURCE_MANAGED_SKILLS_FILE = path.join(SOURCE_AGENTS_DIR, "macca-managed-skills.txt");
 const SOURCE_LOCK_FILE = path.join(SOURCE_AGENTS_DIR, "macca-lock.json");
+const SOURCE_LEGACY_PAYLOADS_FILE = path.join(SOURCE_AGENTS_DIR, "legacy-payloads.json");
 const OWNERSHIP_MARKER = ".macca-owned.json";
 const TRANSACTION_FILE = "macca-transaction.json";
 const STATE_FILE = "macca-state.json";
@@ -307,6 +309,26 @@ function resolveTargetDirectory(rawDirectory) {
     return path.resolve(process.cwd(), rawDirectory);
 }
 
+function assertSafeTargetDirectory(rawDirectory) {
+    const requested = rawDirectory ? path.resolve(process.cwd(), rawDirectory) : process.cwd();
+    const absolute = path.isAbsolute(requested) ? requested : path.resolve(requested);
+    const segments = absolute.split(path.sep).filter(Boolean);
+    let current = absolute.startsWith(path.sep) ? path.sep : segments.shift() || absolute;
+
+    if (fs.existsSync(current) && fs.lstatSync(current).isSymbolicLink()) {
+        throw new Error(`Refusing symlinked target project ancestor: ${current}`);
+    }
+
+    for (const segment of segments) {
+        current = current === path.sep ? path.join(current, segment) : path.join(current, segment);
+        if (fs.existsSync(current) && fs.lstatSync(current).isSymbolicLink()) {
+            throw new Error(`Refusing symlinked target project ancestor: ${current}`);
+        }
+    }
+
+    return absolute;
+}
+
 function readNonEmptyLines(filePath) {
     if (!fs.existsSync(filePath)) {
         return [];
@@ -458,6 +480,32 @@ function hashDirectory(directoryPath) {
     return hashText(JSON.stringify(getDirectoryFileHashes(directoryPath)));
 }
 
+function getLegacyPayloadHashes() {
+    if (!fs.existsSync(SOURCE_LEGACY_PAYLOADS_FILE)) return {};
+    const releases = readJsonObject(SOURCE_LEGACY_PAYLOADS_FILE, "legacy payload fingerprints");
+    const combined = {};
+    for (const payloads of Object.values(releases)) {
+        if (!payloads || typeof payloads !== "object" || Array.isArray(payloads)) continue;
+        for (const [encodedSkillName, payloadHash] of Object.entries(payloads)) {
+            if (typeof payloadHash !== "string" || !/^[a-f0-9]{64}$/.test(payloadHash)) continue;
+            const skillName = encodedSkillName.startsWith("base64:")
+                ? Buffer.from(encodedSkillName.slice("base64:".length), "base64").toString("utf8")
+                : encodedSkillName;
+            if (!combined[skillName]) combined[skillName] = new Set();
+            combined[skillName].add(payloadHash);
+        }
+    }
+    return combined;
+}
+
+function isLegacyDirectoryUnchanged(targetPath, skillName) {
+    if (!fs.existsSync(targetPath) || isMaccaOwned(targetPath)) return false;
+    if (!fs.lstatSync(targetPath).isDirectory()) return false;
+    const hashes = getLegacyPayloadHashes()[skillName];
+    const payloadHash = hashDirectory(targetPath);
+    return Boolean(hashes && hashes.has(payloadHash));
+}
+
 function buildInstalledLock(managedSkills) {
     const lock = JSON.parse(fs.readFileSync(SOURCE_LOCK_FILE, "utf8"));
     lock.hashAlgorithm = "sha256";
@@ -565,7 +613,10 @@ function assertTransactionBackup(entry) {
     }
     if (entry.kind === "directory") {
         const marker = readOwnershipMarker(entry.backupPath, path.basename(entry.targetPath));
-        if (!marker || !marker.payloadHash || marker.payloadHash !== hashDirectory(entry.backupPath)) {
+        const validManaged = marker && marker.payloadHash && marker.payloadHash === hashDirectory(entry.backupPath);
+        const validLegacy = entry.legacySkillName
+            && isLegacyDirectoryUnchanged(entry.backupPath, entry.legacySkillName);
+        if (!validManaged && !validLegacy) {
             throw new Error(`Refusing recovery from unowned or modified backup directory: ${entry.backupPath}`);
         }
     }
@@ -589,9 +640,10 @@ function validateTransactionEntries(targetDir, journal) {
         "developer-config.json",
         STATE_FILE
     ].map((fileName) => path.resolve(targetDir, ".agents", fileName)));
-    const skillParents = new Set(
-        TOOL_DEFINITIONS.map((tool) => path.resolve(tool.destination(targetDir)))
-    );
+    const skillParents = new Set([
+        ...TOOL_DEFINITIONS.map((tool) => path.resolve(tool.destination(targetDir))),
+        path.resolve(targetDir, ".opencode", "skill")
+    ]);
     const seenPaths = new Set();
 
     for (const entry of journal.entries) {
@@ -609,6 +661,12 @@ function validateTransactionEntries(targetDir, journal) {
         }
         if (typeof entry.hadTarget !== "boolean") {
             throw new Error("Transaction hadTarget must be boolean");
+        }
+        if (entry.legacySkillName !== undefined && (
+            typeof entry.legacySkillName !== "string"
+            || !/^(?:_[a-z0-9]+|[a-z0-9]+(?:-[a-z0-9]+)*)$/.test(entry.legacySkillName)
+        )) {
+            throw new Error("Transaction legacy skill name is invalid");
         }
         if (entry.stagingPath !== null && (typeof entry.stagedHash !== "string" || !/^[a-f0-9]{64}$/.test(entry.stagedHash))) {
             throw new Error("Transaction staged payload hash is missing or invalid");
@@ -708,7 +766,7 @@ function applySkillTransaction(entries, targetDir) {
     const journalPath = path.join(targetDir, ".agents", TRANSACTION_FILE);
 
     for (const entry of entries) {
-        const { targetPath, sourcePath, content, kind = "directory", allowLegacyOwned = false } = entry;
+        const { targetPath, sourcePath, content, kind = "directory", legacySkillName } = entry;
         const targetName = path.basename(targetPath);
         const parent = path.dirname(targetPath);
         if (fs.existsSync(targetPath)) {
@@ -722,11 +780,12 @@ function applySkillTransaction(entries, targetDir) {
             if (kind === "file" && !stat.isFile()) {
                 throw new Error(`Managed file destination is not a file: ${targetPath}`);
             }
-            if (kind === "directory" && sourcePath && !isMaccaOwned(targetPath) && !allowLegacyOwned) {
-                throw new Error(`Refusing to overwrite unowned skill directory: ${targetPath}`);
-            }
-            if (kind === "directory" && sourcePath) {
-                assertManagedDirectoryUnchanged(targetPath);
+            if (kind === "directory") {
+                if (isMaccaOwned(targetPath)) {
+                    assertManagedDirectoryUnchanged(targetPath);
+                } else if (!legacySkillName || !isLegacyDirectoryUnchanged(targetPath, legacySkillName)) {
+                    throw new Error(`Refusing to overwrite or remove unowned skill directory: ${targetPath}`);
+                }
             }
         }
         prepared.push({
@@ -775,13 +834,14 @@ function applySkillTransaction(entries, targetDir) {
             version: 1,
             phase: "committing",
             transactionId: suffix,
-            entries: prepared.map(({ targetPath, stagingPath, backupPath, kind, hadTarget, stagedHash }) => ({
+            entries: prepared.map(({ targetPath, stagingPath, backupPath, kind, hadTarget, stagedHash, legacySkillName }) => ({
                 targetPath,
                 stagingPath,
                 backupPath,
                 kind,
                 hadTarget,
-                stagedHash: stagingPath ? stagedHash : null
+                stagedHash: stagingPath ? stagedHash : null,
+                legacySkillName
             }))
         });
 
@@ -798,13 +858,14 @@ function applySkillTransaction(entries, targetDir) {
             version: 1,
             phase: "committed",
             transactionId: suffix,
-            entries: prepared.map(({ targetPath, stagingPath, backupPath, kind, hadTarget, stagedHash }) => ({
+            entries: prepared.map(({ targetPath, stagingPath, backupPath, kind, hadTarget, stagedHash, legacySkillName }) => ({
                 targetPath,
                 stagingPath,
                 backupPath,
                 kind,
                 hadTarget,
-                stagedHash: stagingPath ? stagedHash : null
+                stagedHash: stagingPath ? stagedHash : null,
+                legacySkillName
             }))
         });
     } catch (error) {
@@ -1031,7 +1092,7 @@ function applyInstall(targetDir, tools, metadata) {
             entries.push({
                 sourcePath: path.join(SOURCE_SKILLS_DIR, skillName),
                 targetPath: resolveOwnedSkillPath(destination, skillName),
-                allowLegacyOwned: false
+                legacySkillName: skillName
             });
         }
     }
@@ -1084,7 +1145,7 @@ function applyUpgrade(targetDir) {
             entries.push({
                 sourcePath: path.join(SOURCE_SKILLS_DIR, skillName),
                 targetPath: resolveOwnedSkillPath(destination, skillName),
-                allowLegacyOwned: false
+                legacySkillName: skillName
             });
         }
 
@@ -1093,8 +1154,26 @@ function applyUpgrade(targetDir) {
             if (fs.existsSync(oldPath) && isMaccaOwned(oldPath)) {
                 assertManagedDirectoryUnchanged(oldPath);
                 entries.push({ sourcePath: null, targetPath: oldPath });
+            } else if (isLegacyDirectoryUnchanged(oldPath, skillName)) {
+                entries.push({ sourcePath: null, targetPath: oldPath, legacySkillName: skillName });
             } else if (fs.existsSync(oldPath)) {
                 process.stderr.write(`Preserving unmarked legacy skill directory: ${oldPath}\n`);
+            }
+        }
+    }
+
+    if (tools.includes("opencode")) {
+        const legacyOpenCodeRoot = path.join(targetDir, ".opencode", "skill");
+        assertSafeProjectPath(targetDir, legacyOpenCodeRoot);
+        for (const skillName of previousManagedSkills) {
+            const oldPath = resolveOwnedSkillPath(legacyOpenCodeRoot, skillName);
+            if (fs.existsSync(oldPath) && isMaccaOwned(oldPath)) {
+                assertManagedDirectoryUnchanged(oldPath);
+                entries.push({ sourcePath: null, targetPath: oldPath });
+            } else if (isLegacyDirectoryUnchanged(oldPath, skillName)) {
+                entries.push({ sourcePath: null, targetPath: oldPath, legacySkillName: skillName });
+            } else if (fs.existsSync(oldPath)) {
+                throw new Error(`Legacy OpenCode skill was modified; move or back it up before upgrade: ${oldPath}`);
             }
         }
     }
@@ -1118,6 +1197,42 @@ function applyUpgrade(targetDir) {
         { kind: "file", content: stateContent, targetPath: path.join(agentsDirectory, STATE_FILE) }
     );
     applySkillTransaction(entries, targetDir);
+
+    if (tools.includes("kimi")) reportLegacyKimiInstall();
+}
+
+function getLegacyKimiRoot() {
+    if (process.platform === "win32") {
+        return path.join(
+            process.env.APPDATA || path.join(os.homedir(), "AppData", "Roaming"),
+            "agents",
+            "skills"
+        );
+    }
+    return path.join(os.homedir(), ".config", "agents", "skills");
+}
+
+function reportLegacyKimiInstall() {
+    const legacyRoot = getLegacyKimiRoot();
+    if (!fs.existsSync(legacyRoot)) return;
+
+    const legacyHashes = getLegacyPayloadHashes();
+    const detected = [];
+    for (const [skillName, acceptedHashes] of Object.entries(legacyHashes)) {
+        const skillPath = path.join(legacyRoot, skillName);
+        if (!fs.existsSync(skillPath)) continue;
+        const stat = fs.lstatSync(skillPath);
+        if (stat.isSymbolicLink() || !stat.isDirectory()) continue;
+        const payloadHash = hashDirectory(skillPath);
+        detected.push({ skillPath, unchanged: acceptedHashes.has(payloadHash) });
+    }
+
+    if (!detected.length) return;
+    process.stderr.write(
+        `Legacy Kimi copies remain outside this project at ${legacyRoot}. `
+        + "MACCA did not delete global files. Verify the new project-local .agents/skills installation, "
+        + "then remove old copies manually if your Kimi version still discovers them.\n"
+    );
 }
 
 function printInstallSummary(action, tools) {
@@ -1135,7 +1250,7 @@ async function runInstall(args) {
         tools = args.yes ? ["codex"] : await promptForTools();
     }
 
-    const targetDir = resolveTargetDirectory(args.directory);
+    const targetDir = assertSafeTargetDirectory(args.directory);
     ensureDirectory(targetDir);
     assertSafeProjectPath(targetDir, path.join(targetDir, ".agents"));
     recoverInterruptedTransaction(targetDir);
@@ -1174,7 +1289,7 @@ async function runInstall(args) {
 }
 
 function runUpgrade(args) {
-    const targetDir = resolveTargetDirectory(args.directory);
+    const targetDir = assertSafeTargetDirectory(args.directory);
     assertSafeProjectPath(targetDir, path.join(targetDir, ".agents"));
     recoverInterruptedTransaction(targetDir);
     const tools = readNonEmptyLines(path.join(targetDir, ".agents", "macca-tools.txt"));

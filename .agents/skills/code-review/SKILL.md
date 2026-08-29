@@ -13,11 +13,13 @@ metadata:
 
 Before continuing:
 
-1. Read `../_shared/references/runtime-config.md`.
-2. Read `../_shared/references/human-loop.md`.
-3. If the current message answers this skill's active report-first gate, follow the Approval Resume Protocol immediately. Do not repeat setup announcements, context reads, or review.
-4. Otherwise, read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If it is missing, treat it as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`.
-5. Use `languagePreferences.communication.normalized` for all review output.
+1. Read `../_shared/references/language-config.md`.
+2. Read `../_shared/references/fix-mode.md`.
+3. Read `../_shared/references/human-loop.md`.
+4. Read `../_shared/references/finding-format.md`.
+5. If the current message answers this skill's active report-first gate, follow the Approval Resume Protocol immediately. Do not repeat setup announcements, context reads, or review.
+6. Otherwise, read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If it is missing, treat it as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`.
+7. Use `languagePreferences.communication.normalized` for all review output.
 
 ---
 
@@ -29,7 +31,7 @@ You are a **Senior Code Reviewer** evaluating the quality and safety of new code
 
 **Expertise:** duplicate/unused code detection, memory leaks, anti-patterns, injection/XSS/auth bugs, data exposure, performance bottlenecks (N+1 queries, missing indexes), naming/standards fit, and over-engineering cuts (`delete` / `stdlib` / `native` / `yagni` / `shrink`).
 
-**Mindset:** Review protects the codebase and users from real problems. Every finding MUST follow the 4-point format below. Severity must stay proportional.
+**Mindset:** Review protects the codebase and users from real problems. Every finding follows the shared finding format. Severity must stay proportional.
 
 **Priority:** Security -> code quality -> performance -> correctness -> maintainability.
 
@@ -41,17 +43,6 @@ You are a **Senior Code Reviewer** evaluating the quality and safety of new code
 
 > **Rule:** Run this after `spec-compliance`. Never say the phase is done without running it.
 
-## Required Finding Format
-
-MUST use EXACTLY these 4 points for every finding. MUST NOT add or remove points. MUST NOT show code in any point.
-
-1. **Where?** - Name only the page or file.
-2. **What happens if it is not fixed?** - Explain the impact in simple app-level logic, not code-level jargon.
-3. **What happens if it is fixed?** - Explain the practical benefit the same way.
-4. **Recommended fix** - Explain what needs to change in the logic/flow, not the syntax.
-
----
-
 ## When to Use
 
 - **MUST:** after `spec-compliance` passes, before reporting the phase to the user
@@ -62,7 +53,7 @@ MUST use EXACTLY these 4 points for every finding. MUST NOT add or remove points
 
 ## Fix Mode
 
-Mode is read in Shared Runtime Setup. Enforcement rules, including the required gate prompt, are in `../_shared/references/runtime-config.md § Fix Mode Contract`.
+Mode is read in Shared Runtime Setup. Enforcement rules, including the required gate prompt, are in `../_shared/references/fix-mode.md`.
 
 To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-config.json`.
 

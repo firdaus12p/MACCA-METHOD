@@ -1,12 +1,13 @@
 {
     "name": "macca-method",
-    "version": "1.1.0",
+    "version": "2.0.0",
     "description": "CLI installer for MACCA AI spec-driven development skills.",
     "license": "MIT",
     "scripts": {
-        "validate": "node --check ./bin/macca-method.js && node --check ./scripts/test-install.js && node --check ./scripts/run-skill-validator.js && node ./scripts/run-skill-validator.js && npm run test:install && npm pack --dry-run",
+        "validate": "node --check ./bin/macca-method.js && node --check ./scripts/test-install.js && node --check ./scripts/test-upgrade-legacy.js && node --check ./scripts/run-skill-validator.js && node --check ./scripts/validate-skill-behavior.js && node ./scripts/run-skill-validator.js && node ./scripts/validate-skill-behavior.js && npm run test:install && npm run test:upgrade:legacy && npm pack --dry-run",
         "test:install": "node ./scripts/test-install.js",
-        "test:install:published": "node ./scripts/test-install.js --published"
+        "test:install:published": "node ./scripts/test-install.js --published",
+        "test:upgrade:legacy": "node ./scripts/test-upgrade-legacy.js"
     },
     "bin": {
         "macca-method": "bin/macca-method.js"
@@ -15,7 +16,9 @@
         "bin/",
         ".agents/",
         "scripts/test-install.js",
+        "scripts/test-upgrade-legacy.js",
         "scripts/run-skill-validator.js",
+        "scripts/validate-skill-behavior.js",
         "aturan-pembuatan-skills.md",
         "image-macca-method.webp",
         "README.md",

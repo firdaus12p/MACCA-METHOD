@@ -1,6 +1,6 @@
 ---
 name: brainstorm-prd
-description: Interview users and generate `PRD.md` (Product Requirements Document). Use when creating a PRD or starting a new project.
+description: Interviews users and generates `PRD.md` with scope, outcomes, metrics, rollout, business rules, and traceability. Use only when the user explicitly wants to define a new product or create/recreate its PRD.
 compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
 metadata:
   persona: "Galbi"
@@ -36,12 +36,13 @@ You are an experienced **Product Manager** who turns raw ideas into clear, actio
 
 Before any interview:
 
-1. Read `../_shared/references/runtime-config.md`.
-2. Read `../_shared/references/brainstorm-session.md`.
-3. Read `../_shared/references/scope-rules.md`.
+1. Read `../_shared/references/language-config.md`.
+2. Read `../_shared/references/config-mutation.md`.
+3. Read `../_shared/references/brainstorm-session.md`.
+4. Read `../_shared/references/scope-rules.md`.
 4. Use `languagePreferences.communication.normalized` for chat.
 5. Use `languagePreferences.documents.normalized` for the final `project-context/PRD.md`.
-6. Apply `brainstormPreferences.discussionMode` and `brainstormPreferences.recommendations` using the shared session policy.
+6. Apply `brainstormPreferences.discussionMode`, `recommendations`, and `discoveryDepth` using the shared session policy.
 
 ---
 
@@ -92,6 +93,7 @@ Collect:
 
 Collect:
 - Current condition without this project
+- Current workaround and its time, cost, or reliability impact
 - Main pain points
 - Why existing solutions are not enough
 
@@ -119,6 +121,7 @@ Collect:
 - Step-by-step user journey
 - Different flows for different roles
 - Happy path vs error scenarios
+- Expected degraded behavior when data or an external dependency is unavailable
 
 ### 7. Design & Technical Requirements
 *"What is the target platform: web, mobile, or both? Any design references or technical preferences?"*
@@ -144,8 +147,10 @@ Collect:
 
 Collect:
 - MVP criteria
-- Success metrics
+- Success metrics with baseline, target, timeframe, measurement source, and owner
 - Timeline/deadline
+- Product rollout: pilot/beta/phased/full launch, target audience, and readiness criteria
+- Analytics events needed to measure the selected metrics, only when behavioral measurement is relevant
 
 ### 10. Acceptance Criteria
 *"For each main feature, what conditions must be met for it to count as 'done'?"*
@@ -204,101 +209,11 @@ All requirements must have stable Traceability IDs:
 
 Do not renumber old IDs in future updates; append new IDs sequentially.
 
-## PRD.md Output Format
+## PRD.md Output
 
-````markdown
-# PRD: [Project Name]
+After discovery is complete and immediately before generating `project-context/PRD.md`, read `assets/PRD.template.md`.
 
-> **Version:** 1.0 | **Date:** [date] | **Status:** Draft
-
-## Document Role
-- **Source of Truth:** Product scope, user intent, business rules, and success criteria
-- **Primary Owner:** `brainstorm-prd`
-- **Out of Scope:** API payload details, schema column definitions, code patterns, and implementation order
-
-## Canonical Terminology
-| Term | Meaning |
-|------|---------|
-| [Term] | [Exact meaning in this project] |
-
----
-
-## 1. Project Goal
-[Goal and vision — 1-2 paragraphs]
-
-## 2. Target Users
-| Persona | Description | Role |
-|---------|-------------|------|
-| [Persona 1] | [Description] | End User / Admin / etc |
-
-## 3. Problem Statement
-[Problem being solved]
-
-## 4. Core Features
-### MVP (Release 1)
-| ID | Feature | Description | Priority |
-|----|---------|-------------|----------|
-| FEAT-01 | [Feature] | [Description] | High |
-
-### Future Enhancements
-- **FEAT-02:** [Feature] — [Description]
-
-## 5. Business Rules
-- **BR-01:** [Rule]
-- **BR-02:** [Rule]
-
-## 6. User Flow
-### [Persona 1]
-1. [Step 1]
-2. [Step 2]
-
-## 7. Design & Technical Requirements
-- **Platform:** Web / Mobile / Desktop
-- **UI Reference:** [Link or name]
-- **Tech Stack (preferred):** [If any]
-- **Integrations:** [Third-party services]
-
-## 8. Non-Functional Requirements
-| ID | Category | Requirement | Target |
-|----|----------|-------------|--------|
-| NFR-01 | Performance | Page load time | < 3 seconds |
-| NFR-02 | Security | [Requirement] | [Target] |
-| NFR-03 | Scalability | Concurrent users | [Count] |
-| NFR-04 | Accessibility | [Requirement] | [Target] |
-
-## 9. Success Criteria (Minimum)
-- [ ] [Criterion 1]
-- [ ] [Criterion 2]
-
-## 10. Acceptance Criteria
-### FEAT-01: [Feature Name]
-- **AC-01:** **Given** [starting condition], **When** [user action], **Then** [expected result]
-
-## 11. Non-Goals / Out of Scope
-- [What will NOT be done]
-
-## 12. Assumptions
-- [Assumption 1]
-- [Assumption 2]
-
-## 13. User Stories
-- **US-01:** As a **[role]**, I want **[feature]** so that **[benefit]**
-
-## 14. Stakeholders
-| Name/Role | Responsibility |
-|-----------|----------------|
-| [Name] | [Role] |
-
-## 15. Open Questions
-| Question | Status | Owner |
-|----------|--------|-------|
-| [Question] | Pending | [Who] |
-
-## Reading Guide for AI
-- If this PRD conflicts with detailed implementation documents, the PRD wins on business intent and scope.
-- If a term is ambiguous, prioritize the definition in `Canonical Terminology`.
-- Use `Non-Goals / Out of Scope`, `Assumptions`, and `Open Questions` to avoid building more than necessary.
-````
+Adapt only sections that are applicable and preserve every required contract from the interview. Do not load the template during early discovery.
 
 ## After PRD.md Is Created
 

@@ -13,8 +13,10 @@ metadata:
 
 Before continuing:
 
-1. Read `../_shared/references/runtime-config.md`.
-2. Read `../_shared/references/human-loop.md`.
+1. Read `../_shared/references/language-config.md`.
+2. Read `../_shared/references/fix-mode.md`.
+3. Read `../_shared/references/human-loop.md`.
+4. Read `../_shared/references/finding-format.md`.
 3. If this message answers this skill's active report-first gate, resume directly under the Approval Resume Protocol. Do not rerun startup or compliance analysis.
 4. Otherwise, read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If it is missing, treat it as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`.
 5. Use `languagePreferences.communication.normalized` for all user-facing reports and review output.
@@ -45,7 +47,7 @@ You are a **QA Engineer and Spec Auditor** who ensures that no implementation dr
 
 ## Fix Mode
 
-Mode is read in Shared Runtime Setup. Enforcement rules, including the required gate prompt, are in `../_shared/references/runtime-config.md § Fix Mode Contract`.
+Mode is read in Shared Runtime Setup. Enforcement rules, including the required gate prompt, are in `../_shared/references/fix-mode.md`.
 
 To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-config.json`.
 
@@ -70,6 +72,8 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 - [ ] Acceptance criteria per feature are met (Given/When/Then from `PRD.md`)
 - [ ] No features from `PRD.md § Non-Goals` are included
 - [ ] NFRs are considered: performance, security, accessibility per `PRD.md § Non-Functional Requirements`
+- [ ] If this phase implements analytics or rollout behavior, it matches `PRD.md § Success Metrics and Rollout`; otherwise mark N/A
+- [ ] Failure/degraded behavior implemented by this phase matches the PRD where specified
 - [ ] If the PRD uses requirement IDs (`FEAT-*`, `BR-*`, etc.), phase code is traceable to the relevant IDs through Task.md
 - [ ] If changes are not yet in the PRD but are recorded in the active phase plan `## Approved Scope Delta`, DO NOT mark them as scope creep violations for this phase. Note them as `pending formal spec update` if needed.
 
@@ -91,6 +95,7 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 - [ ] Auth method matches `architecture.md § Authentication & Authorization`
 - [ ] State management is consistent - do not mix Zustand and Redux
 - [ ] API type is consistent - REST stays REST, not suddenly GraphQL
+- [ ] Operations, observability, rollback, and recovery constraints touched by this phase follow architecture; otherwise mark N/A
 
 **Example findings:**
 ```
@@ -110,6 +115,7 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 - [ ] Relationships/data placement match the selected model: keys, references, embedding, edges, streams, or equivalent
 - [ ] Delete, retention, archival, and projection behavior matches the contract where applicable
 - [ ] Required audit/version fields or event metadata exist where the selected model defines them
+- [ ] Tenant isolation, concurrency, and schema-evolution constraints touched by this phase match `schema.md`; otherwise mark N/A
 - [ ] PII is handled safely - never logged, never exposed in responses
 - [ ] If a table has `Trace to`, its usage aligns with the referenced requirement
 
@@ -131,6 +137,7 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 - [ ] Success result and error semantics match the protocol-native contract
 - [ ] Pagination/filtering or subscription/delivery behavior follows `api.md` where applicable
 - [ ] Authentication, authorization, idempotency, and replay controls match the contract
+- [ ] Deprecation, retry/timeout, SLO, and contract-test invariants touched by this phase match `api.md`; otherwise mark N/A
 - [ ] `API-*` operations remain traceable to requirements
 - [ ] A new operation listed in `## Approved Scope Delta` is temporary approved scope, not a rogue operation; note pending formal spec sync
 
@@ -152,6 +159,7 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 - [ ] TypeScript rules are followed: strict, no `any`, no `enum` (if forbidden)
 - [ ] Code style rules are followed: no `console.log`, early return, max function length
 - [ ] Security rules are followed: tokens in httpOnly cookies, no secrets in code
+- [ ] Applicable logging, migration, feature-flag, generated-code, and secret-rotation rules are followed
 
 **Example findings:**
 ```
@@ -171,6 +179,7 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 - [ ] Spacing uses the system - no random margin/padding
 - [ ] Border radius/shadow follow `StyleGuide § Component Style`
 - [ ] Breakpoints follow `StyleGuide § Responsive & Breakpoints`
+- [ ] Applicable operational states, accessibility, localization, and UI performance constraints are implemented
 
 **Example findings:**
 ```
@@ -192,6 +201,7 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 - [ ] The task is not half-finished - no unfinished work remains
 - [ ] If the task has traceability IDs, all are valid and point to real upstream artifacts
 - [ ] If an active phase task implements new scope recorded only in `## Approved Scope Delta`, treat it as valid for the active phase, but mention that syncing into the main spec documents is still pending if not done yet.
+- [ ] Every applicable Phase Definition of Done item has evidence; `N/A` items include a reason
 
 **Example findings:**
 ```
@@ -269,23 +279,7 @@ The report is shown in this session chat. Do not save it to a file unless the us
 | [ID] | `[path]` | [bounded change] | [compliance check/test] |
 ```
 
-**Format for each finding - MUST use these 4 points. MUST NOT show code:**
-
-```markdown
-#### [Severity] [ID] [Short Title]
-
-**Where?**
-[Page or file name only]
-
-**What happens if it is not fixed?**
-[Explain the impact in simple logic - as if speaking to a user who understands how the app works, not the code. Short and direct.]
-
-**What happens if it is fixed?**
-[Explain the benefit in simple logic. Short and direct.]
-
-**Recommended fix**
-[Explain what needs to change in logic and flow, not code syntax.]
-```
+Format each finding with the shared `finding-format.md` loaded during setup.
 
 ---
 

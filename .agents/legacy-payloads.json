@@ -1,0 +1,22 @@
+{
+  "1.1.0": {
+    "_shared": "fa7d1f79c95bfe33cffd2ea0215e7bc3c01aaf1d5a72d8462a626f5c7ff8396e",
+    "add-feature": "dd31b4cbf66e09b313fdfa2d47d05a9625d5b68f265ddf0e2d9264f9d6309f4d",
+    "brainstorm-api": "07349d8b7ff9b9dadbb89a5dcfd1bfdba1e40e14b913bf94ef4f33ecc24987fa",
+    "brainstorm-architecture": "97193d976c5cecdf5cc12dde4d0b691ecaf4fe1fd23bf8252dbc7e8bdd161359",
+    "brainstorm-prd": "ac5c7cd95f33083f030cf2a0b2a1db8a9833fb5da3db11b72e729c96d36d58b0",
+    "brainstorm-rules": "4a1ddd8c7e36eb6abd481af276ac6d6eac183431f2eceaf902e7cb33b0eba744",
+    "brainstorm-schema": "06f6251ac07583d4118c8bdb88a39c812ba390a81a487b04ddf830f4bd0dd83a",
+    "brainstorm-styleguide": "2f0fc76c074097ae94e54e17deda18209c8d6c39053c35150ed953b5cf0af9b7",
+    "brainstorm-task": "2c0cb3a51b42ab9a2784f668473535d07bd46eb099768af9de000a42912596c6",
+    "bug-fix": "fae7c87df1c50abd0361806e6e4e472827939de87407eaff1485665fa35b1aa6",
+    "code-review": "df924d268b3068cfab2f8f3b1046bdbc9341d69cf62b2c7c2f8951ef6a3b0f39",
+    "developer": "9e446d83747c86609d7dff34e258d3e83d8b6267fcbb91723f861fbe8311e084",
+    "help": "7cb8ebe46069266e56fee5cacbc5c7bc28f68459e8752a1a1ed5a8734c436f06",
+    "quick-dev": "4912623f5f7c2697dadaebbd04e950b5afb08301246279fa1eb948aeedcb9371",
+    "base64:cmFwYXQ=": "630692d55e8bf515fd0fe263404cce034d66d9b7037dec26df8a3017626a6473",
+    "spec-audit": "397a44c512c02ff186ad1855c9040c4b735b8d5f578b69bc78d4831b62e76728",
+    "spec-compliance": "0ca7aff9bbdc7109d529dfe4ed6024bacc56df6ee028b92f1d52be6ce931ae04",
+    "spec-init": "30466716e0f88e4b8511c7797a95306f1575345c691daf9fa7331726cfcb47b4"
+  }
+}

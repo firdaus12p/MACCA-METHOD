@@ -21,11 +21,12 @@ This file defines which skill primarily owns each persistent output, so skills d
 ## Ownership Rules
 
 - `help` explains and routes. It does not create project spec files.
-- `rapat` facilitates decisions and maps them to target artifacts. It does not replace the primary owner of spec files.
+- `meet` facilitates one structured persona round and maps decisions to target artifacts. It does not replace the primary owner of spec files.
 - `spec-audit` and `spec-compliance` report findings. They do not rewrite spec artifacts unless the user explicitly asks for follow-up fix work.
 - `code-review` reports code issues. It does not own spec documents.
 - `spec-init` is the bootstrap exception for existing codebases without specs.
 - `bug-fix` may add one narrowly scoped regression guard to a spec or rule only after user confirmation; larger document changes return to the primary owner.
+- `release-readiness` is report-only and owns no persistent project artifact unless the user explicitly requests a saved copy of its report.
 
 ## Drift Rule
 

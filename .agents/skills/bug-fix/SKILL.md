@@ -1,6 +1,6 @@
 ---
 name: bug-fix
-description: Diagnoses, fixes, validates, and documents bugs, checking `bug-log.md` for recurring patterns. Use for bug reports, runtime errors, regressions, and to resume an approved bug fix after a report-first gate. Records the bug only after the user confirms the fix works.
+description: Diagnoses, fixes, validates, and documents bugs, checking `bug-log.md` for recurring patterns. Use for bug reports, runtime errors, regressions, and to resume an approved bug fix after a report-first gate. Always explain the root cause and obtain explicit implementation approval before the first code change, then record the bug only after the user confirms the fix works.
 compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
 metadata:
   persona: "Ikhsan"
@@ -13,8 +13,9 @@ metadata:
 
 Before continuing:
 
-1. Read `../_shared/references/runtime-config.md`.
-2. Read `../_shared/references/human-loop.md`.
+1. Read `../_shared/references/language-config.md`.
+2. Read `../_shared/references/fix-mode.md`.
+3. Read `../_shared/references/human-loop.md`.
 3. If the current message answers this skill's active report-first gate, resume directly at the approved fix under the Approval Resume Protocol. Do not repeat diagnosis or ask again.
 4. Otherwise, read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If it is missing, treat it as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`.
 5. Use `languagePreferences.communication.normalized` for all chat output.
@@ -121,13 +122,14 @@ MUST use EXACTLY these 3 points. MUST NOT show code - explain only in working lo
 [Explain what needs to change in the logic and flow, not syntax. Speak as if explaining how the app works.]
 ```
 
-### 2d. Single Fix Gate
+### 2d. Root-Cause Approval Gate
 
 Include the root cause, proposed files, bounded changes, and validation in the same diagnosis response.
 
-- In `report-first`, show the shared gate once and end the response. The next `yes`, `fix`, or `continue` resumes directly at **Apply the Fix**.
-- In `fix-then-report`, continue directly to **Apply the Fix**.
-- Do not add another proposed-fix confirmation in Step 3.
+- Always wait for explicit user approval before the first code change, regardless of `fixMode`.
+- Reuse the shared report-first gate wording when the diagnosis is presented as a report-style approval.
+- After the first implementation approval, `fixMode` governs downstream `spec-compliance` and `code-review` remediation only.
+- Do not add another implementation approval gate in Step 3.
 
 ---
 
@@ -243,6 +245,19 @@ Regression prevention added.
 
 ---
 
+## Step 6b - Validate Regression Prevention
+
+After Step 6 changes code, tests, or spec/rule documents:
+
+1. Run the new regression test or the narrowest equivalent verification.
+2. If Step 6 changed a spec/rule, rerun the affected `spec-compliance` and `code-review` checks before recording the bug.
+3. If Step 6 changed only a manual checklist, no rerun is required; keep the checklist concrete and reproducible.
+4. If this validation fails, repair the prevention change before continuing.
+
+Only then continue to Step 7.
+
+---
+
 ## Step 7 - Record in the Bug Log
 
 After the user confirms the fix worked, record it in `project-context/bug-log.md`.
@@ -303,14 +318,15 @@ Number BUG-N automatically from existing entries.
 
 MUST follow these without exception. Breaking even one makes the bug-fix process invalid.
 
-1. **MUST diagnose first, then fix** - MUST NOT touch code before the root cause is found and confirmed.
+1. **MUST diagnose first, then fix** - MUST NOT touch code before the root cause is found and explicitly approved for implementation.
 2. **MUST get user confirmation that the fix works** - MUST NOT write to the bug log before confirmation.
 3. **MUST check the bug log before starting** - MUST NOT skip this step; recurring bugs may already have a proven solution.
 4. **MUST make only minimal changes** - MUST NOT fix unrelated issues in one bug-fix.
 5. **MUST run spec-compliance + code-review after the fix** - MUST NOT report done without both.
-6. **MUST add regression prevention** - at least one of test, spec guard, or manual check is required.
-7. **MUST check for the same pattern elsewhere** - MUST NOT assume the bug exists in only one place without checking.
-8. **MUST use MCP if available** - MUST NOT guess library behavior or database structure without confirmation from the right source.
+6. **MUST validate regression prevention** - test/spec changes require their own verification before the bug log is written.
+7. **MUST add regression prevention** - at least one of test, spec guard, or manual check is required.
+8. **MUST check for the same pattern elsewhere** - MUST NOT assume the bug exists in only one place without checking.
+9. **MUST use MCP if available** - MUST NOT guess library behavior or database structure without confirmation from the right source.
 
 ---
 

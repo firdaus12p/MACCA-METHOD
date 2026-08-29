@@ -122,31 +122,7 @@ Before a report-first gate, retain this fix manifest for actionable findings:
 
 If the workflow will update a phase plan status or append Code Review Notes, include that plan file and mutation in the manifest. Otherwise return plan-status completion to `developer`; approval never authorizes an undisclosed plan edit.
 
-For each finding, use EXACTLY this structure. MUST NOT show code in any point:
-
-```markdown
-#### [Severity] [ID] [Short Title]
-
-**Where?**
-[Page or file name only]
-
-**What happens if it is not fixed?**
-[Explain the impact in simple app-level logic. Short and direct.]
-
-**What happens if it is fixed?**
-[Explain the practical benefit in simple app-level logic. Short and direct.]
-
-**Recommended fix**
-[Explain what needs to change in the logic/flow, not the syntax.]
-```
-
-Finding rules:
-- `Where?` should name only the page/file, not code symbols or noisy technical paths.
-- `Not fixed?` must describe a real app/user consequence, not technical jargon.
-- `Fixed?` must describe a practical benefit, not jargon.
-- `Recommendation` must explain change logic, not code or a diff.
-- MUST NOT add a 5th point or a `Why this fix?` section.
-- If a checklist item has no issue, MUST NOT create an empty finding just to fill the format.
+Format every finding with the shared `finding-format.md` loaded by the parent skill. Keep exact technical targets and validation in the fix manifest, not as a fifth finding point.
 
 Fix priority - follow `fixMode` from Shared Runtime Setup:
 

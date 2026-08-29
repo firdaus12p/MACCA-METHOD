@@ -13,8 +13,9 @@ metadata:
 
 At startup:
 
-1. Read `../_shared/references/runtime-config.md`.
+1. Read `../_shared/references/language-config.md`.
 2. Read `../_shared/references/scope-rules.md`.
+3. Read `../_shared/references/invocation-policy.md` when explaining how a skill is activated.
 3. Use `languagePreferences.communication.normalized` for all chat output, reports, and guidance.
 
 ---
@@ -119,12 +120,13 @@ Before recommending the next skill, read `developerPreferences.scope` if present
 | PRD + Architecture exist, UI direction is needed | Use `brainstorm-styleguide` |
 | All files exist except Task.md | Run `brainstorm-task` |
 | Task.md exists, incomplete tasks `[ ]` remain | Continue with `developer` |
-| All tasks are complete `[x]`, and there is a new feature request or small technical change | Use `developer` first for maintenance/post-task mode; use `add-feature` if official business/spec scope expands |
+| All tasks are complete `[x]`, and a small bounded technical change still has a clear phase/task anchor | Use `quick-dev`; use `developer` for larger maintenance, unclear anchoring, or broader post-task work; use `add-feature` when official business/spec scope expands |
 | A bug is reported | Use `bug-fix` |
 | Need to check spec consistency | Run `spec-audit` in **project mode** |
 | Want to audit the MACCA framework itself | Run `spec-audit` in **framework mode** |
-| Want a team discussion | Run `rapat` |
-| All tasks are complete, no changes remain | The project is complete. Run `spec-audit` in **project mode** for a final consistency check |
+| Want one structured round of team input | Run `meet` |
+| Preparing a completed candidate for production | Run `release-readiness` |
+| All tasks are complete, no changes remain | Run `spec-audit` in **project mode**; before production release, run `release-readiness` |
 
 ---
 
@@ -145,5 +147,6 @@ Keep inline explanations short:
 - `code-review` = checks whether implementation quality and security are good
 - `brainstorm-*` = defines source-of-truth planning documents
 - `developer` = executes `Task.md` phase by phase
+- `release-readiness` = report-only gate for deployment, migration, config, observability, rollback, and operational evidence
 
 If a question needs exact wording or edge-case details, read the matching README section first instead of paraphrasing from memory.

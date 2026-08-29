@@ -13,8 +13,9 @@ metadata:
 
 At startup:
 
-1. Read `../_shared/references/runtime-config.md`.
-2. Read `../_shared/references/human-loop.md`.
+1. Read `../_shared/references/language-config.md`.
+2. Read `../_shared/references/fix-mode.md`.
+3. Read `../_shared/references/human-loop.md`.
 3. If this message answers this skill's active correction gate, resume directly under the Approval Resume Protocol. Do not rerun startup or the audit.
 4. Otherwise, read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If it is missing, treat it as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`.
 5. Use `languagePreferences.communication.normalized` for audit reports.
@@ -45,7 +46,7 @@ You check **between** documents, not inside a single document.
 
 ## Fix Mode
 
-Mode is read in Shared Runtime Setup. Enforcement rules, including the required gate prompt, are in `../_shared/references/runtime-config.md § Fix Mode Contract`.
+Mode is read in Shared Runtime Setup. Enforcement rules, including the required gate prompt, are in `../_shared/references/fix-mode.md`.
 
 To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-config.json`.
 
@@ -96,9 +97,9 @@ Read everything that exists. Note ID patterns if they are used.
 
 ### Framework Mode
 
-Resolve the active skill's installation root first. Read the `SKILL.md`, `_shared/references/`, and skill-local `references/` files under that root. If auditing the MACCA source repository, also read its MACCA README and installer/upgrade scripts. Do not assume `.agents/skills/` exists in a Copilot-only or OpenCode-only installation, and do not treat the user's application README as MACCA documentation.
+Resolve the active skill installation root. First read `_shared/references/skill-catalog.md`, `invocation-policy.md`, `output-ownership.md`, `scope-rules.md`, and the MACCA README only when this is the MACCA source repository.
 
-Read `README.md`, relevant `SKILL.md` files, and relevant reference files. Note instruction conflicts, duplication, workflow inconsistencies, and shared-contract drift.
+Compare compact contracts first. Read full `SKILL.md`, local references/assets, or installer code only for skills/relationships flagged by that comparison or explicitly named by the user. Do not load the entire collection by default. Do not treat an application's README as MACCA documentation.
 
 ---
 
@@ -109,6 +110,8 @@ Read `README.md`, relevant `SKILL.md` files, and relevant reference files. Note 
 **SA-01: PRD ↔ architecture**
 - Does the architecture support the PRD NFRs (performance, security, accessibility)?
 - Do the PRD constraints fit the chosen tech stack?
+- Do PRD success metrics map to architecture observability signals where technical instrumentation is required?
+- Does product rollout align with deployment, rollback, and recovery constraints?
 
 **SA-02: PRD ↔ schema**
 - Does every persisted PRD entity have a datastore-native representation (table, collection, aggregate, node, stream, or equivalent)?
@@ -122,23 +125,29 @@ Read `README.md`, relevant `SKILL.md` files, and relevant reference files. Note 
 - Is every PRD feature mapped to >=1 task?
 - Does Task.md include tasks for features not in the PRD (scope creep)? If the feature is recorded in `## Approved Scope Delta`, mark it as `pending formal spec sync`, not a direct conflict.
 - Do PRD IDs (`FEAT-*`, `BR-*`) appear in Task.md traceability?
+- Do rollout, analytics, degraded behavior, and applicable NFR work have tasks or explicit N/A decisions?
 
 **SA-05: schema ↔ api**
 - Does every persisted input/output field in `api.md` map to the data contract where appropriate?
 - Do response types match schema types?
 - If schema/api traceability is used, does it reference real PRD IDs?
+- Do API retry/idempotency assumptions align with schema concurrency and consistency rules?
 
 **SA-06: architecture ↔ rules**
 - Are architectural patterns (e.g. repository pattern) required in `rules.md`?
 - Do any rules conflict with the chosen architecture?
+- Do logging, migration, feature-flag, generated-code, and secret rules exist only when their architecture/schema mechanisms apply?
 
 **SA-07: architecture ↔ schema**
 - Does schema notation fit the architecture's database choice?
 - Is schema style consistent with the architecture's ORM choice?
+- Do tenancy, scale, migration, backup, and recovery assumptions align?
 
 **SA-08: StyleGuide ↔ PRD**
 - Does the CSS framework in StyleGuide match any PRD mention?
 - Are all PRD pages/features covered by StyleGuide components?
+- Do accessibility targets and supported locales match the PRD?
+- Do operational UI states cover PRD failure/degraded behavior where UI is involved?
 
 **SA-09: Task.md ↔ all specs**
 - Do task references point to real spec sections?
@@ -146,6 +155,7 @@ Read `README.md`, relevant `SKILL.md` files, and relevant reference files. Note 
 - If task traceability IDs are used, do they reference real PRD/schema/api/rules IDs?
 - Are semi-structured fields (ID, table, `Trace to`, `Traceability ID`) preserved instead of replaced with free text?
 - If new scope exists only in `## Approved Scope Delta`, the audit must separate it as `temporary approval`, not mix it with uncontrolled scope creep.
+- Does each phase Definition of Done include only applicable controls from the specs and quality gates?
 
 ### Framework Mode
 
@@ -174,7 +184,7 @@ Read `README.md`, relevant `SKILL.md` files, and relevant reference files. Note 
 - Are there dead ends, loops, or mismatched handoffs?
 
 **SA-F07: Persona consistency**
-- Are personas, roles, and assigned skills consistent across README, `rapat`, and skill frontmatter?
+- Are personas, roles, and assigned skills consistent across README, `meet`, and skill frontmatter?
 - Does any skill name the wrong owner?
 
 **SA-F08: Enforcement & order consistency**

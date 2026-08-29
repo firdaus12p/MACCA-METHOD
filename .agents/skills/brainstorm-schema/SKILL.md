@@ -1,6 +1,6 @@
 ---
 name: brainstorm-schema
-description: Interview users and generate `schema.md` (Data Model / Database Schema). Use after `architecture.md` is complete.
+description: Interviews users and generates `schema.md` for relational, document, key-value, graph, event-store, or mixed persistence, including evolution and recovery. Use only when the user explicitly requests data-model design after architecture.
 compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
 metadata:
   persona: "Fachri"
@@ -36,12 +36,13 @@ You are **@Fachri — Tech Lead**, a **Senior Database Architect** who designs e
 
 Before any interview:
 
-1. Read `../_shared/references/runtime-config.md`.
-2. Read `../_shared/references/brainstorm-session.md`.
-3. Read `../_shared/references/scope-rules.md`.
+1. Read `../_shared/references/language-config.md`.
+2. Read `../_shared/references/config-mutation.md`.
+3. Read `../_shared/references/brainstorm-session.md`.
+4. Read `../_shared/references/scope-rules.md`.
 4. Use `languagePreferences.communication.normalized` for chat.
 5. Use `languagePreferences.documents.normalized` for the final `project-context/schema.md`.
-6. Apply `brainstormPreferences.discussionMode` and `brainstormPreferences.recommendations` using the shared session policy.
+6. Apply `brainstormPreferences.discussionMode`, `recommendations`, and `discoveryDepth` using the shared session policy.
 
 ---
 
@@ -90,6 +91,7 @@ Collect by persistence model:
 - **Graph:** node labels, edge types, and key properties
 - **Event store:** aggregates, stream names, event types, and projections
 - **All modes:** purpose, ownership boundary, and source requirement for each structure
+- **Multi-tenant systems only:** tenant key/boundary, isolation enforcement, cross-tenant constraints, export/deletion, and partition strategy
 
 ### 3. Fields & Data Types
 *"For each data structure, list fields and datastore-native data types."*
@@ -100,6 +102,7 @@ Collect per datastore-native structure:
 - Which columns contain sensitive data/PII?
 - For sensitive columns: hash, encrypt, mask, or plain text?
 - Any intentionally denormalized columns (intentionally duplicated)?
+- Expected record/document/event volume, growth rate, payload size, and retention horizon where material
 
 ### 4. Relationships and Data Placement
 *"What relationships exist, and should related data use foreign keys, references, embedding, edges, or another datastore-native pattern?"*
@@ -111,6 +114,7 @@ Collect:
 - **Graph:** edge direction/cardinality and traversal boundaries
 - **Event store:** aggregate boundaries, stream correlation, projection consistency, and event evolution
 - **All modes:** delete/retention behavior and cross-structure consistency
+- Concurrency model: transaction boundary, optimistic version, lock/contention policy, duplicate update protection, or equivalent
 
 ### 5. Indexes & Performance
 *"Which access patterns, filters, sorts, traversals, stream reads, or lookups must be efficient? What datastore-native indexes or projections support them?"*
@@ -119,99 +123,13 @@ Collect:
 - Required reads/writes and expected scale
 - Datastore-native indexes, projections, partitioning, traversal, or caching needed for those access patterns
 - Consistency and latency expectations that constrain the design
+- Schema evolution: backward/forward compatibility, migration order, backfill, validation, rollback/roll-forward, and zero-downtime constraints when migrations apply
 
-## schema.md Output Format
+## schema.md Output
 
-Select one datastore-specific shape before writing:
-- Relational: tables, columns, keys, constraints, relationships, indexes
-- Document: collections, document shape, required/optional fields, embedded vs referenced documents, validation rules, indexes
-- Key-value/graph/event store: keys/nodes/events, value or payload shape, consistency, retention, traversal/query/index strategy
-- Mixed: separate bounded sections per datastore and document synchronization/ownership boundaries
+After discovery is complete and immediately before generating `project-context/schema.md`, read `assets/schema.template.md`.
 
-The relational template below is an example only. Do not emit SQL types, foreign keys, or `gen_random_uuid()` for a non-relational datastore.
-
-````markdown
-# Database Schema
-
-## Document Role
-- **Source of Truth:** Data model and persistence contract
-- **Primary Owner:** `brainstorm-schema`
-- **Out of Scope:** Endpoint behavior, UI rules, and code-level implementation details
-
-## Global Conventions
-- **Database:** PostgreSQL / MySQL / MongoDB
-- **ID Strategy:** UUID / auto-increment
-- **Table Naming:** snake_case, plural
-- **Audit Fields:** `created_at`, `updated_at` in all tables, set by [app / DB trigger]
-- **Soft Delete:** Yes — `deleted_at` column / No — hard delete
-- **Timezone:** UTC
-- **Retention/Deletion:** [How long kept, when deleted, when anonymized/archived]
-
-## Entity Map
-| Data ID | Table | Purpose | Trace to |
-|---------|-------|---------|----------|
-| DATA-01 | `[table_name]` | [short purpose] | `FEAT-01 / BR-01` |
-| DATA-02 | `[table_name_2]` | [short purpose] | `FEAT-01 / BR-02` |
-
----
-
-## Table DATA-01: `[table_name]`
-> [Short description of the table purpose]
-> **Trace to:** [FEAT-01 / BR-01]
-> **PII:** Yes — contains personal data / No
-> **Data Protection:** [hash / encrypt / mask / none]
-> **Retention:** [How long it is stored / when archived or deleted]
-
-| Column | Type | Nullable | Default | Constraint | Notes |
-|--------|------|----------|---------|------------|-------|
-| id | UUID | No | gen_random_uuid() | PRIMARY KEY | |
-| [column] | [type] | [Yes/No] | [default] | [constraint] | [notes] |
-| created_at | TIMESTAMP | No | now() | | Auto-set |
-| updated_at | TIMESTAMP | No | now() | | Auto-update |
-| deleted_at | TIMESTAMP | Yes | null | | Soft delete |
-
-**Relationships:**
-- One-to-Many to `[other_table]` via `[foreign_key]` — on delete: CASCADE / SET NULL / RESTRICT
-
-**Indexes:**
-- `[column_name]` — used in WHERE/JOIN/ORDER BY
-
----
-
-## Table DATA-02: `[table_name_2]`
-> [Description]
-> **Trace to:** [FEAT-01 / BR-02]
-> **PII:** Yes / No
-
-| Column | Type | Nullable | Default | Constraint | Notes |
-|--------|------|----------|---------|------------|-------|
-| id | UUID | No | gen_random_uuid() | PRIMARY KEY | |
-
-**Relationships:**
-- Many-to-One to `[other_table]` via `[foreign_key]`
-
-**Indexes:**
-- `[foreign_key]` — standard FK index
-
----
-
-## Intentional Denormalization
-| Table | Denormalized Column | Reason |
-|-------|---------------------|--------|
-| [table] | [column] | [Why duplicated — for example order history] |
-
-## Data Protection & Retention
-| Table/Column | Category | Protection | Retention | Notes |
-|--------------|----------|------------|-----------|-------|
-| [users.email] | PII | [encrypt/mask/plain] | [retention rule] | [notes] |
-
-## Not Yet Modeled / Deferred
-- [Data area intentionally not yet modeled]
-
-## Assumptions & Open Questions
-- [Assumption about tables, relationships, or data rules]
-- [Question that needs user confirmation]
-````
+Adapt only sections that are applicable and preserve every required contract from the interview. Do not load the template during early discovery.
 
 ## After schema.md Is Created
 

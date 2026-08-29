@@ -13,12 +13,14 @@ metadata:
 
 Before any output:
 
-1. Read `../_shared/references/runtime-config.md`.
-2. Read `../_shared/references/human-loop.md`.
-3. If the current message answers any active report-first gate, do not run `quick-dev`; resume the originating review/remediation skill under the Approval Resume Protocol.
-4. Otherwise, read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If missing, treat as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`.
-5. Use `languagePreferences.communication.normalized` for chat.
-6. Use `languagePreferences.documents.normalized` for generated artifacts.
+1. Read `../_shared/references/language-config.md`.
+2. Read `../_shared/references/config-mutation.md`.
+3. Read `../_shared/references/fix-mode.md`.
+4. Read `../_shared/references/human-loop.md`.
+5. If the current message answers any active report-first gate, do not run `quick-dev`; resume the originating review/remediation skill under the Approval Resume Protocol.
+6. Otherwise, read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If missing, treat as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`.
+7. Use `languagePreferences.communication.normalized` for chat.
+8. Use `languagePreferences.documents.normalized` for generated artifacts.
 
 ---
 
@@ -26,19 +28,7 @@ Before any output:
 
 Run as `@Firdaus` (Expert Developer). Use the shared persona profile in `../_shared/references/personas.md`.
 
-**Code Writing Principles:**
-- **YAGNI Ladder — MUST climb before writing a single line of code. MUST NOT skip steps. Stop at the first sufficient step:**
-  1. Does this need to be built? (YAGNI) — if not, stop.
-  2. Does it already exist in the codebase? MUST search and reuse it — MUST NOT duplicate it.
-  3. Is it in the standard library? MUST use it.
-  4. Is it native to the platform/framework? MUST use it.
-  5. Is it in an installed dependency? MUST use it.
-  6. Can it be one line? MUST make it one line.
-  7. Only if none of the above applies: write the minimum working code.
-- Comments explain WHY, not WHAT.
-- Deletion > addition. Boring > clever. Fewest files. Shortest working diff wins.
-- Bug fixes = root cause, not symptoms.
-- Business logic or scope changes → ask the user. Technical decisions → decide yourself.
+Read and follow `../_shared/references/implementation-principles.md`. Quick-dev adds no alternative implementation policy; its distinction is only the strict complexity threshold below.
 
 ---
 
@@ -80,7 +70,7 @@ After the user answers, create or update `.agents/developer-config.json` with `n
 Read `additionalSkills` and `availableMCPs` from `.agents/developer-config.json`.
 
 - **Both exist:** show `[Skills: N registered] [MCPs: ...]` on one line. Tell the user to correct now if needed.
-- **Either missing:** ask once using the same questions as `developer` Step 0b in `../developer/references/execution-workflow.md`. Save and preserve other fields.
+- **Either missing:** read `../developer/references/onboarding.md`, ask only the missing setup questions, and preserve other fields.
 
 ---
 
@@ -160,14 +150,13 @@ If the task is outside `project-context/`, follow the approval flow from `develo
 
 ## Step 3 — Execute
 
-Read `../developer/references/execution-workflow.md` and follow **Step 3 only** (3a through 3e):
+Read `../developer/references/execute-task.md` and follow its task execution workflow:
 
-- **3a** — Understand the task. Check if it touches anything not in `project-context/`.
-- **3b** — Clarify if still ambiguous. Most ambiguities should already be resolved in Step 1.
-- **3b.5** — I/O contract for non-trivial functions.
-- **3c** — Code: Additional Skills → MCP → YAGNI Ladder. In that order, no skipping.
-- **3c.5** — [SELF-REVIEW].
-- **3c.6** — Validate.
+- Understand scope and record approved deltas before coding.
+- Clarify only blocking ambiguity.
+- Define I/O for non-trivial logic.
+- Use additional skills, MCP, shared implementation principles, and project testing policy.
+- Self-review and validate.
 
 The approved scope delta must already exist before this step. Never defer its record until after coding.
 

@@ -42,6 +42,8 @@ When using AI for coding without clear guidance, these problems are common:
 
 MACCA uses **skills** — structured instructions given to AI to perform specific tasks. Each skill has a clear responsibility and does not overlap.
 
+Skills use progressive disclosure: only names/descriptions are advertised initially, the selected `SKILL.md` loads on demand, and long templates/checklists load only at the phase that needs them. This keeps discovery complete without placing every workflow and output template in context at once.
+
 ```
 ┌──────────────────────────────────────────────────────┐
 │                  PLANNING PHASE                     │
@@ -71,17 +73,23 @@ MACCA uses **skills** — structured instructions given to AI to perform specifi
 
 All planning output documents are stored in `project-context/` in your project.
 
-> **Any time:** you can call `help` to see project status and recommended next steps, or `rapat` if you need a multi-persona discussion before continuing.
+> **Any time:** you can call `help` to see project status and recommended next steps, or `meet` for one structured round of multi-persona input before continuing.
 
 ---
 
 ## 3. Planning Skills
 
-Planning skills run as interview sessions. At the start of each session, AI announces the topic count, then asks two things (if not already saved in config):
+Planning skills run as evidence-first interview sessions. AI reads applicable upstream specs first and asks only material decisions that are still unknown. At the start of each session, AI announces the topic count, then asks two things if not already saved:
 1. **Pacing**: (A) one by one · (B) three at a time · (C) all at once
 2. **Recommendations**: should AI provide suggested answers for each question?
 
-These choices are saved and reused in future sessions.
+These choices are saved and reused. Discovery depth is separate from pacing:
+
+- **quick** — only when you explicitly identify disposable prototype/internal experiment work
+- **standard** — default production depth
+- **critical** — automatic deeper security, failure, recovery, and operational detail for payments, sensitive/regulated data, multi-tenancy, public uploads/webhooks, privileged administration, or high availability
+
+Depth is inferred from existing context and can be overridden; it does not add a mandatory setup question. Mandatory safety topics are never skipped.
 
 ---
 
@@ -99,19 +107,19 @@ These choices are saved and reused in future sessions.
 **Topics covered:**
 1. Project Goal — long-term vision and what makes the project unique
 2. Target Users — user personas, demographics, pain points
-3. Problem Being Solved — real problems, not assumptions
+3. Problem Being Solved — real problem, current workaround, and its cost/limitations
 4. Main Features (MVP) — minimum features required in the first version
 5. Business Rules — rules that must never be broken (for example: stock cannot go negative)
-6. Non-Goals — what will *not* be built in this version
-7. User Stories — real workflows from the user perspective
-8. Acceptance Criteria — concrete conditions for a feature to be considered done
-9. Non-Functional Requirements — performance, security, accessibility
-10. Platform & Constraints — web, mobile, or both; technical limits
-11. External Integrations — payment gateway, email, OAuth, etc.
-12. Monetization — business model and revenue sources
-13. Analytics & Logging — what data must be tracked
-14. Roadmap — release priorities and phases after MVP
-15. Open Questions — items not yet decided
+6. User Flow — happy path, failure scenarios, and degraded behavior
+7. Design & Technical Requirements — platform, references, integrations, preferences
+8. Non-Functional Requirements — performance, security, scalability, accessibility, availability
+9. Success Metrics & Rollout — baseline, target, timeframe, measurement source, owner, launch strategy
+10. Acceptance Criteria — concrete conditions for each feature
+11. Non-Goals — what will *not* be built
+12. Assumptions — unverified conditions
+13. User Stories — prioritized workflows from the user perspective
+14. Stakeholders — owners and responsibilities
+15. Open Questions — unresolved decisions and risks
 
 **Important behavior:**
 - Use `Traceability ID` (`FEAT-*`, `BR-*`, `AC-*`, `NFR-*`, `US-*`) so each requirement can be traced to tasks and code
@@ -136,14 +144,14 @@ These choices are saved and reused in future sessions.
 
 **Topics covered:**
 1. System Context — systems and external services that interact
-2. Tech Stack — frontend, backend, database, hosting, CI/CD
+2. Tech Stack — frontend, backend, database, hosting, CI/CD, plus strategic dependency/license/health/lock-in/exit evaluation
 3. Folder Structure — project file and directory organization
 4. Design Patterns — architecture patterns (MVC, Clean Architecture, Feature-based, Hexagonal)
 5. Authentication & Authorization — login method, JWT/session, RBAC
 6. API Style — REST, GraphQL, or tRPC
 7. State Management — Zustand, Redux, Context API, etc.
-8. Deployment — dev/staging/prod environments, deployment strategy, cloud provider
-9. Observability — logging, monitoring, error tracking
+8. Security & Abuse Cases — required risk screen; depth increases for sensitive systems
+9. Deployment & Operations — environments, deployment, observability, owner/runbook, rollback, and critical-system recovery/RPO/RTO
 10. Architecture Decision Records — major decisions and their reasoning
 
 **Important behavior:**
@@ -168,15 +176,15 @@ These choices are saved and reused in future sessions.
 **Topic count:** 5 topics
 
 **Topics covered:**
-1. Database Conventions — ID strategy (UUID/auto-increment/CUID), naming convention, audit fields, soft delete, timezone
-2. Table List — all required tables/collections
-3. Per-Table Details — columns, data types, constraints, and indexes
-4. Relationships — foreign keys, one-to-many, many-to-many, cascade rules
-5. Sensitive Data & Compliance — PII, retention policy, anonymization
+1. Persistence Conventions — identity, naming, audit/version metadata, deletion, retention
+2. Entity/Storage Map — relational, document, key-value, graph, event-store, or mixed
+3. Fields & Data Types — datastore-native validation, PII, volume, growth, payload size
+4. Relationships & Placement — references/embedding/edges/aggregates plus tenancy and concurrency
+5. Access Patterns & Evolution — indexes/projections, consistency, migration, backfill, compatibility, recovery
 
 **Important behavior:**
-- Give each table a `Traceability ID` (`DATA-*`) that can be traced to requirements in `PRD.md`
-- Agreed table and column names are a **contract** — `spec-compliance` (SC-03) verifies that code uses the exact names from this document
+- Give each persisted entity a `Traceability ID` (`DATA-*`)
+- Datastore-native names, tenancy, concurrency, retention, and migration constraints are verified by `spec-compliance` (SC-03)
 
 </details>
 
@@ -187,23 +195,23 @@ These choices are saved and reused in future sessions.
 
 **Persona:** @Fachri — Tech Lead
 
-**Called when:** After `schema.md` is complete.
+**Called when:** After applicable architecture/data decisions, or after architecture for a frontend consumer contract.
 
-**Read before starting:** `project-context/PRD.md`, `project-context/architecture.md`, `project-context/schema.md`
+**Read before starting:** `project-context/PRD.md`, `project-context/architecture.md`, and `project-context/schema.md` when a provider/full contract needs persisted data details.
 
 **Output:** `project-context/api.md`
 
 **Topic count:** 5 topics
 
 **Topics covered:**
-1. Base URL, Versioning & Auth — dev/prod base URL, versioning, authentication method, standard response format
-2. Error Catalog — all possible error codes and their meanings
-3. Core Endpoints — main endpoints based on features in `PRD.md`
-4. Pagination, Filter & Sorting — standard patterns for list endpoints
-5. Rate Limiting & Security — request-per-minute limits, CORS policy, CSRF protection
+1. Entry Point, Versioning, Deprecation & Auth — protocol-native compatibility and lifecycle
+2. Error Catalog — protocol-native errors, retryability, timeout interaction, client action
+3. Operations — REST endpoints, GraphQL operations, RPC procedures, events, or mixed contracts
+4. Input/Output/Event Details — examples, validation, authorization, idempotency/replay
+5. Flow & Reliability — pagination/streaming, rate limits, retries, SLOs, and contract-test invariants
 
 **Important behavior:**
-- Give each endpoint a `Traceability ID` (`API-*`)
+- Give each operation a `Traceability ID` (`API-*`)
 - Agreed request and response formats are a **contract** verified by `spec-compliance` (SC-04) during coding
 
 </details>
@@ -221,7 +229,7 @@ These choices are saved and reused in future sessions.
 
 **Output:** `project-context/StyleGuide.md`
 
-**Topic count:** 7 topics
+**Topic count:** 8 topics
 
 **Topics covered:**
 1. CSS Framework — Tailwind CSS (v3/v4), Bootstrap, CSS Modules, or custom
@@ -231,6 +239,7 @@ These choices are saved and reused in future sessions.
 5. Component Styles — button, card, form input, modal, table — styling and states
 6. Responsive & Breakpoints — sm/md/lg/xl breakpoints and layout changes
 7. Icons & Assets — icon library, image formats, asset naming conventions
+8. Accessibility, Localization & Operational States — keyboard/focus/screen reader/reduced motion; loading/empty/error/forbidden/offline; locales/RTL; UI performance
 
 **Important behavior:**
 - Agreed colors and spacing are a **contract** — `spec-compliance` (SC-06) flags arbitrary values outside this list
@@ -261,6 +270,8 @@ These choices are saved and reused in future sessions.
 6. Git Workflow — commit message convention, branching strategy
 7. `[FORBIDDEN]` Section — list of technical prohibitions that AI **must scan** before writing code
 
+Conditional rules are generated only when applicable: structured logging, migrations, feature flags, generated code, and secret rotation.
+
 **Important behavior:**
 - The `[FORBIDDEN]` section is the first thing `developer` reads before coding
 - If the `[FORBIDDEN]` section is missing, `spec-compliance` records it as a MINOR finding
@@ -280,7 +291,7 @@ These choices are saved and reused in future sessions.
 
 **Output:** `project-context/Task.md`
 
-**Clarification topic count:** 4 topics
+**User clarification count:** 3 topics plus one automatic document-completeness check
 
 **Clarification topics:**
 1. Phase Priority Order — implementation order, which features must finish first
@@ -297,6 +308,7 @@ These choices are saved and reused in future sessions.
 - Every task has concrete, verifiable `Acceptance Criteria`
 - Testing order follows `rules.md`: test-first when explicitly selected, otherwise test-with-change or the project's approved workflow
 - Every task has a `Traceability ID` that links it to requirements in the specs
+- Every phase receives a Definition of Done derived from applicable specs: validation, security, migration/recovery, observability, docs/rollout, `spec-compliance`, and `code-review`
 
 </details>
 
@@ -384,18 +396,23 @@ For each task:
    ```
 6. Run validation, update `Task.md` (`[ ]` → `[x]`)
 
+Developer loads workflow references by state, not all at once:
+- `onboarding.md` only for missing setup or plan-first
+- `execute-task.md` only for the current task
+- `close-phase.md` only when closing a phase/project
+
 **Step 4 — After all tasks in the phase are complete**
 1. Show a phase summary
-2. If there is a plan file for this phase → update plan status: `in-progress` → `code-review`
-3. Run `spec-compliance` automatically
-4. If clean, run `code-review` automatically
-5. Offer the next phase
+2. Verify the applicable Phase Definition of Done; mark genuine non-applicable items with a reason
+3. If there is a plan file for this phase → update plan status: `in-progress` → `code-review`
+4. Run `spec-compliance` automatically
+5. If clean, run `code-review` automatically
+6. Complete quality-gate DoD items, then offer the next phase
 
 **MCPs used (if listed in `availableMCPs`):**
-- `context7` — fetch installed-version library documentation before coding
-- `sequential-thinking` — for complex problems/architecture
-- `grep-app` — search for real implementation examples in public repos
-- `exa` — changelog, breaking changes, verify active maintenance
+- `context7` or equivalent docs MCP — current installed-version library documentation
+- `codebase-memory-mcp` or equivalent graph/symbol tooling — codebase discovery and relationships
+- Other registered MCPs only when relevant to the current task
 
 </details>
 
@@ -406,7 +423,7 @@ For each task:
 
 **Persona:** @Firdaus — Expert Developer
 
-**Called when:** A small, targeted change is needed (color fix, layout tweak, copy edit, minor logic adjustment) where reading Task.md phases and creating plan files is unnecessary overhead. Full quality gates still run.
+**Called when:** A small, targeted change is needed (color fix, layout tweak, copy edit, minor logic adjustment) and it still maps cleanly to the current project context. It avoids full phase ceremony, but keeps the same quality gates.
 
 **Not for:** new features, database migrations, new API endpoints, or changes touching more than 5 files — use `developer` instead.
 
@@ -416,7 +433,7 @@ For each task:
 Same as `developer`. Reads `.agents/developer-config.json`, greets by name and project.
 
 **Step 0b & 0c — Additional Skills, MCP, Scope**
-Same as `developer`. Reads from config if already set — does not ask again.
+Same setup policy as `developer`. Reads from config if already set and asks only for missing required setup.
 
 **Step 1 — Pre-flight summary** *(unique to quick-dev)*
 
@@ -435,13 +452,13 @@ Need confirmation before proceeding:   ← omit if none
 ```
 - Non-blocking ambiguities go under "Assumptions", not as questions
 - Missing specs (e.g. no `StyleGuide.md` but task touches UI) are flagged here
-- Waits for user confirmation before proceeding
+- Waits only when a blocking ambiguity exists; otherwise proceeds in the same turn with listed assumptions
 
 **Step 2 — Read relevant specs**
 Same table as `developer` — reads only what the task needs.
 
 **Step 3 — Execute**
-Same as `developer` Step 3 (understand → clarify → I/O contract → code → [SELF-REVIEW] → validate). YAGNI Ladder is mandatory.
+Loads the same task-execution workflow as `developer`: scope check → delta approval if needed → clarify only blocking ambiguity → I/O contract for non-trivial logic → code → `[SELF-REVIEW]` → validate.
 
 **Step 4 — Update Task.md**
 
@@ -453,6 +470,8 @@ Same as `developer` Step 3 (understand → clarify → I/O contract → code →
 
 **Step 5 — Quality gates**
 Runs full `spec-compliance` then `code-review`. Both follow `fixMode` from config.
+
+**Important behavior:** quick-dev is a bounded router, not a separate implementation philosophy. It follows the same shared implementation principles, testing policy, and approval gates as `developer`, but only for small, clearly anchored work. Anything broader routes back to `developer`.
 
 **Step 6 — Final report**
 ```
@@ -481,13 +500,13 @@ Remaining ambiguities:   ← omit if none
 
 | ID | Aspect | Documents Read |
 |----|-------|---------------------|
-| SC-01 | PRD Compliance | `PRD.md` — features, business rules, acceptance criteria, non-goals |
-| SC-02 | Architecture Compliance | `architecture.md` — tech stack, folder structure, design patterns, auth method |
-| SC-03 | Schema Compliance | `schema.md` — exact table/column names, relationships, soft delete, audit fields, PII |
-| SC-04 | API Compliance | `api.md` — endpoint path, HTTP method, request/response format, error codes |
-| SC-05 | Rules Compliance | `rules.md` — `[FORBIDDEN]` section, naming convention, TypeScript rules |
-| SC-06 | StyleGuide Compliance | `StyleGuide.md` — CSS framework, color tokens, spacing system |
-| SC-07 | Task Completion | `Task.md` — all acceptance criteria met, no half-finished tasks |
+| SC-01 | PRD Compliance | scope, business rules, acceptance/NFR, metrics/rollout and degraded behavior when applicable |
+| SC-02 | Architecture Compliance | stack, boundaries, patterns, auth, observability/rollback/recovery when touched |
+| SC-03 | Schema Compliance | datastore-native names, validation, tenancy, concurrency, retention and evolution |
+| SC-04 | API Compliance | protocol-native operations, errors, auth, reliability, lifecycle and contract invariants |
+| SC-05 | Rules Compliance | `[FORBIDDEN]`, naming, security, testing and applicable operational conventions |
+| SC-06 | StyleGuide Compliance | tokens, responsive behavior, accessibility, localization and operational states |
+| SC-07 | Task Completion | acceptance criteria, traceability and applicable Phase Definition of Done |
 | SC-08 | Scope Compliance | `developer-config.json` — frontend/backend scope respected, no files outside scope |
 
 **Severity:** `💥 BLOCKER` → fix now, re-run | `🔴 MAJOR` → fix before the next phase | `⚠️ MINOR` → discuss | `✅ PASS` → continue to `code-review`
@@ -517,7 +536,7 @@ If this field is missing, the default is `report-first`. To change it, the user 
 | Tier | Item |
 |------|------|
 | 💥 BLOCKER | CR-01 Wrong imports · CR-02 Runtime errors · CR-03 Null/undefined · CR-04 SQL injection · CR-05 Deprecated methods |
-| 🔴 MAJOR | CR-06 Duplicate function · CR-07 Unused code · CR-08 Duplicate logic · CR-09 Obsolete code · CR-10 Inconsistent naming · CR-11 Ignoring existing code · CR-12 Missing dependency · CR-13 Dependency conflict · CR-14 Memory leaks · CR-15 Security ignored · CR-16 No rate limit handling · CR-17 No tests |
+| 🔴 MAJOR | CR-06 Duplicate function · CR-07 Unused code · CR-08 Duplicate logic · CR-09 Obsolete code · CR-10 Inconsistent naming · CR-11 Ignoring existing code · CR-12 Missing dependency · CR-13 Dependency conflict · CR-14 Memory leaks · CR-15 Security ignored · CR-16 Missing required rate-limit handling · CR-17 Missing tests required by `rules.md` |
 | ⚠️ MINOR | CR-18 Edge cases · CR-19 Happy path only · CR-20 Performance · CR-21 Outdated pattern · CR-22 Under-engineering · CR-23 Over-engineering · CR-24 Environment assumptions |
 | ℹ️ INFO | CR-25 Missing comments · CR-26 Jargon · CR-27 Comment quality |
 
@@ -648,7 +667,7 @@ Recommended next steps: ...
 **Two modes:**
 
 **Project Mode** — audit `project-context/`
-Checks consistency *between* documents: tables in `schema` with no endpoint in `api`? Features in `PRD` with no task in `Task.md`? `architecture` tech stack conflicting with `rules`? `Traceability ID`s referenced but missing from the source?
+Checks consistency *between* documents: persisted entities with no supporting operation? Features with no task? PRD metrics with no observability signal? Rollout without rollback? Architecture decisions conflicting with rules? Traceability IDs referenced but missing?
 
 **Framework Mode** — audit MACCA itself
 Checks consistency *between* skill instructions: are README, skill docs, and workflow aligned, or do they conflict?
@@ -676,25 +695,26 @@ Mode B — Guided Generate: one document → you review → confirm → continue
 
 **Generation order:** `architecture.md` → `rules.md` → `schema.md` → `api.md` → `StyleGuide.md` → `PRD.md`
 
-`PRD.md` is created last because it is inferred from existing code, not assumptions.
+`PRD.md` is created last because it is synthesized from observed behavior, not guessed intent.
 
 **Each generated document includes:**
 - **Evidence Inputs** — files/sources used as the basis for each claim
 - **Confidence Level** per claim: *High* (seen directly in code) / *Medium* (strong inference) / *Low* (guess, needs verification)
 - **Confidence Summary** — summary of strong facts, inferences, and what still needs manual verification
+- **Missing Decisions** — choices that cannot be proven from code, with the recommended owning brainstorm skill
 
 </details>
 
 ---
 
 <details>
-<summary><strong>rapat</strong> — Multi-persona team discussion</summary>
+<summary><strong>meet</strong> — Single-round multi-persona team meeting</summary>
 
 **Persona:** @Galbi (facilitator)
 
 **Called when:** Any time you need perspectives from several specialties at once.
 
-**How it works:** @Galbi facilitates. You can call any persona by name to ask for their view. Each persona responds according to their expertise and role.
+**How it works:** Provide agenda, desired outcome, hard constraints, optional evidence, and participants in one setup. In one response, every selected persona gives exactly one evidence/assumption-labeled recommendation in a fixed order. @Galbi then summarizes decisions, open questions, action items, and artifact handoffs before closing automatically. A second round requires a new `meet` invocation.
 
 **Available personas:**
 - `@Galbi` — Project Manager: scope, priorities, business impact
@@ -707,12 +727,38 @@ Mode B — Guided Generate: one document → you review → confirm → continue
 
 ---
 
+<details>
+<summary><strong>release-readiness</strong> — Production release evidence gate</summary>
+
+**Persona:** @Fachri — Tech Lead
+
+**Called when:** The user asks whether a candidate is ready to ship, before production release, or after all Task.md phases are complete.
+
+**Behavior:** Report-only. It never deploys, publishes, applies migrations, rotates secrets, or changes production.
+
+It consumes existing quality evidence instead of repeating complete reviews, then checks:
+
+1. Scope, acceptance criteria, Definition of Done, and unresolved quality findings
+2. Build, tests, type/lint checks, and candidate-specific smoke tests
+3. Environment configuration and secrets
+4. Migration, backfill, backup, validation, and recovery
+5. Deployment ownership, rollback, and feature flags
+6. Logs, metrics, traces, alerts, health checks, runbooks, and incident ownership
+7. Compatibility, deprecation, version, changelog, and consumer communication
+8. Accessibility and operational UI states when UI changed
+
+Verdicts: `READY`, `CONDITIONAL`, or `NOT READY`. Missing required evidence is `NOT VERIFIED`, never an assumed pass.
+
+</details>
+
+---
+
 ## 6. The MACCA AI Team
 
 | Persona | Role | Skills |
 |---------|------|--------|
-| **@Galbi** | Project Manager | `brainstorm-prd`, `brainstorm-task`, `add-feature`, `help`, `rapat` |
-| **@Fachri** | Tech Lead | `brainstorm-architecture`, `brainstorm-api`, `brainstorm-schema`, `brainstorm-rules`, `spec-init`, `spec-audit`, `spec-compliance`, `code-review` |
+| **@Galbi** | Project Manager | `brainstorm-prd`, `brainstorm-task`, `add-feature`, `help`, `meet` |
+| **@Fachri** | Tech Lead | `brainstorm-architecture`, `brainstorm-api`, `brainstorm-schema`, `brainstorm-rules`, `spec-init`, `spec-audit`, `spec-compliance`, `code-review`, `release-readiness` |
 | **@Akram** | UI/UX Designer | `brainstorm-styleguide` |
 | **@Firdaus** | Expert Developer | `developer`, `quick-dev` |
 | **@Ikhsan** | Debugger | `bug-fix` |
@@ -762,8 +808,12 @@ Step 7: Start coding
   → Call: developer
   → Per task: code → validate → [SELF-REVIEW]
   → Per phase: spec-compliance → code-review → next phase
-  → If all tasks are complete but small technical changes, hardening, optimization, or maintenance remain: keep using `developer` (post-task / maintenance mode)
-  → For small targeted fixes (color, layout, copy, minor logic): use `quick-dev` directly instead of going through a full phase
+  → If all tasks are complete but broader maintenance, hardening, optimization, or unclear follow-up work remain: keep using `developer` (post-task / maintenance mode)
+  → For small targeted fixes (color, layout, copy, minor logic) with a clear anchor to existing work: use `quick-dev`; if the scope is broader or the traceability anchor is unclear, stay in `developer`
+
+Step 8: Prepare a production release
+  → Call: spec-audit (final project consistency)
+  → Call: release-readiness (report-only operational gate)
 ```
 
 > Not sure where to start? Call `help`.
@@ -830,11 +880,12 @@ What happens:
   1. You describe the bug
   2. AI checks bug-log.md — has it happened before?
   3. AI checks all callers of the broken code
-  4. AI explains the root cause → wait for confirmation before fixing
+  4. AI explains the root cause and proposed fix → explicit approval is required before the first code change
   5. Apply the fix → spec-compliance + code-review
   6. You confirm the bug is resolved
   7. AI adds regression prevention
-  8. AI records it in bug-log.md ← only after your confirmation
+  8. If prevention changed code/specs, AI validates it and reruns affected checks
+  9. AI records it in bug-log.md ← only after your confirmation
 ```
 
 </details>
@@ -881,9 +932,11 @@ Run this whenever you want to refresh an existing MACCA setup to the newest publ
 
 The updater uses the MACCA files inside `.agents/` to know which installed skill folders should be refreshed.
 
-> Safety note: current releases add ownership markers. If an older unmarked installation collides with a managed skill name, the installer stops instead of overwriting it. Move or remove only the confirmed old MACCA copy, then rerun install/upgrade. Unmarked directories are never treated as owned from an editable manifest alone.
+> Upgrade from `1.1.0`: the updater fingerprints the official published payload before adopting an unmarked legacy skill. Byte-identical legacy copies are migrated automatically, including the previous OpenCode location and meeting-skill rename. Modified or unknown folders are never overwritten; back them up or move them, then rerun upgrade.
 
 > `project-context/` and `developer-config.json` are **not touched** during upgrade.
+
+`2.0.0` is a major release because skill naming, workflow contracts, progressive disclosure, and release checks changed. The published `1.1.0` OpenCode layout is covered by an automated upgrade test. For reproducible CI/bootstrap, pin the desired version; for interactive upgrades, use `@latest` as shown above.
 
 ### How to Call a Skill
 
@@ -892,6 +945,18 @@ Use the skill brainstorm-prd
 Use the skill developer
 Use the skill help
 ```
+
+You normally do not need to remember skill names. OpenCode and Copilot advertise each skill's `name` and `description`, then the model selects a relevant skill. Requests that can mutate broad source-of-truth documents or start implementation require clear user intent; read-only routing and bounded workflows may activate automatically.
+
+| Invocation policy | Skills |
+|---|---|
+| Explicit intent | `brainstorm-prd`, `brainstorm-architecture`, `brainstorm-schema`, `brainstorm-api`, `brainstorm-styleguide`, `brainstorm-rules`, `add-feature`, `spec-init` |
+| Explicit implementation intent | `developer` — phrases such as "implement Phase 2" are sufficient; the skill name is not required |
+| Model-auto router | `quick-dev` for bounded small implementation requests that still map clearly to the current project context |
+| Both direct and automatic/orchestrated | `brainstorm-task`, `bug-fix`, `code-review`, `spec-audit`, `release-readiness`, `help`, `meet` |
+| Primarily orchestrated | `spec-compliance`, called by execution/remediation workflows |
+
+Agent Skills has no portable `user-invocable` or `disable-model-invocation` field. Copilot VS Code supports these as vendor extensions, but OpenCode ignores them. MACCA therefore keeps canonical frontmatter portable and enforces intent through descriptions, scope checks, and confirmation gates. Host-specific slash commands or permissions may be added as optional adapters, never as the only safety mechanism.
 
 ### Folder Structure
 
@@ -904,6 +969,8 @@ your-project/
 │   ├── macca-tools.txt          ← tools selected during install
 │   ├── macca-managed-skills.txt ← internal manifest used by MACCA updates
 │   ├── macca-lock.json          ← MACCA package/version manifest
+│   ├── macca-state.json         ← hashes of installer-managed metadata
+│   ├── macca-transaction.json   ← exists only during/recovering an interrupted atomic update
 │   └── skills/                  ← if Codex or Kimi is selected
 │
 ├── .github/skills/              ← if GitHub Copilot is selected
@@ -929,7 +996,7 @@ your-project/
 └── ... (your project code)
 ```
 
-Each installed skills folder contains `_shared` plus these MACCA skills: `add-feature`, `brainstorm-api`, `brainstorm-architecture`, `brainstorm-prd`, `brainstorm-rules`, `brainstorm-schema`, `brainstorm-styleguide`, `brainstorm-task`, `bug-fix`, `code-review`, `developer`, `help`, `quick-dev`, `rapat`, `spec-audit`, `spec-compliance`, and `spec-init`.
+Each installed skills folder contains `_shared` plus these 18 MACCA skills: `add-feature`, `brainstorm-api`, `brainstorm-architecture`, `brainstorm-prd`, `brainstorm-rules`, `brainstorm-schema`, `brainstorm-styleguide`, `brainstorm-task`, `bug-fix`, `code-review`, `developer`, `help`, `meet`, `quick-dev`, `release-readiness`, `spec-audit`, `spec-compliance`, and `spec-init`.
 
 | AI Tool | Skills Folder |
 |---------|---------------|
@@ -942,6 +1009,8 @@ Each installed skills folder contains `_shared` plus these MACCA skills: `add-fe
 | Kilo Code | `.kilo/skills/` |
 | Codex (OpenAI) | `.agents/skills/` |
 | Kimi CLI | `.agents/skills/` |
+
+The installer validates path containment, refuses symlink escapes and unowned collisions, preserves `developer-config.json`, detects local drift through SHA-256 hashes, and journals install/upgrade transactions for recovery. CI runs the full package/install/upgrade suite on Ubuntu, Windows, and macOS with Node 18 and 22.
 
 ---
 
@@ -972,7 +1041,8 @@ The `.agents/developer-config.json` file is shared config across skills. All ski
   },
   "brainstormPreferences": {
     "discussionMode": "one-by-one",
-    "recommendations": true
+    "recommendations": true,
+    "discoveryDepth": "standard"
   },
   "codeReviewPreferences": {
     "fixMode": "report-first"
@@ -1001,6 +1071,7 @@ The `.agents/developer-config.json` file is shared config across skills. All ski
 | `developerPreferences.scope` | `developer` (Step 0c) | `"frontend"`, `"backend"`, or `"fullstack"` |
 | `brainstormPreferences.discussionMode` | brainstorm-* skills | `"one-by-one"`, `"three-at-a-time"`, or `"all-at-once"` |
 | `brainstormPreferences.recommendations` | brainstorm-* skills | `true` = AI gives suggested answers for each question |
+| `brainstormPreferences.discoveryDepth` | brainstorm-* skills | `"quick"`, `"standard"`, or `"critical"`; inferred when absent, user-overridable |
 | `codeReviewPreferences.fixMode` | user / config runtime | `"report-first"` or `"fix-then-report"` |
 | `additionalSkills` | `developer` (Step 0b) | AI searches for the path in the workspace first, then asks only if it is not found |
 | `availableMCPs` | `developer` (Step 0b) | Available MCPs; only listed MCPs are used |
@@ -1026,11 +1097,14 @@ The `.agents/developer-config.json` file is shared config across skills. All ski
 | **Acceptance Criteria** | Concrete conditions for a task to be considered done |
 | **scope** | Developer work boundary: frontend-only, backend-only, or fullstack |
 | **fixMode** | `code-review` preference: report first or fix immediately |
+| **discoveryDepth** | Brainstorm detail level independent from question batching: quick/standard/critical |
 | **availableMCPs** | MCPs listed and available for use in this project |
 | **Confidence Level** | In `spec-init`: High/Medium/Low for claims derived from codebase analysis |
 | **Evidence Inputs** | In `spec-init`: files/sources used as evidence for a claim |
 | **Plan status** | Plan file lifecycle status: `review` → `in-progress` → `code-review` → `done` |
 | **Plan deviation** | Implementation drift from decisions in the plan (library, pattern, scope) — recorded by `code-review` if found |
+| **Definition of Done** | Phase-level evidence checklist derived from applicable specs and quality gates |
+| **Release readiness** | Report-only operational verdict for a specific candidate and target environment |
 
 **Traceability ID Scheme:**
 
@@ -1041,8 +1115,8 @@ The `.agents/developer-config.json` file is shared config across skills. All ski
 | `NFR-01` | Non-functional requirement in `PRD.md` |
 | `AC-01` | Acceptance Criteria in `PRD.md` |
 | `US-01` | User story in `PRD.md` |
-| `DATA-01` | Table or data entity in `schema.md` |
-| `API-01` | Endpoint in `api.md` |
+| `DATA-01` | Datastore-native entity/aggregate/collection/stream in `schema.md` |
+| `API-01` | REST/GraphQL/RPC/event operation in `api.md` |
 | `RULE-01` | Rule in `rules.md` referenced across documents |
 
 </details>
@@ -1054,21 +1128,21 @@ The `.agents/developer-config.json` file is shared config across skills. All ski
 <details>
 <summary>Do all spec documents need to be complete before coding?</summary>
 
-They do not need to be perfect. The minimum required before `developer` can run is `PRD.md` and `architecture.md`. The more complete the specs are, the more accurately AI can work.
+They do not need to be perfect. `architecture.md` is the hard execution prerequisite; `rules.md` and applicable PRD/schema/API/StyleGuide contracts are strongly recommended and missing required contracts create explicit verification gaps. The more complete the applicable specs are, the more accurately AI can work.
 
 </details>
 
 <details>
 <summary>Can this be used for an existing project?</summary>
 
-Yes. Use `spec-init` — AI reads the codebase and generates all spec documents. Every claim gets a confidence level (High/Medium/Low) and its evidence source.
+Yes. Use `spec-init` — AI reads the codebase and generates evidence-backed specs. Every claim gets a confidence level and evidence source; decisions that cannot be proven are listed under `Missing Decisions` with the owning brainstorm skill.
 
 </details>
 
 <details>
 <summary>Can AI make mistakes?</summary>
 
-Yes. That is why `spec-compliance` and `code-review` run automatically after every phase. If something is wrong, AI fixes it before continuing.
+Yes. That is why `spec-compliance` and `code-review` run after every phase. In the default `report-first` mode, AI reports all findings and waits for `fix`/approval before editing; in `fix-then-report`, actionable blocker/major findings are repaired and validated automatically.
 
 </details>
 
@@ -1096,7 +1170,7 @@ No. A bug is recorded only after **you confirm** that it is resolved. AI does no
 <details>
 <summary>Do I need to choose developer preferences in every session?</summary>
 
-No. All preferences (scope, work mode, additional skills, MCPs, code review mode) are asked once and saved. Future sessions use them directly.
+No. Scope, work mode, additional skills, MCPs, review mode, brainstorm pacing, recommendations, and discovery depth are saved or inferred and reused. Future sessions ask only for missing material decisions.
 
 </details>
 

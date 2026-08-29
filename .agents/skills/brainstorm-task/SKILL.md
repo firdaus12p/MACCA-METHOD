@@ -13,12 +13,13 @@ metadata:
 
 Before starting:
 
-1. Read `../_shared/references/runtime-config.md`.
-2. Read `../_shared/references/brainstorm-session.md`.
-3. Read `../_shared/references/scope-rules.md`.
-4. Use `languagePreferences.communication.normalized` for chat.
-5. Use `languagePreferences.documents.normalized` for the final `project-context/Task.md`.
-6. Apply `brainstormPreferences.recommendations` using the shared session policy.
+1. Read `../_shared/references/language-config.md`.
+2. Read `../_shared/references/config-mutation.md`.
+3. Read `../_shared/references/brainstorm-session.md`.
+4. Read `../_shared/references/scope-rules.md`.
+5. Use `languagePreferences.communication.normalized` for chat.
+6. Use `languagePreferences.documents.normalized` for the final `project-context/Task.md`.
+7. Apply `brainstormPreferences.recommendations` and `discoveryDepth` using the shared session policy.
 
 ## Character
 
@@ -139,6 +140,7 @@ Before writing `Task.md`, analyze internally:
 8. **Testing workflow:** Follow the policy in `rules.md`. If it requires test-first/TDD, precede implementation with a test task. Otherwise pair each behavior change with the test/verification task required by the approved rules. Do not force TDD against project policy.
 9. If the specs mention security controls, create explicit security tasks — do not leave them implicit. Examples: auth guards, ownership checks, input validation, secure cookie config, rate limiting, CSRF protection, audit logs, data masking.
 10. Create a **traceability matrix**: every main requirement (`FEAT-*`, `BR-*`, `NFR-*`, `API-*`, `DATA-*`) must have at least one task that references it.
+11. Derive a phase Definition of Done from applicable specs. Do not ask another question: include tests/checks, security, migration/backfill, observability, documentation, rollout/rollback evidence, spec-compliance, and code-review only when relevant.
 
 After analysis, **show the scope summary to the user**:
 
@@ -162,101 +164,11 @@ Is this scope correct? Anything to add or remove?
 
 Wait for user confirmation before creating Task.md.
 
-## Output Format (Task.md)
+## Task.md Output
 
-````markdown
-# Task: [Project Name]
+After discovery is complete and immediately before generating `project-context/Task.md`, read `assets/Task.template.md`.
 
-> **Total Phases:** [X] | **Total Tasks:** [Y] | **Last Updated:** [date]
-
-## Document Role
-- **Source of Truth:** Execution plan derived from approved spec documents
-- **Primary Owner:** `brainstorm-task`
-- **Out of Scope:** New product scope, new schema/API decisions, and code quality review findings
-
-## Upstream Dependencies
-| Topic | Canonical Source |
-|------|------------------|
-| Product scope | `project-context/PRD.md` |
-| Technical structure | `project-context/architecture.md` |
-| Data contract | `project-context/schema.md` |
-| API contract | `project-context/api.md` |
-| UI contract | `project-context/StyleGuide.md` |
-| Coding rules | `project-context/rules.md` |
-
-## Execution Rules
-- Work on tasks **one by one** in order within each phase.
-- After each **phase** is complete, **STOP** and wait for user confirmation before the next phase.
-- Update status `[ ]` to `[x]` when a task is complete.
-- If a task is blocked, mark it `[~]` and note the reason.
-
----
-
-## Progress Overview
-| Phase | Name | Status | Progress |
-|------|------|--------|----------|
-| 1 | [Setup & Configuration] | [ ] | 0/3 |
-| 2 | [Database & Models] | [ ] | 0/4 |
-| 3 | [Backend: Auth] | [ ] | 0/3 |
-
-## AI Read Order
-1. Read `Execution Rules`
-2. Read `Progress Overview`
-3. Read only the current phase
-4. Use `References` and `Traceability IDs` before searching elsewhere
-
----
-
-## Phase 1: [Phase Name]
-> **Dependency:** None (first phase)
-> **Goal:** [What must be complete at the end of this phase]
-
-- [ ] **Task 1.1: [Task Name]**
-  - **Files:** `[path/file created or modified]`
-  - **Description:** [What is done, briefly]
-  - **References:** [`project-context/architecture.md#section` / `project-context/rules.md#section`]
-  - **Traceability IDs:** [`FEAT-01` / `BR-01` / `API-01` / `DATA-01`]
-  - **Acceptance Criteria:**
-    - [ ] [Testable condition 1]
-    - [ ] [Testable condition 2]
-
-- [ ] **Task 1.2: [Task Name]**
-  - **Files:** `[path/file]`
-  - **Description:** [Briefly what is done]
-  - **Dependencies:** Task 1.1 must be complete first
-  - **References:** [`project-context/schema.md#users`]
-  - **Traceability IDs:** [`FEAT-01` / `DATA-01`]
-  - **Acceptance Criteria:**
-    - [ ] [Testable condition]
-
----
-
-## Phase 2: [Phase Name]
-> **Dependency:** Phase 1 must be complete
-> **Goal:** [Phase goal]
-
-- [ ] **Task 2.1: [Task Name]**
-  - **Files:** `[path/file]`
-  - **Description:** [Brief]
-  - **References:** [`project-context/api.md#auth`]
-  - **Traceability IDs:** [`FEAT-01` / `API-01` / `NFR-02`]
-  - **Acceptance Criteria:**
-    - [ ] [Testable condition]
-
----
-
-## Traceability Matrix
-| Requirement ID | Source | Covering Tasks |
-|----------------|--------|----------------|
-| FEAT-01 | `project-context/PRD.md` | `Task 1.1`, `Task 1.2`, `Task 2.1` |
-| BR-01 | `project-context/PRD.md` | `Task 1.1` |
-| API-01 | `project-context/api.md` | `Task 2.1` |
-| DATA-01 | `project-context/schema.md` | `Task 1.2` |
-
-## Assumptions & Open Questions
-- [Assumption that affects planning granularity or order]
-- [Open question that may change future phases]
-````
+Adapt only sections that are applicable and preserve every required contract from the interview. Do not load the template during early discovery.
 
 ---
 

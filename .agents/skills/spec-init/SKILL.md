@@ -1,6 +1,6 @@
 ---
 name: spec-init
-description: Generate all `project-context/` documents from an existing codebase. Supports Batch Generate (all at once) or Guided Generate (one by one with confirmation). Suitable for active projects or boilerplates.
+description: Generates evidence-backed `project-context/` specs from an existing codebase in batch or guided mode, recording confidence and missing decisions. Use only when the user explicitly requests spec bootstrapping or reverse documentation.
 compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
 metadata:
   persona: "Fachri"
@@ -13,7 +13,7 @@ metadata:
 
 Before starting:
 
-1. Read `../_shared/references/runtime-config.md`.
+1. Read `../_shared/references/language-config.md`.
 2. Read `../_shared/references/human-loop.md`.
 3. Read `../_shared/references/scope-rules.md`.
 4. Use `languagePreferences.communication.normalized` for chat output and review prompts.
@@ -147,11 +147,22 @@ When any Medium or Low confidence exists, also include:
 - [question that still needs user confirmation]
 ````
 
+Every generated document must include unresolved decisions that cannot be observed from code:
+
+````markdown
+## Missing Decisions
+
+| Decision Needed | Why It Cannot Be Inferred | Recommended Owner Skill |
+|-----------------|---------------------------|-------------------------|
+| [decision] | [missing evidence] | `[brainstorm-* skill]` |
+````
+
 Rules:
 - Do not mark **High** unless direct evidence exists.
 - For **Medium**, explain the inference basis briefly.
 - For **Low**, write it as a question or note, not a final fact.
 - `PRD.md` usually mixes High and Medium confidence because it is synthesized last from other artifacts.
+- Never infer missing business motivation, rollout, SLO, tenancy, migration, recovery, or operational policy from convention alone. Record it under `Missing Decisions` and route it to the owning brainstorm skill.
 
 ---
 
@@ -220,40 +231,40 @@ Next steps:
 **Read:** folder structure, `package.json`, config files
 **Extract:** tech stack, folder structure, database choice, deployment setup, visible design patterns
 **Add:** `Input Evidence` listing the files and folders used to infer the architecture
-**Add if possible:** `Document Role`, `System Boundaries`, `Canonical Terminology`, `ADR Index`, `Assumptions & Open Questions`
+**Add if possible:** `Document Role`, `System Boundaries`, `Canonical Terminology`, `ADR Index`, observed operations/observability/recovery facts, `Assumptions & Open Questions`, `Missing Decisions`
 
 ### rules.md
 **Read:** `.eslintrc*`, `.prettierrc*`, `tsconfig.json`, 2-3 code examples
 **Extract:** naming conventions in use, indentation, quote style, consistent patterns
 **Add a `[FORBIDDEN]` section:** From ESLint rules and TypeScript strict settings, extract the 5-10 most critical technical prohibitions into a `[FORBIDDEN]` table format that matches `brainstorm-rules` output.
 **Add:** `Input Evidence` listing the config files and code examples used
-**Add if possible:** `Document Role`, `Rule Priority`, `Assumptions & Exceptions`
+**Add if possible:** `Document Role`, `Rule Priority`, observed conditional operational rules, `Assumptions & Exceptions`, `Missing Decisions`
 
 ### schema.md
 **Read:** `migrations/`, `models/`, `prisma/schema.prisma`, or equivalents
 **Extract:** datastore-native entities (tables, collections, aggregates, nodes, streams, or keys), fields/payloads, types, relationships, validation, retention, and indexes/projections
 **Add:** `Input Evidence` listing the schema sources inspected
-**Add if possible:** `Document Role`, `Entity Map`, `Not Yet Modeled / Deferred`, `Assumptions & Open Questions`
+**Add if possible:** `Document Role`, `Entity Map`, observed scale/tenancy/concurrency/migration facts, `Not Yet Modeled / Deferred`, `Assumptions & Open Questions`, `Missing Decisions`
 
 ### api.md
-**Read:** `routes/`, `controllers/`, `handlers/`, OpenAPI/Swagger if available
-**Extract:** method + path for each endpoint, request body, response format, auth requirements
+**Read:** protocol-native routing/integration sources such as `routes/`, `controllers/`, `handlers/`, GraphQL schemas/resolvers, RPC routers, event producers/consumers, and OpenAPI/Swagger if available
+**Extract:** protocol-native operation identity, request/input shape, response/output/event shape, auth requirements, lifecycle/deprecation facts, and reliability signals
 **Add:** `Input Evidence` listing the routing/controller sources inspected
-**Add if possible:** `Document Role`, `Scope Summary`, `Canonical Terminology`, `Endpoint Inventory`, `Assumptions & Open Questions`
+**Add if possible:** `Document Role`, `Scope Summary`, `Canonical Terminology`, operation inventory, observed reliability/deprecation facts, `Assumptions & Open Questions`, `Missing Decisions`
 
 ### StyleGuide.md
 **Read:** `tailwind.config.*`, `components/` folder, main CSS/SCSS files
 **Extract:** colors in use, existing components, spacing system, fonts
 **Skip if:** there is no UI folder or the project is backend-only
 **Add:** `Input Evidence` listing the UI assets inspected
-**Add if possible:** `Document Role`, `Supported Surfaces`, `Component Inventory`, `Non-Goals / Not Yet Defined`, `Assumptions & Open Questions`
+**Add if possible:** `Document Role`, `Supported Surfaces`, `Component Inventory`, observed accessibility/operational states, `Non-Goals / Not Yet Defined`, `Assumptions & Open Questions`, `Missing Decisions`
 
 ### PRD.md
 **Do not read new files**. Only synthesize from previous documents.
 **Extract:** features already built (from API, UI, and schema evidence) and business rules supported by direct constraints or behavior. Treat absent capabilities as `not observed`, `unknown`, or `deferred`; absence is not evidence of an intentional non-goal.
 **Confidence note:** PRD usually mixes **High** and **Medium**. Do not state business motivation as fact unless it is explicitly visible in the codebase.
 **Add:** `Input Evidence` referencing the previously generated spec files used for synthesis
-**Add if possible:** `Document Role`, `Canonical Terminology`, `Reading Guide for AI`
+**Add if possible:** `Document Role`, `Canonical Terminology`, observed metrics/workarounds, `Reading Guide for AI`, `Missing Decisions`
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: brainstorm-architecture
-description: Interview users and generate `architecture.md` (System Architecture). Use after `PRD.md` is complete to define the tech stack, structure, and architecture decisions.
+description: Interviews users and generates `architecture.md` with stack, boundaries, operations, observability, recovery, security, and ADRs. Use only when the user explicitly wants architecture decisions documented after the PRD.
 compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
 metadata:
   persona: "Fachri"
@@ -36,12 +36,13 @@ You are **@Fachri — Tech Lead**, a **Senior Software Architect** who designs s
 
 Before any interview:
 
-1. Read `../_shared/references/runtime-config.md`.
-2. Read `../_shared/references/brainstorm-session.md`.
-3. Read `../_shared/references/scope-rules.md`.
+1. Read `../_shared/references/language-config.md`.
+2. Read `../_shared/references/config-mutation.md`.
+3. Read `../_shared/references/brainstorm-session.md`.
+4. Read `../_shared/references/scope-rules.md`.
 4. Use `languagePreferences.communication.normalized` for chat.
 5. Use `languagePreferences.documents.normalized` for the final `project-context/architecture.md`.
-6. Apply `brainstormPreferences.discussionMode` and `brainstormPreferences.recommendations` using the shared session policy.
+6. Apply `brainstormPreferences.discussionMode`, `recommendations`, and `discoveryDepth` using the shared session policy.
 
 ---
 
@@ -90,6 +91,7 @@ Collect:
 - ORM/ODM
 - Hosting platform
 - Specific versions (for example Next.js 14 App Router, React 18)
+- For each strategic dependency/vendor: existing/native alternative, runtime compatibility, maintenance health, license, security advisories, operational cost, lock-in, migration path, and removal/exit path
 
 ### 3. State Management
 *"If there is a frontend, how is state managed?"*
@@ -152,6 +154,10 @@ Collect:
 - CI/CD strategy
 - Domain and SSL
 - CDN or object storage needs?
+- Operational owner, support/runbook expectations, and capacity constraints
+- Logs, metrics, traces, dashboards, alert thresholds, and retention required by PRD success/NFR targets
+- Deployment rollback trigger, mechanism, validation, and data compatibility
+- For critical depth: backup/restore ownership, tested restore process, RPO, RTO, and regional/dependency failure behavior
 
 ### 10. Architecture Decision Records (ADR)
 *"Are there key architecture decisions whose rationale should be documented?"*
@@ -160,128 +166,14 @@ Collect:
 - Non-obvious decisions (why PostgreSQL vs MongoDB)
 - Structural decisions with hidden rationale
 - Trade-offs considered
+- Revisit/exit trigger for strategic libraries and vendors
 - If the user has no ADRs, help identify them from topics 1-9
 
-## architecture.md Output Format
+## architecture.md Output
 
-````markdown
-# Architecture
+After discovery is complete and immediately before generating `project-context/architecture.md`, read `assets/architecture.template.md`.
 
-> **Version:** 1.0 | **Date:** [date]
-
-## Document Role
-- **Source of Truth:** System design, technical constraints, and architecture decisions
-- **Primary Owner:** `brainstorm-architecture`
-- **Out of Scope:** Detailed API payload schemas, per-table database columns, UI design tokens, and task sequencing
-
-## System Boundaries
-| Topic | Canonical Document |
-|-------|--------------------|
-| Product scope and business intent | `project-context/PRD.md` |
-| Data model and field-level contracts | `project-context/schema.md` |
-| Endpoint contracts and error payloads | `project-context/api.md` |
-| UI language and component styling | `project-context/StyleGuide.md` |
-| Coding standards and AI behavior | `project-context/rules.md` |
-| Execution order and implementation plan | `project-context/Task.md` |
-
----
-
-## 1. System Context
-
-**Users:** [End Users, Admins, etc.]
-
-**External Services:**
-| Service | Purpose | Protocol |
-|---------|---------|----------|
-| [Service] | [Purpose] | REST / SDK / OAuth |
-
-## 2. Tech Stack
-| Layer | Technology | Version | Notes |
-|-------|------------|---------|-------|
-| Frontend | [Framework] | [Version] | [Notes] |
-| Backend | [Framework] | [Version] | [Notes] |
-| Database | [Database] | [Version] | [Notes] |
-| ORM | [ORM] | [Version] | [Notes] |
-| Language | [Language] | [Version] | [Notes] |
-
-## 3. State Management
-- **Client State:** [Zustand / Redux / Context API]
-- **Server State:** [TanStack Query / SWR]
-- **Forms:** [React Hook Form / Formik]
-- **Persistence:** [localStorage / sessionStorage / none]
-
-## 4. API Design
-- **Type:** REST / GraphQL / tRPC
-- **Real-time:** WebSocket / SSE / No
-- **Base Path:** `/api/v1`
-
-## 5. Folder Structure
-```
-[Project Root]
-├── [folder 1]/         # [description]
-│   ├── [subfolder]/    # [description]
-│   └── [file]
-├── [folder 2]/         # [description]
-└── [folder 3]/         # [description]
-```
-
-## 6. Design Pattern
-- **Main Pattern:** MVC / Feature-based / Clean Architecture
-- **Layers:** routes → controller → service → repository
-- **Notes:** [Special rules]
-
-## 7. Authentication & Authorization
-- **Method:** JWT / Session / OAuth
-- **Provider:** Google / GitHub / Custom
-- **Token Storage:** httpOnly cookie
-- **RBAC:** Yes / No
-- **Roles:** [List with access levels]
-
-## 8. Security & Abuse Cases
-- **Sensitive Data:** [PII, tokens, payment data, etc.]
-- **Critical Actions:** [Login, password reset, admin actions, upload, payment, etc.]
-- **Abuse Cases:**
-   - [Brute force, spam, IDOR, CSRF, privilege escalation, replay, upload abuse, etc.]
-- **Required Controls:**
-   - [Rate limiting, ownership checks, CSRF protection, audit logs, signed webhooks, secure session expiry]
-- **Audit Logs:** [Which events must be recorded]
-
-## 9. Deployment & Infrastructure
-- **Platform:** Vercel / Railway / Docker+VPS / etc.
-- **Environments:** development → staging → production
-- **CI/CD:** GitHub Actions / etc.
-- **CDN/Storage:** Cloudflare / S3 / etc.
-- **Domain:** [Planned domain]
-
-## 10. Canonical Terminology
-| Term | Definition |
-|------|------------|
-| [Term] | [Definition in the project context] |
-
-## 11. Architecture Decision Records (ADR)
-
-### ADR Index
-| ADR ID | Title | Status | Summary |
-|--------|-------|--------|---------|
-| ADR-001 | [Title] | Accepted / Proposed | [One-line reason] |
-
-### ADR-001: [Title]
-- **Context:** [Situation that led to the decision]
-- **Decision:** [What was decided]
-- **Rationale:** [Why this option]
-- **Trade-off:** [Accepted downside]
-- **Rejected Alternatives:** [What else was considered and why it was rejected]
-
----
-
-## 12. Assumptions & Open Questions
-
-### Assumptions
-- [Assumption the architecture depends on]
-
-### Open Questions
-- [Question that is still unresolved]
-````
+Adapt only sections that are applicable and preserve every required contract from the interview. Do not load the template during early discovery.
 
 ## After architecture.md Is Created
 
@@ -298,6 +190,7 @@ Collect:
 - **System Context (topic 1)** is the highest level. Start here before technical detail.
 - **Threat modeling (topic 8)** is required before implementation.
 - **ADR (topic 10)** helps prevent accidental reversal of mature decisions.
+- Use the strategic dependency checklist only for architecture-level choices; local packages remain a `developer` decision.
 - Render the final document in the configured document language
 
 

@@ -1,6 +1,6 @@
 ---
 name: add-feature
-description: Skill for adding new features to running projects. Read current specs, identify all affected documents, update every impacted spec, then add a phase and tasks to Task.md.
+description: Adds an approved new feature to a running project by updating every affected spec and delegating a new Task.md phase. Use only when the user explicitly asks to expand official product or business scope.
 compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
 metadata:
   persona: "Galbi"
@@ -13,7 +13,7 @@ metadata:
 
 At startup:
 
-1. Read `../_shared/references/runtime-config.md`.
+1. Read `../_shared/references/language-config.md`.
 2. Read `../_shared/references/output-ownership.md`.
 3. Read `../_shared/references/scope-rules.md`.
 4. Use `languagePreferences.communication.normalized` for feature analysis and reports.

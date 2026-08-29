@@ -11,8 +11,9 @@ bug-fix
 code-review
 developer
 help
+meet
 quick-dev
-rapat
+release-readiness
 spec-audit
 spec-compliance
 spec-init

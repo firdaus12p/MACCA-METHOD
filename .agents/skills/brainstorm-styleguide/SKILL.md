@@ -1,6 +1,6 @@
 ---
 name: brainstorm-styleguide
-description: Interview users and generate `StyleGuide.md` (UI/UX Design System). Use after the PRD or when defining the application's appearance.
+description: Interviews users and generates `StyleGuide.md` covering visual tokens, components, accessibility, localization, responsive behavior, and operational UI states. Use only when the user explicitly requests a UI/UX contract.
 compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
 metadata:
   persona: "Akram"
@@ -44,12 +44,13 @@ This skill generates **StyleGuide.md** through an interactive interview. It prev
     - If `.agents/developer-config.json` exists, read `developerPreferences.scope`
 
 3. **Shared Runtime Setup** — before the interview:
-    - Read `../_shared/references/runtime-config.md`.
+    - Read `../_shared/references/language-config.md`.
+    - Read `../_shared/references/config-mutation.md`.
     - Read `../_shared/references/brainstorm-session.md`.
     - Read `../_shared/references/scope-rules.md`.
     - Use `languagePreferences.communication.normalized` for chat.
     - Use `languagePreferences.documents.normalized` for the final `project-context/StyleGuide.md`.
-    - Apply `brainstormPreferences.discussionMode` and `brainstormPreferences.recommendations` using the shared session policy.
+    - Apply `brainstormPreferences.discussionMode`, `recommendations`, and `discoveryDepth` using the shared session policy.
     - For this skill: announce that there are 7 topics, ask for pacing (one by one / three at once / all at once), and ask for recommendation preference if it is not already stored.
 
 4. If scope = `backend`, DO NOT create `StyleGuide.md`. Explain that UI work is outside the current scope.
@@ -62,7 +63,7 @@ This skill generates **StyleGuide.md** through an interactive interview. It prev
 
 7. Summarize the result and provide next steps.
 
-## Interview Topics (7)
+## Interview Topics (8)
 
 ### 1. CSS Framework
 **Ask:** *"What CSS framework is used: Tailwind, Bootstrap, or custom CSS?"*
@@ -131,138 +132,20 @@ This skill generates **StyleGuide.md** through an interactive interview. It prev
 - Default icon size (16px, 20px, 24px)
 - Need custom SVG icons?
 
-## Output Format (StyleGuide.md)
+### 8. Accessibility, Localization & Operational States
+**Ask:** *"Which accessibility target and non-happy-path states must the UI support: loading, empty, error, forbidden, offline, reduced motion, keyboard, screen reader, or localization?"*
 
-````markdown
-# StyleGuide
+**Collect:**
+- Accessibility target from PRD (for example WCAG AA), keyboard order, visible focus, labels, contrast, touch targets, and reduced motion
+- Loading/skeleton, empty, error, disabled/read-only, permission-denied, offline, and partial-data behavior that applies to primary surfaces
+- Supported locales from PRD; text expansion, pluralization, date/number/currency/timezone formatting, and RTL only when relevant
+- UI performance constraints: font loading, asset/image strategy, motion budget, and component/render budget where relevant
 
-> **Framework:** [CSS Framework] | **Approach:** [Utility-first / Component-based]
+## StyleGuide.md Output
 
-## Document Role
-- **Source of Truth:** Visual system and UI conventions for this project
-- **Primary Owner:** `brainstorm-styleguide`
-- **Out of Scope:** Backend logic, API contracts, and non-UI technical architecture
+After discovery is complete and immediately before generating `project-context/StyleGuide.md`, read `assets/StyleGuide.template.md`.
 
-## Supported Surfaces
-| Surface | Included? | Notes |
-|---------|-----------|-------|
-| Web app | Yes / No | [notes] |
-| Admin panel | Yes / No | [notes] |
-| Marketing site | Yes / No | [notes] |
-| Email / PDF / export | Yes / No | [notes] |
-
----
-
-## 1. CSS Framework
-- **Framework:** [Tailwind CSS v3 / Bootstrap 5 / CSS Modules / etc.]
-- **Version:** [version]
-- **Notes:** [Additional rules]
-
-## 2. Color Palette
-| Role | Hex | Tailwind | Description |
-|------|-----|----------|-------------|
-| Primary | `#xxx` | `bg-blue-600` | Main brand |
-| Secondary | `#xxx` | `bg-gray-600` | Accent |
-| Background | `#xxx` | `bg-gray-50` | Page background |
-| Surface | `#xxx` | `bg-white` | Card/panel background |
-| Primary Text | `#xxx` | `text-gray-900` | Main text |
-| Secondary Text | `#xxx` | `text-gray-500` | Secondary text |
-| Error | `#xxx` | `text-red-500` | Error message |
-| Success | `#xxx` | `text-green-500` | Success message |
-| Warning | `#xxx` | `text-yellow-500` | Warning message |
-| Info | `#xxx` | `text-blue-500` | Info message |
-
-**Dark Mode:** [Supported / Not supported]
-
-## 3. Typography
-- **Heading Font:** [Font Name] — via [Google Fonts / local]
-- **Body Font:** [Font Name] — via [Google Fonts / local]
-
-| Level | Size | Weight | Line Height |
-|-------|------|--------|-------------|
-| H1 | [size] | [weight] | [line-height] |
-| H2 | [size] | [weight] | [line-height] |
-| H3 | [size] | [weight] | [line-height] |
-| H4 | [size] | [weight] | [line-height] |
-| Body | [size] | regular | [line-height] |
-| Small | [size] | regular | [line-height] |
-| Caption | [size] | regular | [line-height] |
-
-## 4. Spacing System
-- **Base Unit:** [4px / 8px]
-- **Scale:** [Tailwind Default / Custom]
-
-| Token | Value | Tailwind |
-|-------|-------|----------|
-| xs | [4px] | `p-1` |
-| sm | [8px] | `p-2` |
-| md | [16px] | `p-4` |
-| lg | [24px] | `p-6` |
-| xl | [32px] | `p-8` |
-| 2xl | [48px] | `p-12` |
-
-## 5. Component Style
-- **Border Radius:** [rounded-md / rounded-lg / none]
-- **Shadow:** [shadow-sm / shadow-md / none]
-
-## Component Inventory
-| Component | Status | Notes |
-|-----------|--------|-------|
-| Button | Defined | [notes] |
-| Card | Defined | [notes] |
-| Input | Defined | [notes] |
-| Modal | Defined / Deferred | [notes] |
-| Table | Defined / Deferred | [notes] |
-
-### Button
-| Variant | Style |
-|---------|-------|
-| Primary | [bg-primary text-white rounded-md px-4 py-2] |
-| Secondary | [outline / ghost] |
-| Danger | [bg-error text-white] |
-
-### Card
-- Background: [surface color]
-- Border: [border style]
-- Shadow: [shadow level]
-- Padding: [padding value]
-
-### Input
-- Border: [border style]
-- Focus: [focus ring style]
-- Error state: [error border + message style]
-
-### Transition & Animation
-- **Default Duration:** [150ms / 200ms / 300ms]
-- **Easing:** [ease-in-out / ease-out]
-- **Pattern:** `transition-all duration-150 ease-in-out`
-
-## 6. Responsive & Breakpoints
-- **Approach:** [Mobile-first / Desktop-first]
-
-| Breakpoint | Value | Description |
-|------------|-------|-------------|
-| sm | [640px] | Small tablet |
-| md | [768px] | Tablet |
-| lg | [1024px] | Desktop |
-| xl | [1280px] | Large desktop |
-
-**Layout Rules:**
-- [Description of layout changes per breakpoint]
-
-## 7. Iconography
-- **Library:** [Lucide React / Heroicons / FontAwesome / etc.]
-- **Default Size:** [20px / 24px]
-- **Import Pattern:** `import { IconName } from 'lucide-react'`
-- **Notes:** [Rules for icon usage]
-
-## Non-Goals / Not Yet Defined
-- [UI areas intentionally outside this style guide]
-
-## Assumptions & Open Questions
-- [Assumption about branding, assets, or surface coverage]
-- [Question that needs confirmation]
-````
+Adapt only sections that are applicable and preserve every required contract from the interview. Do not load the template during early discovery.
 
 ---
 

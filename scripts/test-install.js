@@ -135,7 +135,7 @@ function main() {
         fs.writeFileSync(collisionSkill, "---\nname: developer\ndescription: User-owned collision fixture.\n---\n", "utf8");
         expectCliFailure(
             ["install", "--yes", "--tool", "codex", "--directory", collisionDir],
-            "Refusing to overwrite unowned skill directory"
+            "Refusing to overwrite or remove unowned skill directory"
         );
         if (!fs.readFileSync(collisionSkill, "utf8").includes("User-owned collision fixture")) {
             throw new Error("Collision protection modified the user-owned skill");
@@ -152,6 +152,31 @@ function main() {
             );
             if (fs.readdirSync(outsideSkills).length !== 0) {
                 throw new Error("Symlink containment test wrote outside the target project");
+            }
+
+            const outerReal = path.join(tmpDir, "outer-real-project");
+            const outerLink = path.join(tmpDir, "outer-link-project");
+            fs.mkdirSync(outerReal, { recursive: true });
+            fs.symlinkSync(outerReal, outerLink, "dir");
+            expectCliFailure(
+                ["install", "--yes", "--tool", "codex", "--directory", outerLink],
+                "Refusing symlinked target project ancestor"
+            );
+            if (fs.readdirSync(outerReal).length !== 0) {
+                throw new Error("Target directory ancestry symlink test wrote into the real directory");
+            }
+        } else {
+            const outerReal = path.join(tmpDir, "outer-real-project");
+            const outerLink = path.join(tmpDir, "outer-link-project");
+            fs.mkdirSync(outerReal, { recursive: true });
+            try {
+                run(commandName("cmd"), ["/c", "mklink", "/J", outerLink, outerReal]);
+                expectCliFailure(
+                    ["install", "--yes", "--tool", "codex", "--directory", outerLink],
+                    "Refusing symlinked target project ancestor"
+                );
+            } catch {
+                process.stdout.write("  Skipping Windows junction ancestry test (mklink unavailable or not permitted)\n");
             }
         }
 
@@ -272,8 +297,43 @@ function main() {
         assertPathExists(path.join(projectDir, ".agents", "skills", "brainstorm-prd", "SKILL.md"));
         assertPathExists(path.join(projectDir, ".github", "skills", "brainstorm-prd", "SKILL.md"));
         assertPathExists(path.join(projectDir, ".opencode", "skills", "brainstorm-prd", "SKILL.md"));
+        for (const skillsRoot of [
+            path.join(projectDir, ".agents", "skills"),
+            path.join(projectDir, ".github", "skills"),
+            path.join(projectDir, ".opencode", "skills")
+        ]) {
+            assertPathExists(path.join(skillsRoot, "meet", "SKILL.md"));
+        }
         assertPathExists(customSkill);
         assertPathExists(path.join(projectDir, ".agents", "macca-lock.json"));
+
+        const allToolsDir = path.join(tmpDir, "all-tools-project");
+        runCli([
+            "install",
+            "--yes",
+            "--tool", "codex",
+            "--tool", "github-copilot",
+            "--tool", "cursor",
+            "--tool", "claude-code",
+            "--tool", "windsurf",
+            "--tool", "gemini-cli",
+            "--tool", "opencode",
+            "--tool", "kilo-code",
+            "--tool", "kimi-cli",
+            "--directory", allToolsDir
+        ]);
+        for (const expectedPath of [
+            path.join(allToolsDir, ".agents", "skills", "meet", "SKILL.md"),
+            path.join(allToolsDir, ".github", "skills", "meet", "SKILL.md"),
+            path.join(allToolsDir, ".cursor", "skills", "meet", "SKILL.md"),
+            path.join(allToolsDir, ".claude", "skills", "meet", "SKILL.md"),
+            path.join(allToolsDir, ".windsurf", "skills", "meet", "SKILL.md"),
+            path.join(allToolsDir, ".gemini", "skills", "meet", "SKILL.md"),
+            path.join(allToolsDir, ".opencode", "skills", "meet", "SKILL.md"),
+            path.join(allToolsDir, ".kilo", "skills", "meet", "SKILL.md")
+        ]) {
+            assertPathExists(expectedPath);
+        }
 
         const preservedConfig = JSON.parse(fs.readFileSync(configPath, "utf8"));
         if (!preservedConfig.customField || preservedConfig.customField.preserved !== true) {
