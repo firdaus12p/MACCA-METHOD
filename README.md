@@ -920,7 +920,7 @@ The updater uses the MACCA files inside `.agents/` to know which installed skill
 
 > `project-context/` and `developer-config.json` are **not touched** during upgrade.
 
-`2.0.0` is a major release because skill naming, workflow contracts, progressive disclosure, and release checks changed. The published `1.1.0` OpenCode layout is covered by an automated upgrade test. For reproducible CI/bootstrap, pin the desired version; for interactive upgrades, use `@latest` as shown above.
+`2.0.x` is the major-release line for the skill naming, workflow contract, progressive disclosure, and release-check changes. The published `1.1.0` OpenCode layout is covered by an automated upgrade test. For reproducible CI/bootstrap, pin the desired version; for interactive upgrades, use `@latest` as shown above.
 
 ### How to Call a Skill
 
