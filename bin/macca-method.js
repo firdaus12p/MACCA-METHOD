@@ -516,6 +516,43 @@ function buildInstalledLock(managedSkills) {
     return `${JSON.stringify(lock, null, 2)}\n`;
 }
 
+function compareSemver(left, right) {
+    const parse = (value) => String(value || "0.0.0")
+        .split("-")[0]
+        .split(".")
+        .map((part) => Number.parseInt(part, 10) || 0);
+    const a = parse(left);
+    const b = parse(right);
+    const length = Math.max(a.length, b.length);
+    for (let index = 0; index < length; index += 1) {
+        const diff = (a[index] || 0) - (b[index] || 0);
+        if (diff !== 0) return diff;
+    }
+    return 0;
+}
+
+function assertPackageNotOlderThanInstalled(agentsDirectory) {
+    const installedLockPath = path.join(agentsDirectory, "macca-lock.json");
+    if (!fs.existsSync(installedLockPath)) {
+        return;
+    }
+
+    const packagedLock = readJsonObject(SOURCE_LOCK_FILE, "packaged MACCA lock");
+    const installedLock = readJsonObject(installedLockPath, "installed MACCA lock");
+    const packagedVersion = packagedLock.version;
+    const installedVersion = installedLock.version;
+    if (typeof packagedVersion !== "string" || typeof installedVersion !== "string") {
+        return;
+    }
+
+    if (compareSemver(packagedVersion, installedVersion) < 0) {
+        throw new Error(
+            `Refusing to downgrade MACCA from ${installedVersion} to ${packagedVersion}. `
+            + "Publish or use a newer package before running install/upgrade."
+        );
+    }
+}
+
 function readOwnershipMarker(targetPath, expectedSkill = path.basename(targetPath)) {
     const markerPath = path.join(targetPath, OWNERSHIP_MARKER);
     if (!fs.existsSync(markerPath)) {
@@ -1078,6 +1115,7 @@ function applyInstall(targetDir, tools, metadata) {
     const agentsDirectory = path.join(targetDir, ".agents");
     ensureDirectory(targetDir);
     assertSafeProjectPath(targetDir, agentsDirectory);
+    assertPackageNotOlderThanInstalled(agentsDirectory);
     for (const fileName of ["macca-managed-skills.txt", "macca-tools.txt", "developer-config.json", "macca-lock.json", STATE_FILE]) {
         assertSafeProjectPath(targetDir, path.join(agentsDirectory, fileName));
     }
@@ -1125,6 +1163,7 @@ function applyInstall(targetDir, tools, metadata) {
 function applyUpgrade(targetDir) {
     const agentsDirectory = path.join(targetDir, ".agents");
     assertSafeProjectPath(targetDir, agentsDirectory);
+    assertPackageNotOlderThanInstalled(agentsDirectory);
     for (const fileName of ["macca-managed-skills.txt", "macca-tools.txt", "developer-config.json", "macca-lock.json", STATE_FILE]) {
         assertSafeProjectPath(targetDir, path.join(agentsDirectory, fileName));
     }

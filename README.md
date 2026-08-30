@@ -44,32 +44,7 @@ MACCA uses **skills** — structured instructions given to AI to perform specifi
 
 Skills use progressive disclosure: only names/descriptions are advertised initially, the selected `SKILL.md` loads on demand, and long templates/checklists load only at the phase that needs them. This keeps discovery complete without placing every workflow and output template in context at once.
 
-```
-┌──────────────────────────────────────────────────────┐
-│                  PLANNING PHASE                     │
-│                                                      │
-│  brainstorm-prd → brainstorm-architecture            │
-│                            ↓                         │
-│                       brainstorm-schema              │
-│                            ↓                         │
-│                       brainstorm-api                 │
-│                            ↓                         │
-│                 brainstorm-styleguide (optional)     │
-│                            ↓                         │
-│                       brainstorm-rules               │
-│                            ↓                         │
-│                       brainstorm-task                │
-└──────────────────────────────────────────────────────┘
-                           ↓
-┌──────────────────────────────────────────────────────┐
-│                  EXECUTION PHASE                     │
-│                                                      │
-│         developer (per Task.md phase)                │
-│         quick-dev (single focused task)              │
-│                 ↓ (after each)                       │
-│          spec-compliance → code-review               │
-└──────────────────────────────────────────────────────┘
-```
+The full project flow is documented in [Workflow](#7-workflow). `brainstorm-styleguide` is optional and additive; it never replaces `brainstorm-schema`, `brainstorm-api`, or `brainstorm-rules`.
 
 All planning output documents are stored in `project-context/` in your project.
 
@@ -769,6 +744,10 @@ Verdicts: `READY`, `CONDITIONAL`, or `NOT READY`. Missing required evidence is `
 
 ## 7. Workflow
 
+![MACCA Workflow](flow.webp)
+
+`brainstorm-styleguide` branches from `brainstorm-architecture` as an optional UI input, then feeds back into `brainstorm-rules`. It does not skip `brainstorm-schema`, `brainstorm-api`, or `brainstorm-rules`.
+
 <details>
 <summary><strong>New Project</strong> — Start from scratch</summary>
 
@@ -792,6 +771,7 @@ Step 3b: Define the API (if any)
 Step 3c: Define the UI design (optional)
   → Call: brainstorm-styleguide
   → Output: project-context/StyleGuide.md
+  → Adds UI constraints only; it does not replace Step 3a, Step 3b, or Step 4
 
 Step 4: Set code standards
   → Call: brainstorm-rules
@@ -906,6 +886,8 @@ This is the supported cross-platform path for Windows, Linux, and macOS.
 npx macca-method@latest install
 ```
 
+`@latest` always resolves from the newest version published on npm. Pushing changes to GitHub does not update the install command until a newer npm package is published.
+
 The CLI asks you to choose the AI tool, then prompts for the developer name, project name, and language preferences.
 
 To see the supported AI tool names before installing, run:
@@ -929,6 +911,8 @@ npx macca-method@latest upgrade
 ```
 
 Run this whenever you want to refresh an existing MACCA setup to the newest published skills.
+
+If the installed project was created from a newer unpublished/local build, `upgrade` now refuses an older npm package instead of silently downgrading the skill folders.
 
 The updater uses the MACCA files inside `.agents/` to know which installed skill folders should be refreshed.
 

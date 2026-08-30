@@ -335,6 +335,31 @@ function main() {
             assertPathExists(expectedPath);
         }
 
+        if (mode === "local") {
+            const downgradeDir = path.join(tmpDir, "downgrade-project");
+            runCli([
+                "install",
+                "--yes",
+                "--tool", "github-copilot",
+                "--tool", "opencode",
+                "--directory", downgradeDir,
+                "--name", "Downgrade User",
+                "--project", "Downgrade Project",
+                "--communication-language", "English",
+                "--document-language", "English"
+            ]);
+            const downgradeLockPath = path.join(downgradeDir, ".agents", "macca-lock.json");
+            const downgradeLock = JSON.parse(fs.readFileSync(downgradeLockPath, "utf8"));
+            downgradeLock.version = "99.0.0";
+            fs.writeFileSync(downgradeLockPath, `${JSON.stringify(downgradeLock, null, 2)}\n`, "utf8");
+            expectCliFailure([
+                "upgrade",
+                "--directory", downgradeDir
+            ], "Refusing to downgrade MACCA");
+            assertPathExists(path.join(downgradeDir, ".github", "skills", "meet", "SKILL.md"));
+            assertPathExists(path.join(downgradeDir, ".opencode", "skills", "meet", "SKILL.md"));
+        }
+
         const preservedConfig = JSON.parse(fs.readFileSync(configPath, "utf8"));
         if (!preservedConfig.customField || preservedConfig.customField.preserved !== true) {
             throw new Error("Reinstall did not preserve unknown developer-config.json fields");
