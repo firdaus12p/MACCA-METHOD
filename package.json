@@ -1,6 +1,6 @@
 {
     "name": "macca-method",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "description": "CLI installer for MACCA AI spec-driven development skills.",
     "license": "MIT",
     "scripts": {
