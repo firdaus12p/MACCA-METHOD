@@ -43,6 +43,16 @@ function runNpm(args, options = {}) {
     return capture(commandName("npm"), args, options);
 }
 
+function runNpmWithInheritedStdio(args, options = {}) {
+    const npmExecPath = process.env.npm_execpath;
+    if (npmExecPath && /\.c?js$/i.test(npmExecPath)) {
+        run(process.execPath, [npmExecPath, ...args], options);
+        return;
+    }
+
+    run(commandName("npm"), args, options);
+}
+
 function run(command, args, options = {}) {
     execFileSync(command, args, {
         cwd: rootDir,
@@ -61,22 +71,22 @@ function capture(command, args, options = {}) {
 
 function runCli(args) {
     if (mode === "published") {
-        run(commandName("npx"), ["--yes", "macca-method", ...args]);
+        runNpmWithInheritedStdio(["exec", "--yes", "--package", "macca-method", "--", "macca-method", ...args]);
         return;
     }
 
-    run(commandName("npx"), ["--yes", "--package", packageSpec, "macca-method", ...args]);
+    runNpmWithInheritedStdio(["exec", "--yes", "--package", packageSpec, "--", "macca-method", ...args]);
 }
 
 function expectCliFailure(args, expectedText) {
     try {
         if (mode === "published") {
-            capture(commandName("npx"), ["--yes", "macca-method", ...args], { cwd: rootDir, stdio: "pipe" });
+            runNpm(["exec", "--yes", "--package", "macca-method", "--", "macca-method", ...args], { cwd: rootDir, stdio: "pipe" });
         } else {
-            capture(commandName("npx"), ["--yes", "--package", packageSpec, "macca-method", ...args], { cwd: rootDir, stdio: "pipe" });
+            runNpm(["exec", "--yes", "--package", packageSpec, "--", "macca-method", ...args], { cwd: rootDir, stdio: "pipe" });
         }
     } catch (error) {
-        const output = `${error.stdout || ""}${error.stderr || ""}`;
+        const output = `${error.stdout || ""}${error.stderr || ""}${error.message || ""}`;
         if (!output.includes(expectedText)) {
             throw new Error(`Expected failed command to include ${expectedText}, got: ${output}`);
         }

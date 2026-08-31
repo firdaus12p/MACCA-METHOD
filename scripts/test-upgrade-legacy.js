@@ -38,6 +38,16 @@ function captureNpm(args, options = {}) {
     return capture(commandName("npm"), args, options);
 }
 
+function runNpm(args, options = {}) {
+    const npmExecPath = process.env.npm_execpath;
+    if (npmExecPath && /\.c?js$/i.test(npmExecPath)) {
+        run(process.execPath, [npmExecPath, ...args], options);
+        return;
+    }
+
+    run(commandName("npm"), args, options);
+}
+
 function run(command, args, options = {}) {
     return execFileSync(command, args, {
         cwd: rootDir,
@@ -75,10 +85,12 @@ try {
     const legacyPackageList = JSON.parse(legacyPackOutput);
     const legacyPackageSpec = path.join(temporaryRoot, legacyPackageList[0].filename);
 
-    run(commandName("npx"), [
+    runNpm([
+        "exec",
         "--yes",
         "--package",
         legacyPackageSpec,
+        "--",
         "macca-method",
         "install",
         "--yes",
@@ -103,10 +115,12 @@ try {
     const packageList = JSON.parse(packOutput);
     const packageSpec = path.join(temporaryRoot, packageList[0].filename);
 
-    run(commandName("npx"), [
+    runNpm([
+        "exec",
         "--yes",
         "--package",
         packageSpec,
+        "--",
         "macca-method",
         "upgrade",
         "--directory",
