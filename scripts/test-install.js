@@ -10,7 +10,7 @@ const { execFileSync } = require("node:child_process");
 
 const rootDir = path.resolve(__dirname, "..");
 const mode = process.argv.includes("--published") ? "published" : "local";
-const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "macca-test-install-"));
+const tmpDir = fs.mkdtempSync(path.join(resolveTempRoot(), "macca-test-install-"));
 const projectDir = path.join(tmpDir, "project");
 const collisionDir = path.join(tmpDir, "collision-project");
 const symlinkDir = path.join(tmpDir, "symlink-project");
@@ -18,7 +18,29 @@ const driftDir = path.join(tmpDir, "drift-project");
 let packageSpec = "macca-method";
 
 function commandName(base) {
-    return process.platform === "win32" ? `${base}.cmd` : base;
+    if (process.platform !== "win32") {
+        return base;
+    }
+
+    return base === "npm" || base === "npx" ? `${base}.cmd` : base;
+}
+
+function resolveTempRoot() {
+    const tempRoot = os.tmpdir();
+    try {
+        return fs.realpathSync(tempRoot);
+    } catch {
+        return tempRoot;
+    }
+}
+
+function runNpm(args, options = {}) {
+    const npmExecPath = process.env.npm_execpath;
+    if (npmExecPath && /\.c?js$/i.test(npmExecPath)) {
+        return capture(process.execPath, [npmExecPath, ...args], options);
+    }
+
+    return capture(commandName("npm"), args, options);
 }
 
 function run(command, args, options = {}) {
@@ -109,7 +131,7 @@ function ensureExpectedTools(filePath) {
 }
 
 function resolveLocalPackage() {
-    const packOutput = capture(commandName("npm"), ["pack", "--json", "--pack-destination", tmpDir]);
+    const packOutput = runNpm(["pack", "--json", "--pack-destination", tmpDir]);
     const packageList = JSON.parse(packOutput);
 
     if (!Array.isArray(packageList) || packageList.length === 0 || !packageList[0].filename) {

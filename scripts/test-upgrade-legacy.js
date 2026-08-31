@@ -8,12 +8,34 @@ const path = require("node:path");
 const { execFileSync } = require("node:child_process");
 
 const rootDir = path.resolve(__dirname, "..");
-const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "macca-legacy-upgrade-"));
+const temporaryRoot = fs.mkdtempSync(path.join(resolveTempRoot(), "macca-legacy-upgrade-"));
 const projectDir = path.join(temporaryRoot, "project");
 const obsoleteMeetingName = Buffer.from("cmFwYXQ=", "base64").toString("utf8");
 
 function commandName(base) {
-    return process.platform === "win32" ? `${base}.cmd` : base;
+    if (process.platform !== "win32") {
+        return base;
+    }
+
+    return base === "npm" || base === "npx" ? `${base}.cmd` : base;
+}
+
+function resolveTempRoot() {
+    const tempRoot = os.tmpdir();
+    try {
+        return fs.realpathSync(tempRoot);
+    } catch {
+        return tempRoot;
+    }
+}
+
+function captureNpm(args, options = {}) {
+    const npmExecPath = process.env.npm_execpath;
+    if (npmExecPath && /\.c?js$/i.test(npmExecPath)) {
+        return capture(process.execPath, [npmExecPath, ...args], options);
+    }
+
+    return capture(commandName("npm"), args, options);
 }
 
 function run(command, args, options = {}) {
@@ -43,7 +65,7 @@ function assertMissing(targetPath) {
 try {
     fs.mkdirSync(projectDir, { recursive: true });
 
-    const legacyPackOutput = capture(commandName("npm"), [
+    const legacyPackOutput = captureNpm([
         "pack",
         "macca-method@1.1.0",
         "--json",
@@ -77,7 +99,7 @@ try {
     const legacyRoot = path.join(projectDir, ".opencode", "skill");
     assertExists(path.join(legacyRoot, obsoleteMeetingName, "SKILL.md"));
 
-    const packOutput = capture(commandName("npm"), ["pack", "--json", "--pack-destination", temporaryRoot]);
+    const packOutput = captureNpm(["pack", "--json", "--pack-destination", temporaryRoot]);
     const packageList = JSON.parse(packOutput);
     const packageSpec = path.join(temporaryRoot, packageList[0].filename);
 
