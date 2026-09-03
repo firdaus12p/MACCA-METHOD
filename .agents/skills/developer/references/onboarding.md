@@ -7,9 +7,9 @@ Read this file only when identity/config/work mode is incomplete or plan-first m
 If `additionalSkills` is missing:
 
 1. Ask once whether the project uses framework/domain skills.
-2. For each named skill, search `.agents/skills/`, `.github/skills/`, `.opencode/skills/`, then matching workspace folders.
+2. For each named skill, search every MACCA tool destination: `.agents/skills/` (codex/kimi), `.github/skills/` (copilot), `.opencode/skills/`, `.claude/skills/`, `.cursor/skills/`, `.windsurf/skills/`, `.gemini/skills/`, `.kilo/skills/`. If none match, also check the global equivalents `~/.config/opencode/skills/`, `~/.claude/skills/`, and `~/.agents/skills/`. Only then fall back to matching workspace folders.
 3. If found, record its path. If absent, ask for the path or allow `skip`.
-4. Before saving, load `../../_shared/references/additional-skills.md` and use its canonical `paths` shape.
+4. Before saving, load `.agents/skills/_shared/references/additional-skills.md` and use its canonical `paths` shape.
 
 When an additional skill is relevant to a task, read it before coding.
 

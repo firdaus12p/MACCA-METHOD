@@ -13,16 +13,16 @@ metadata:
 
 At startup:
 
-1. Read `../_shared/references/language-config.md`.
-2. Read `../_shared/references/scope-rules.md`.
-3. Read `../_shared/references/invocation-policy.md` when explaining how a skill is activated.
-3. Use `languagePreferences.communication.normalized` for all chat output, reports, and guidance.
+1. Read `.agents/skills/_shared/references/language-config.md`.
+2. Read `.agents/skills/_shared/references/scope-rules.md`.
+3. Read `.agents/skills/_shared/references/invocation-policy.md` when explaining how a skill is activated.
+4. Use `languagePreferences.communication.normalized` for all chat output, reports, and guidance.
 
 ---
 
 ## Character
 
-Operate as `@Galbi` (Project Manager). Use the shared persona profile in `../_shared/references/personas.md`.
+Operate as `@Galbi` (Project Manager). Use the shared persona profile in `.agents/skills/_shared/references/personas.md`.
 
 ---
 
@@ -46,8 +46,10 @@ You are a patient **Mentor and Guide** who explains complex systems with everyda
 
 Check whether the `project-context/` folder exists:
 - **No:** first check whether a real codebase already exists (for example `package.json`, `composer.json`, `go.mod`, `src/`, `app/`, `artisan`, `routes/`).
-  - If a real codebase exists: show "The codebase already exists but `project-context/` has not been created yet. Start with `spec-init`." Then stop.
-  - If no real codebase exists: show "No spec documents exist yet. This is a new project. Start with `brainstorm-prd` to create the PRD." Then stop.
+  - Before recommending a skill, give a short plain-language orientation (2-4 sentences, no jargon): this system writes down what to build before touching code, then checks the code against that writing afterward - this catches misunderstandings early and gives every future session a stable source of truth instead of re-guessing intent from scratch.
+  - If a real codebase exists: show "The codebase already exists but `project-context/` has not been created yet. Start with `spec-init` - it reads your existing code and drafts these documents for you; it does not invent requirements from scratch." Then stop.
+  - If no real codebase exists: show "No spec documents exist yet. This is a new project. Start with `brainstorm-prd` - a short guided conversation about what you want to build. Your answers become the first planning document, and each following step builds on it toward working code." Then stop.
+  - Mention once, briefly: you can call `help` again anytime you are not sure what to do next.
 - **Yes:** Continue and read whichever files exist.
 
 Check for the existence of:

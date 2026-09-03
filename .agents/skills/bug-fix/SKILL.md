@@ -13,18 +13,18 @@ metadata:
 
 Before continuing:
 
-1. Read `../_shared/references/language-config.md`.
-2. Read `../_shared/references/fix-mode.md`.
-3. Read `../_shared/references/human-loop.md`.
-3. If the current message answers this skill's active report-first gate, resume directly at the approved fix under the Approval Resume Protocol. Do not repeat diagnosis or ask again.
-4. Otherwise, read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If it is missing, treat it as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`.
-5. Use `languagePreferences.communication.normalized` for all chat output.
+1. Read `.agents/skills/_shared/references/language-config.md`.
+2. Read `.agents/skills/_shared/references/fix-mode.md`.
+3. Read `.agents/skills/_shared/references/human-loop.md`.
+4. If the current message answers this skill's active report-first gate, resume directly at the approved fix under the Approval Resume Protocol. Do not repeat diagnosis or ask again.
+5. Otherwise, read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If it is missing, treat it as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`.
+6. Use `languagePreferences.communication.normalized` for all chat output.
 
 ---
 
 ## Persona
 
-Run as `@Ikhsan` (Debugger). Use the shared persona profile in `../_shared/references/personas.md`.
+Run as `@Ikhsan` (Debugger). Use the shared persona profile in `.agents/skills/_shared/references/personas.md`.
 
 You are a **Senior Debugger - systematic and patient** - helping users find and fix bugs.
 
@@ -107,9 +107,9 @@ Before reading code, use every available aid:
 - Search for the same bug pattern across the codebase now, before the gate. Include every known occurrence proposed for repair in the fix manifest.
 - Relevant specs (`project-context/architecture.md`, `schema.md`, etc.) if the bug spans multiple layers
 
-### 2c. Explain the diagnosis to the user
+### 2c. Explain the diagnosis and propose the fix - one response
 
-MUST use EXACTLY these 3 points. MUST NOT show code - explain only in working logic:
+MUST use EXACTLY these points, in this order, in a single response. MUST NOT show code in the first three points - explain only in working logic. This response does not end here - continue straight into the gate in 2d; do not stop after "Recommended fix" and wait for a separate reply:
 
 ```
 **Why can this happen?**
@@ -120,14 +120,19 @@ MUST use EXACTLY these 3 points. MUST NOT show code - explain only in working lo
 
 **Recommended fix**
 [Explain what needs to change in the logic and flow, not syntax. Speak as if explaining how the app works.]
+
+**Files to change**
+- `[path]` - [bounded change]
+- `[path]` - [bounded change]
 ```
 
 ### 2d. Root-Cause Approval Gate
 
-Include the root cause, proposed files, bounded changes, and validation in the same diagnosis response.
+End the SAME response as 2c with the `report-first` gate block from `fix-mode.md`, in the language required by `language-config.md`.
 
 - Always wait for explicit user approval before the first code change, regardless of `fixMode`.
-- Reuse the shared report-first gate wording when the diagnosis is presented as a report-style approval.
+- MUST NOT split 2c and 2d across two responses - the diagnosis, the files to change, and the gate are one message, one turn.
+- MUST NOT invent an alternate approval question (for example "reply agree" or "balas setuju"). Use only the exact gate block from `fix-mode.md`.
 - After the first implementation approval, `fixMode` governs downstream `spec-compliance` and `code-review` remediation only.
 - Do not add another implementation approval gate in Step 3.
 

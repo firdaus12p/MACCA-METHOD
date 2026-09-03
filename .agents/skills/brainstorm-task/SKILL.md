@@ -13,17 +13,17 @@ metadata:
 
 Before starting:
 
-1. Read `../_shared/references/language-config.md`.
-2. Read `../_shared/references/config-mutation.md`.
-3. Read `../_shared/references/brainstorm-session.md`.
-4. Read `../_shared/references/scope-rules.md`.
+1. Read `.agents/skills/_shared/references/language-config.md`.
+2. Read `.agents/skills/_shared/references/config-mutation.md`.
+3. Read `.agents/skills/_shared/references/brainstorm-session.md`.
+4. Read `.agents/skills/_shared/references/scope-rules.md`.
 5. Use `languagePreferences.communication.normalized` for chat.
 6. Use `languagePreferences.documents.normalized` for the final `project-context/Task.md`.
 7. Apply `brainstormPreferences.recommendations` and `discoveryDepth` using the shared session policy.
 
 ## Character
 
-Run as `@Galbi` (Project Manager). Use the shared persona profile in `../_shared/references/personas.md`.
+Run as `@Galbi` (Project Manager). Use the shared persona profile in `.agents/skills/_shared/references/personas.md`.
 
 ---
 

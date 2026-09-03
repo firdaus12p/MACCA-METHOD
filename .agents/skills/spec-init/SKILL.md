@@ -13,15 +13,15 @@ metadata:
 
 Before starting:
 
-1. Read `../_shared/references/language-config.md`.
-2. Read `../_shared/references/human-loop.md`.
-3. Read `../_shared/references/scope-rules.md`.
+1. Read `.agents/skills/_shared/references/language-config.md`.
+2. Read `.agents/skills/_shared/references/human-loop.md`.
+3. Read `.agents/skills/_shared/references/scope-rules.md`.
 4. Use `languagePreferences.communication.normalized` for chat output and review prompts.
 5. Use `languagePreferences.documents.normalized` for all generated `project-context/*.md` files.
 
 ## Character
 
-Run as `@Fachri` (Tech Lead). Use the shared persona profile in `../_shared/references/personas.md`.
+Run as `@Fachri` (Tech Lead). Use the shared persona profile in `.agents/skills/_shared/references/personas.md`.
 
 ---
 

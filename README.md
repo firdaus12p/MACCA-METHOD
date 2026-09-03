@@ -305,7 +305,7 @@ Conditional rules are generated only when applicable: structured logging, migrat
 **Step 0 — Identify name & project**
 Read `.agents/developer-config.json`. If `name` or `project` is missing, AI asks once and saves the answer.
 
-**Step 0b — Setup additional skills & MCP**
+**Additional skills & MCP setup** (`references/onboarding.md`)
 
 *Additional Skills:*
 - If `additionalSkills` already exists in config → use it directly
@@ -318,7 +318,7 @@ Read `.agents/developer-config.json`. If `name` or `project` is missing, AI asks
 - If not → AI asks once: *"Which MCPs are available in your workspace?"*
 - Only listed MCPs will be used.
 
-**Step 0c — Set developer scope**
+**Developer scope** (`references/onboarding.md`)
 - If `developerPreferences.scope` already exists → use it directly
 - If not → AI asks once:
   ```
@@ -329,7 +329,7 @@ Read `.agents/developer-config.json`. If `name` or `project` is missing, AI asks
   ```
 - This scope is enforced in every phase: AI will not create/change files outside the scope.
 
-**Step 1b — Choose work mode**
+**Work mode** (`references/onboarding.md`)
 - If `developerPreferences.workMode` already exists → use it directly
 - If not → AI asks once:
   ```
@@ -344,7 +344,7 @@ Read `.agents/developer-config.json`. If `name` or `project` is missing, AI asks
   status: done        ← when code-review is complete
   ```
 
-**Step 2 — Select relevant specs + enforce scope**
+**Selecting relevant specs** (`references/execute-task.md`)
 
 | Condition | Read |
 |---------|--------|
@@ -356,7 +356,7 @@ Read `.agents/developer-config.json`. If `name` or `project` is missing, AI asks
 
 Scope enforcement: if `scope=frontend`, AI does not touch backend files. If `scope=backend`, AI does not touch frontend files.
 
-**Step 3 — Execute tasks one by one**
+**Executing tasks** (`references/execute-task.md`)
 
 For each task:
 1. Understand the task and acceptance criteria
@@ -376,7 +376,7 @@ Developer loads workflow references by state, not all at once:
 - `execute-task.md` only for the current task
 - `close-phase.md` only when closing a phase/project
 
-**Step 4 — After all tasks in the phase are complete**
+**Closing a phase** (`references/close-phase.md`)
 1. Show a phase summary
 2. Verify the applicable Phase Definition of Done; mark genuine non-applicable items with a reason
 3. If there is a plan file for this phase → update plan status: `in-progress` → `code-review`
@@ -1051,14 +1051,14 @@ The `.agents/developer-config.json` file is shared config across skills. All ski
 | `name` | `developer` (Step 0) | Asked once |
 | `project` | `developer` (Step 0) | Asked once |
 | `languagePreferences` | installer / first skill | Communication language and document language |
-| `developerPreferences.workMode` | `developer` (Step 1b) | `"direct"` or `"plan-first"` |
-| `developerPreferences.scope` | `developer` (Step 0c) | `"frontend"`, `"backend"`, or `"fullstack"` |
+| `developerPreferences.workMode` | `developer` (`references/onboarding.md` § Work Mode) | `"direct"` or `"plan-first"` |
+| `developerPreferences.scope` | `developer` (`references/onboarding.md` § Developer Scope) | `"frontend"`, `"backend"`, or `"fullstack"` |
 | `brainstormPreferences.discussionMode` | brainstorm-* skills | `"one-by-one"`, `"three-at-a-time"`, or `"all-at-once"` |
 | `brainstormPreferences.recommendations` | brainstorm-* skills | `true` = AI gives suggested answers for each question |
 | `brainstormPreferences.discoveryDepth` | brainstorm-* skills | `"quick"`, `"standard"`, or `"critical"`; inferred when absent, user-overridable |
 | `codeReviewPreferences.fixMode` | user / config runtime | `"report-first"` or `"fix-then-report"` |
-| `additionalSkills` | `developer` (Step 0b) | AI searches for the path in the workspace first, then asks only if it is not found |
-| `availableMCPs` | `developer` (Step 0b) | Available MCPs; only listed MCPs are used |
+| `additionalSkills` | `developer` (`references/onboarding.md` § Additional Skills and MCPs) | AI searches for the path in the workspace first, then asks only if it is not found |
+| `availableMCPs` | `developer` (`references/onboarding.md` § Additional Skills and MCPs) | Available MCPs; only listed MCPs are used |
 
 **Rule:** all skills must **merge**, not overwrite the file. Unknown fields must be preserved.
 

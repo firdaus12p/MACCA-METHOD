@@ -260,14 +260,19 @@ Tunggu jawaban di pesan berikutnya. Jangan menerapkan perubahan sebelum user men
 Setiap gate harus mendefinisikan state yang ditunda: sumber laporan, ID temuan, file target, tindakan yang disetujui, dan validasi. Pada pesan berikutnya:
 
 1. Normalisasi jawaban dengan trim dan case-fold.
-2. Jika jawaban tepat `yes`, `fix`, atau `continue`, terapkan **semua temuan actionable pada laporan tepat sebelumnya**.
+2. Jika jawaban cocok salah satu token approval yang berlaku untuk bahasa aktif, terapkan **semua temuan actionable pada laporan tepat sebelumnya**.
 3. Jika user menyebut ID, terapkan hanya ID tersebut.
 4. Jangan mengulang review, startup, preflight, atau gate yang sama sebelum mengedit.
 5. Tanyakan ulang hanya jika worktree berubah material, target sudah tidak ada, scope baru/destruktif muncul, atau temuan saling konflik.
 6. Setelah edit, jalankan validasi relevan dan verdict pass terhadap daftar temuan yang sama. Jangan membuka review baru tanpa batas.
 7. Bila host tidak mempertahankan state antar-turn, tampilkan fix manifest ringkas pada laporan agar resume tetap dapat direkonstruksi.
 
-Untuk MACCA, `fix` berarti semua severity yang memiliki rekomendasi konkret, kecuali laporan secara eksplisit membatasi gate ke subset tertentu. Skill seperti `quick-dev` DILARANG mengambil alih balasan approval dari gate aktif.
+**Token approval WAJIB mengikuti bahasa yang dipilih user** (`languagePreferences.communication.normalized`, lihat `language-config.md`) — bukan daftar tunggal yang di-hardcode maintainer lepas dari pilihan user:
+- Bahasa Inggris (`english`/`en`): `yes`, `fix`, `continue`.
+- Bahasa Indonesia (`indonesian`/`id`, default kalau preferensi tidak ada/tidak dikenali): `ya`, `iya`, `setuju`, `lanjut`, `perbaiki`.
+- Kedua set token tetap diterima berdampingan terlepas dari bahasa yang sedang aktif, supaya balasan singkat user tidak pernah dianggap tidak valid hanya karena bahasanya berbeda dari yang diperkirakan. Kontrak lengkapnya ada di `_shared/references/fix-mode.md`.
+
+Untuk MACCA, `fix`/`perbaiki` berarti semua severity yang memiliki rekomendasi konkret, kecuali laporan secara eksplisit membatasi gate ke subset tertentu. Skill seperti `quick-dev` DILARANG mengambil alih balasan approval dari gate aktif.
 
 ---
 
@@ -426,7 +431,7 @@ Pola kolaboratif yang direkomendasikan Anthropic: gunakan satu sesi AI ("AI-A") 
 - [ ] Ada bagian eksplisit "kapan WAJIB bertanya" dan "kapan tidak perlu bertanya"
 - [ ] Format pertanyaan terstruktur, ada rekomendasi default, dan skill membedakan interview pacing vs confirmation gating
 - [ ] Instruksi eksplisit: AI menjeda giliran, TIDAK mengakhiri sesi, lanjut otomatis setelah dijawab
-- [ ] Gate menyimpan fix manifest dan exact `fix` langsung mengeksekusi tanpa gate/preflight kedua
+- [ ] Gate menyimpan fix manifest dan token approval sesuai bahasa aktif (lihat §5.6) langsung mengeksekusi tanpa gate/preflight kedua
 - [ ] Setelah fix ada validasi dan verdict pass yang bounded
 
 **Bahasa**

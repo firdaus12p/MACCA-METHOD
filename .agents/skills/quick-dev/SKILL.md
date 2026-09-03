@@ -13,10 +13,10 @@ metadata:
 
 Before any output:
 
-1. Read `../_shared/references/language-config.md`.
-2. Read `../_shared/references/config-mutation.md`.
-3. Read `../_shared/references/fix-mode.md`.
-4. Read `../_shared/references/human-loop.md`.
+1. Read `.agents/skills/_shared/references/language-config.md`.
+2. Read `.agents/skills/_shared/references/config-mutation.md`.
+3. Read `.agents/skills/_shared/references/fix-mode.md`.
+4. Read `.agents/skills/_shared/references/human-loop.md`.
 5. If the current message answers any active report-first gate, do not run `quick-dev`; resume the originating review/remediation skill under the Approval Resume Protocol.
 6. Otherwise, read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If missing, treat as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`.
 7. Use `languagePreferences.communication.normalized` for chat.
@@ -26,9 +26,9 @@ Before any output:
 
 ## Persona
 
-Run as `@Firdaus` (Expert Developer). Use the shared persona profile in `../_shared/references/personas.md`.
+Run as `@Firdaus` (Expert Developer). Use the shared persona profile in `.agents/skills/_shared/references/personas.md`.
 
-Read and follow `../_shared/references/implementation-principles.md`. Quick-dev adds no alternative implementation policy; its distinction is only the strict complexity threshold below.
+Read and follow `.agents/skills/_shared/references/implementation-principles.md`. Quick-dev adds no alternative implementation policy; its distinction is only the strict complexity threshold below.
 
 ---
 
@@ -70,7 +70,7 @@ After the user answers, create or update `.agents/developer-config.json` with `n
 Read `additionalSkills` and `availableMCPs` from `.agents/developer-config.json`.
 
 - **Both exist:** show `[Skills: N registered] [MCPs: ...]` on one line. Tell the user to correct now if needed.
-- **Either missing:** read `../developer/references/onboarding.md`, ask only the missing setup questions, and preserve other fields.
+- **Either missing:** read `.agents/skills/developer/references/onboarding.md`, ask only the missing setup questions, and preserve other fields.
 
 ---
 
@@ -79,7 +79,7 @@ Read `additionalSkills` and `availableMCPs` from `.agents/developer-config.json`
 Read `developerPreferences.scope` from `.agents/developer-config.json`.
 
 - **Exists:** show `[Scope: frontend / backend / fullstack]`. Tell the user to correct now if needed.
-- **Missing:** ask once using the same question as `developer` Step 0c. Save answer.
+- **Missing:** ask once using the same question as `developer/references/onboarding.md` § Developer Scope. Save answer.
 
 ---
 
@@ -146,11 +146,11 @@ Scan `[FORBIDDEN]` in `rules.md` before any coding.
 
 ## Step 2b — Record an Approved Scope Delta Before Coding
 
-If the task is outside `project-context/`, follow the approval flow from `developer` Step 3a before editing code. After approval, create or update the lightweight `Task.md` entry immediately with `status: in-progress` and the delta details. If `Task.md` or an active phase is missing, stop and route to `developer`; do not invent a phase.
+If the task is outside `project-context/`, follow the approval flow in `developer/references/execute-task.md` § Understand and Protect Scope before editing code. After approval, create or update the lightweight `Task.md` entry immediately with `status: in-progress` and the delta details. If `Task.md` or an active phase is missing, stop and route to `developer`; do not invent a phase.
 
 ## Step 3 — Execute
 
-Read `../developer/references/execute-task.md` and follow its task execution workflow:
+Read `.agents/skills/developer/references/execute-task.md` and follow its task execution workflow:
 
 - Understand scope and record approved deltas before coding.
 - Clarify only blocking ambiguity.
@@ -186,7 +186,7 @@ If a scope delta exists, record it inline:
 1. Run `spec-compliance`. Follow `fixMode` from Shared Runtime Setup.
 2. Run `code-review`. Follow `fixMode` from Shared Runtime Setup.
 
-Both follow the same gate behavior as `developer` Step 4. Do not proceed to Step 6 until both pass.
+Both follow the same `spec-compliance` -> `code-review` gate sequence as `developer/references/close-phase.md`. Do not proceed to Step 6 until both pass.
 
 ---
 

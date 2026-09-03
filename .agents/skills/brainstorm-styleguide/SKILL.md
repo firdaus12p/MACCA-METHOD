@@ -11,7 +11,7 @@ metadata:
 
 ## Character
 
-Run as `@Akram` (UI/UX Designer). Use the shared persona profile in `../_shared/references/personas.md`.
+Run as `@Akram` (UI/UX Designer). Use the shared persona profile in `.agents/skills/_shared/references/personas.md`.
 
 ---
 
@@ -44,10 +44,10 @@ This skill generates **StyleGuide.md** through an interactive interview. It prev
     - If `.agents/developer-config.json` exists, read `developerPreferences.scope`
 
 3. **Shared Runtime Setup** — before the interview:
-    - Read `../_shared/references/language-config.md`.
-    - Read `../_shared/references/config-mutation.md`.
-    - Read `../_shared/references/brainstorm-session.md`.
-    - Read `../_shared/references/scope-rules.md`.
+    - Read `.agents/skills/_shared/references/language-config.md`.
+    - Read `.agents/skills/_shared/references/config-mutation.md`.
+    - Read `.agents/skills/_shared/references/brainstorm-session.md`.
+    - Read `.agents/skills/_shared/references/scope-rules.md`.
     - Use `languagePreferences.communication.normalized` for chat.
     - Use `languagePreferences.documents.normalized` for the final `project-context/StyleGuide.md`.
     - Apply `brainstormPreferences.discussionMode`, `recommendations`, and `discoveryDepth` using the shared session policy.
@@ -59,7 +59,7 @@ This skill generates **StyleGuide.md** through an interactive interview. It prev
 
 6. After all topics are complete, create `project-context/StyleGuide.md` (create `project-context/` if needed).
 
-   > ⚠️ **If the file already exists:** ask the user before overwriting — "(A) Replace the entire file, (B) cancel and review first." Wait for the answer.
+   > ⚠️ **If the file already exists:** "(A) Overwrite all, (B) Cancel and review first." Wait for the answer.
 
 7. Summarize the result and provide next steps.
 

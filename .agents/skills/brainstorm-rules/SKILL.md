@@ -11,7 +11,7 @@ metadata:
 
 ## Character
 
-Run as `@Fachri` (Tech Lead). Use the shared persona profile in `../_shared/references/personas.md`.
+Run as `@Fachri` (Tech Lead). Use the shared persona profile in `.agents/skills/_shared/references/personas.md`.
 
 ---
 
@@ -45,10 +45,10 @@ This skill generates **rules.md**: a "code constitution" so AI works consistentl
     - `project-context/api.md` — auth contract, rate limiting, abuse controls
 
 3. **Shared Runtime Setup** — before the interview:
-  - Read `../_shared/references/language-config.md`.
-  - Read `../_shared/references/config-mutation.md`.
-  - Read `../_shared/references/brainstorm-session.md`.
-  - Read `../_shared/references/scope-rules.md`.
+  - Read `.agents/skills/_shared/references/language-config.md`.
+  - Read `.agents/skills/_shared/references/config-mutation.md`.
+  - Read `.agents/skills/_shared/references/brainstorm-session.md`.
+  - Read `.agents/skills/_shared/references/scope-rules.md`.
   - Use `languagePreferences.communication.normalized` for chat.
   - Use `languagePreferences.documents.normalized` for the final `project-context/rules.md`.
   - Apply `brainstormPreferences.discussionMode`, `recommendations`, and `discoveryDepth` using the shared session policy.
@@ -58,7 +58,7 @@ This skill generates **rules.md**: a "code constitution" so AI works consistentl
 
 5. After all topics are complete, create `project-context/rules.md` (create `project-context/` if needed).
 
-   > ⚠️ **If the file already exists:** ask the user before overwriting — "(A) Replace the entire file, (B) cancel and review first." Wait for the answer.
+   > ⚠️ **If the file already exists:** "(A) Overwrite all, (B) Cancel and review first." Wait for the answer.
 
 6. Summarize the result and provide next steps.
 

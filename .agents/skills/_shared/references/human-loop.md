@@ -54,4 +54,4 @@ Keep one decision topic per pause.
 
 After the user answers, continue from the exact paused step. Do not restart the workflow or ask for the same confirmation again unless the situation materially changes.
 
-An answer to an active gate takes precedence over normal skill startup and routing. For a report-first gate, exact `yes`, `fix`, or `continue` and finding-ID subsets follow the Approval Resume Protocol in `fix-mode.md`. Do not send them through identity setup, preflight, or a second confirmation.
+An answer to an active gate takes precedence over normal skill startup and routing. For a report-first gate, the approval tokens and finding-ID subsets defined in `fix-mode.md`'s Approval Resume Protocol take priority. Do not send them through identity setup, preflight, or a second confirmation.

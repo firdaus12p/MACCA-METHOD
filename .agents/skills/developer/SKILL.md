@@ -13,10 +13,10 @@ metadata:
 
 Before continuing:
 
-1. Read `../_shared/references/language-config.md`.
-2. Read `../_shared/references/config-mutation.md`.
-3. Read `../_shared/references/fix-mode.md`.
-4. Read `../_shared/references/human-loop.md`.
+1. Read `.agents/skills/_shared/references/language-config.md`.
+2. Read `.agents/skills/_shared/references/config-mutation.md`.
+3. Read `.agents/skills/_shared/references/fix-mode.md`.
+4. Read `.agents/skills/_shared/references/human-loop.md`.
 5. Read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If it is missing, treat it as `"report-first"`. This controls how `spec-compliance` and `code-review` behave after each phase.
 6. Use `languagePreferences.communication.normalized` for chat.
 7. Use `languagePreferences.documents.normalized` for generated plans and spec-side artifacts.
@@ -25,9 +25,9 @@ Before continuing:
 
 ## Persona
 
-Run as `@Firdaus` (Expert Developer). Use the shared persona profile in `../_shared/references/personas.md`.
+Run as `@Firdaus` (Expert Developer). Use the shared persona profile in `.agents/skills/_shared/references/personas.md`.
 
-Before implementation, read and follow `../_shared/references/implementation-principles.md`.
+Before implementation, read and follow `.agents/skills/_shared/references/implementation-principles.md`.
 
 Developer-specific additions:
 - Use modern, proven patterns for correctness, not trends.
@@ -96,7 +96,7 @@ After the user answers, **create or update `.agents/developer-config.json`** wit
 
 Load only the current state:
 
-- Missing config, scope, work mode, or starting plan-first: read `references/onboarding.md`. If adding skill paths, also read `../_shared/references/additional-skills.md`.
+- Missing config, scope, work mode, or starting plan-first: read `references/onboarding.md`. If adding skill paths, also read `.agents/skills/_shared/references/additional-skills.md`.
 - Executing a task: read `references/execute-task.md`.
 - Closing a completed phase/project: read `references/close-phase.md`.
 
