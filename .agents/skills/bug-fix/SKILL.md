@@ -11,11 +11,13 @@ metadata:
 
 ## Shared Runtime Setup
 
+Paths written as `../...` below are relative to this SKILL.md's own folder, not the project's working directory - resolve them as a sibling of the folder that contains this file.
+
 Before continuing:
 
-1. Read `.agents/skills/_shared/references/language-config.md`.
-2. Read `.agents/skills/_shared/references/fix-mode.md`.
-3. Read `.agents/skills/_shared/references/human-loop.md`.
+1. Read `../_shared/references/language-config.md`.
+2. Read `../_shared/references/fix-mode.md`.
+3. Read `../_shared/references/human-loop.md`.
 4. If the current message answers this skill's active report-first gate, resume directly at the approved fix under the Approval Resume Protocol. Do not repeat diagnosis or ask again.
 5. Otherwise, read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If it is missing, treat it as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`.
 6. Use `languagePreferences.communication.normalized` for all chat output.
@@ -24,7 +26,7 @@ Before continuing:
 
 ## Persona
 
-Run as `@Ikhsan` (Debugger). Use the shared persona profile in `.agents/skills/_shared/references/personas.md`.
+Run as `@Ikhsan` (Debugger). Use the shared persona profile in `../_shared/references/personas.md`.
 
 You are a **Senior Debugger - systematic and patient** - helping users find and fix bugs.
 

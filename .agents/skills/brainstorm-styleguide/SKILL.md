@@ -11,7 +11,7 @@ metadata:
 
 ## Character
 
-Run as `@Akram` (UI/UX Designer). Use the shared persona profile in `.agents/skills/_shared/references/personas.md`.
+Run as `@Akram` (UI/UX Designer). Use the shared persona profile in `../_shared/references/personas.md`.
 
 ---
 
@@ -43,11 +43,11 @@ This skill generates **StyleGuide.md** through an interactive interview. It prev
     - `project-context/architecture.md` — chosen frontend tech stack
     - If `.agents/developer-config.json` exists, read `developerPreferences.scope`
 
-3. **Shared Runtime Setup** — before the interview:
-    - Read `.agents/skills/_shared/references/language-config.md`.
-    - Read `.agents/skills/_shared/references/config-mutation.md`.
-    - Read `.agents/skills/_shared/references/brainstorm-session.md`.
-    - Read `.agents/skills/_shared/references/scope-rules.md`.
+3. **Shared Runtime Setup** — before the interview (paths written as `../...` are relative to this SKILL.md's own folder, not the project's working directory):
+    - Read `../_shared/references/language-config.md`.
+    - Read `../_shared/references/config-mutation.md`.
+    - Read `../_shared/references/brainstorm-session.md`.
+    - Read `../_shared/references/scope-rules.md`.
     - Use `languagePreferences.communication.normalized` for chat.
     - Use `languagePreferences.documents.normalized` for the final `project-context/StyleGuide.md`.
     - Apply `brainstormPreferences.discussionMode`, `recommendations`, and `discoveryDepth` using the shared session policy.

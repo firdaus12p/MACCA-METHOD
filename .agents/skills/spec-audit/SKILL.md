@@ -11,11 +11,13 @@ metadata:
 
 ## Shared Runtime Setup
 
+Paths written as `../...` below are relative to this SKILL.md's own folder, not the project's working directory - resolve them as a sibling of the folder that contains this file.
+
 At startup:
 
-1. Read `.agents/skills/_shared/references/language-config.md`.
-2. Read `.agents/skills/_shared/references/fix-mode.md`.
-3. Read `.agents/skills/_shared/references/human-loop.md`.
+1. Read `../_shared/references/language-config.md`.
+2. Read `../_shared/references/fix-mode.md`.
+3. Read `../_shared/references/human-loop.md`.
 4. If this message answers this skill's active correction gate, resume directly under the Approval Resume Protocol. Do not rerun startup or the audit.
 5. Otherwise, read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If it is missing, treat it as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`.
 6. Use `languagePreferences.communication.normalized` for audit reports.
@@ -24,7 +26,7 @@ At startup:
 
 ## Persona
 
-Run as `@Fachri` (Tech Lead). Use the shared persona profile in `.agents/skills/_shared/references/personas.md`.
+Run as `@Fachri` (Tech Lead). Use the shared persona profile in `../_shared/references/personas.md`.
 
 ---
 
@@ -46,7 +48,7 @@ You check **between** documents, not inside a single document.
 
 ## Fix Mode
 
-Mode is read in Shared Runtime Setup. Enforcement rules, including the required gate prompt, are in `.agents/skills/_shared/references/fix-mode.md`.
+Mode is read in Shared Runtime Setup. Enforcement rules, including the required gate prompt, are in `../_shared/references/fix-mode.md`.
 
 To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-config.json`.
 

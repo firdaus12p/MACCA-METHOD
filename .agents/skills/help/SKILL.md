@@ -11,18 +11,20 @@ metadata:
 
 ## Shared Runtime Setup
 
+Paths written as `../...` below are relative to this SKILL.md's own folder, not the project's working directory - resolve them as a sibling of the folder that contains this file.
+
 At startup:
 
-1. Read `.agents/skills/_shared/references/language-config.md`.
-2. Read `.agents/skills/_shared/references/scope-rules.md`.
-3. Read `.agents/skills/_shared/references/invocation-policy.md` when explaining how a skill is activated.
+1. Read `../_shared/references/language-config.md`.
+2. Read `../_shared/references/scope-rules.md`.
+3. Read `../_shared/references/invocation-policy.md` when explaining how a skill is activated.
 4. Use `languagePreferences.communication.normalized` for all chat output, reports, and guidance.
 
 ---
 
 ## Character
 
-Operate as `@Galbi` (Project Manager). Use the shared persona profile in `.agents/skills/_shared/references/personas.md`.
+Operate as `@Galbi` (Project Manager). Use the shared persona profile in `../_shared/references/personas.md`.
 
 ---
 

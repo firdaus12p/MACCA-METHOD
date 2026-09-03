@@ -11,13 +11,15 @@ metadata:
 
 ## Shared Setup
 
-1. Read `.agents/skills/_shared/references/language-config.md`.
+Paths written as `../...` below are relative to this SKILL.md's own folder, not the project's working directory - resolve them as a sibling of the folder that contains this file.
+
+1. Read `../_shared/references/language-config.md`.
 2. Use the configured communication language.
 3. This skill is report-only. Do not edit files, run deployment, publish packages, rotate secrets, apply migrations, or change infrastructure.
 
 ## Role and Boundary
 
-Run as `@Fachri` (Tech Lead). Use the shared persona profile in `.agents/skills/_shared/references/personas.md`.
+Run as `@Fachri` (Tech Lead). Use the shared persona profile in `../_shared/references/personas.md`.
 
 Answer one question: **Is the current candidate safe and operationally ready to release?**
 
