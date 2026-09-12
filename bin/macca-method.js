@@ -164,6 +164,11 @@ function parseArgs(argv) {
       continue;
     }
 
+    if (token === "-f" || token === "--force") {
+      args.force = true;
+      continue;
+    }
+
     if (token === "--list-tools") {
       args.listTools = true;
       continue;
@@ -292,6 +297,7 @@ function printHelp() {
       "  -t, --tool <name>                 Repeatable. Also accepts comma-separated values.",
       "  -d, --directory <path>           Target project directory. Defaults to the current directory.",
       "  -y, --yes                        Skip prompts and use defaults where needed.",
+      "  -f, --force                      Overwrite locally modified managed skills.",
       "      --name <value>               Developer name.",
       "      --project <value>            Project name.",
       "      --communication-language <value>",
@@ -493,13 +499,37 @@ function hashText(content) {
   return crypto.createHash("sha256").update(content).digest("hex");
 }
 
+const IGNORED_DIRECTORY_NAMES = new Set([
+  OWNERSHIP_MARKER,
+  ".DS_Store",
+  "Thumbs.db",
+  "__pycache__",
+  ".pytest_cache",
+  ".ruff_cache",
+]);
+
+function shouldIgnoreDirectoryEntry(name) {
+  if (IGNORED_DIRECTORY_NAMES.has(name)) {
+    return true;
+  }
+  if (
+    name.endsWith(".pyc") ||
+    name.endsWith(".pyo") ||
+    name.endsWith(".tmp") ||
+    name.startsWith(".tmp-")
+  ) {
+    return true;
+  }
+  return false;
+}
+
 function getDirectoryFileHashes(directoryPath) {
   const hashes = {};
 
   function walk(currentPath, relativePath = "") {
     const entries = fs
       .readdirSync(currentPath, { withFileTypes: true })
-      .filter((entry) => entry.name !== OWNERSHIP_MARKER)
+      .filter((entry) => !shouldIgnoreDirectoryEntry(entry.name))
       .sort((left, right) => left.name.localeCompare(right.name));
 
     for (const entry of entries) {
@@ -648,7 +678,10 @@ function isMaccaOwned(targetPath) {
   return readOwnershipMarker(targetPath) !== null;
 }
 
-function assertManagedDirectoryUnchanged(targetPath) {
+function assertManagedDirectoryUnchanged(targetPath, force = false) {
+  if (force) {
+    return;
+  }
   const marker = readOwnershipMarker(targetPath);
   if (!marker) {
     throw new Error(
@@ -657,7 +690,8 @@ function assertManagedDirectoryUnchanged(targetPath) {
   }
   if (!marker.payloadHash || marker.payloadHash !== hashDirectory(targetPath)) {
     throw new Error(
-      `Refusing to overwrite locally modified managed skill: ${targetPath}`,
+      `Refusing to overwrite locally modified managed skill: ${targetPath}. ` +
+        "Run upgrade with --force to overwrite local modifications.",
     );
   }
 }
@@ -674,7 +708,10 @@ function readJsonObject(filePath, label) {
   }
 }
 
-function assertManagedFilesUnchanged(agentsDirectory) {
+function assertManagedFilesUnchanged(agentsDirectory, force = false) {
+  if (force) {
+    return;
+  }
   const statePath = path.join(agentsDirectory, STATE_FILE);
   if (!fs.existsSync(statePath)) {
     return;
@@ -684,7 +721,8 @@ function assertManagedFilesUnchanged(agentsDirectory) {
     const filePath = path.join(agentsDirectory, fileName);
     if (!fs.existsSync(filePath) || hashFile(filePath) !== expectedHash) {
       throw new Error(
-        `Refusing to overwrite locally modified MACCA metadata: ${filePath}`,
+        `Refusing to overwrite locally modified MACCA metadata: ${filePath}. ` +
+          "Run upgrade with --force to overwrite local modifications.",
       );
     }
   }
@@ -938,7 +976,7 @@ function getUniqueDestinations(targetDir, tools) {
   return [...destinations.values()];
 }
 
-function applySkillTransaction(entries, targetDir) {
+function applySkillTransaction(entries, targetDir, force = false) {
   const suffix = `${process.pid}-${Date.now()}-${crypto.randomBytes(8).toString("hex")}`;
   const prepared = [];
   const committed = [];
@@ -971,7 +1009,7 @@ function applySkillTransaction(entries, targetDir) {
       }
       if (kind === "directory") {
         if (isMaccaOwned(targetPath)) {
-          assertManagedDirectoryUnchanged(targetPath);
+          assertManagedDirectoryUnchanged(targetPath, force);
         } else if (
           !legacySkillName ||
           !isLegacyDirectoryUnchanged(targetPath, legacySkillName)
@@ -1329,7 +1367,8 @@ async function promptForMetadata(seed) {
   }
 }
 
-function applyInstall(targetDir, tools, metadata) {
+function applyInstall(targetDir, tools, metadata, options = {}) {
+  const force = Boolean(options.force);
   const managedSkills = getSourceManagedSkills();
   const agentsDirectory = path.join(targetDir, ".agents");
   ensureDirectory(targetDir);
@@ -1344,7 +1383,7 @@ function applyInstall(targetDir, tools, metadata) {
   ]) {
     assertSafeProjectPath(targetDir, path.join(agentsDirectory, fileName));
   }
-  assertManagedFilesUnchanged(agentsDirectory);
+  assertManagedFilesUnchanged(agentsDirectory, force);
   const previousManagedSkills = validateManagedSkillNames(
     readNonEmptyLines(path.join(agentsDirectory, "macca-managed-skills.txt")),
     ".agents/macca-managed-skills.txt",
@@ -1401,10 +1440,11 @@ function applyInstall(targetDir, tools, metadata) {
       targetPath: path.join(agentsDirectory, STATE_FILE),
     },
   );
-  applySkillTransaction(entries, targetDir);
+  applySkillTransaction(entries, targetDir, force);
 }
 
-function applyUpgrade(targetDir) {
+function applyUpgrade(targetDir, options = {}) {
+  const force = Boolean(options.force);
   const agentsDirectory = path.join(targetDir, ".agents");
   assertSafeProjectPath(targetDir, agentsDirectory);
   assertPackageNotOlderThanInstalled(agentsDirectory);
@@ -1417,7 +1457,7 @@ function applyUpgrade(targetDir) {
   ]) {
     assertSafeProjectPath(targetDir, path.join(agentsDirectory, fileName));
   }
-  assertManagedFilesUnchanged(agentsDirectory);
+  assertManagedFilesUnchanged(agentsDirectory, force);
   const tools = readNonEmptyLines(
     path.join(agentsDirectory, "macca-tools.txt"),
   );
@@ -1447,7 +1487,7 @@ function applyUpgrade(targetDir) {
     )) {
       const oldPath = resolveOwnedSkillPath(destination, skillName);
       if (fs.existsSync(oldPath) && isMaccaOwned(oldPath)) {
-        assertManagedDirectoryUnchanged(oldPath);
+        assertManagedDirectoryUnchanged(oldPath, force);
         entries.push({ sourcePath: null, targetPath: oldPath });
       } else if (isLegacyDirectoryUnchanged(oldPath, skillName)) {
         entries.push({
@@ -1469,7 +1509,7 @@ function applyUpgrade(targetDir) {
     for (const skillName of previousManagedSkills) {
       const oldPath = resolveOwnedSkillPath(legacyOpenCodeRoot, skillName);
       if (fs.existsSync(oldPath) && isMaccaOwned(oldPath)) {
-        assertManagedDirectoryUnchanged(oldPath);
+        assertManagedDirectoryUnchanged(oldPath, force);
         entries.push({ sourcePath: null, targetPath: oldPath });
       } else if (isLegacyDirectoryUnchanged(oldPath, skillName)) {
         entries.push({
@@ -1478,9 +1518,12 @@ function applyUpgrade(targetDir) {
           legacySkillName: skillName,
         });
       } else if (fs.existsSync(oldPath)) {
-        throw new Error(
-          `Legacy OpenCode skill was modified; move or back it up before upgrade: ${oldPath}`,
-        );
+        if (!force) {
+          throw new Error(
+            `Legacy OpenCode skill was modified; move or back it up before upgrade: ${oldPath}. ` +
+              "Run upgrade with --force to overwrite local modifications.",
+          );
+        }
       }
     }
   }
@@ -1511,7 +1554,7 @@ function applyUpgrade(targetDir) {
       targetPath: path.join(agentsDirectory, STATE_FILE),
     },
   );
-  applySkillTransaction(entries, targetDir);
+  applySkillTransaction(entries, targetDir, force);
 
   if (tools.includes("kimi")) reportLegacyKimiInstall();
 }
@@ -1620,7 +1663,7 @@ async function runInstall(args) {
             : existingConfig.languagePreferences?.documents?.raw,
       });
 
-  applyInstall(targetDir, tools, metadata);
+  applyInstall(targetDir, tools, metadata, { force: Boolean(args.force) });
 
   printInstallSummary("installed", tools);
   process.stdout.write(`  Target project: ${targetDir}\n\n`);
@@ -1633,7 +1676,7 @@ function runUpgrade(args) {
   const tools = readNonEmptyLines(
     path.join(targetDir, ".agents", "macca-tools.txt"),
   );
-  applyUpgrade(targetDir);
+  applyUpgrade(targetDir, { force: Boolean(args.force) });
   printInstallSummary("updated", tools);
   process.stdout.write(`  Target project: ${targetDir}\n\n`);
 }

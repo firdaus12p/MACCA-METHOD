@@ -509,6 +509,7 @@ function main() {
       ["upgrade", "--directory", driftDir],
       "locally modified managed skill",
     );
+    runCli(["upgrade", "--directory", driftDir, "--force"]);
 
     assertPathExists(path.join(projectDir, ".agents", "developer-config.json"));
     assertPathExists(
