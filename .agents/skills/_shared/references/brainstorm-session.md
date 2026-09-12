@@ -84,11 +84,11 @@ When a brainstorming skill starts:
 2. Read `brainstormPreferences` if present.
 3. **Announce the session** before asking anything:
    - If preferences are already saved, announce and proceed in the same response. The user may override them at any time:
-      ```
-      This session has [N] topics.
-      Saved preferences: [pacing] | recommendations: [on/off] | depth: [quick/standard/critical]
-      Using these settings. Type different settings at any time.
-      ```
+     ```
+     This session has [N] topics.
+     Saved preferences: [pacing] | recommendations: [on/off] | depth: [quick/standard/critical]
+     Using these settings. Type different settings at any time.
+     ```
    - If no preferences are saved — ask both before starting:
      ```
      This session has [N] topics. Two things before we start:

@@ -41,7 +41,7 @@ You are a **QA Engineer and Spec Auditor** who ensures that no implementation dr
 
 ---
 
-**Core question:** *Does the code match what we agreed in the specs?*
+**Core question:** _Does the code match what we agreed in the specs?_
 
 > **Rule:** Run this before `code-review`. Spec violations are more fundamental than code quality issues.
 
@@ -80,6 +80,7 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 - [ ] If changes are not yet in the PRD but are recorded in the active phase plan `## Approved Scope Delta`, DO NOT mark them as scope creep violations for this phase. Note them as `pending formal spec update` if needed.
 
 **Example findings:**
+
 ```
 ❌ SC-01 MAJOR: Business rule "stock never goes negative" is not validated in createOrder()
 ❌ SC-01 BLOCKER: "CSV export" is a Non-Goal but was included in the implementation
@@ -100,6 +101,7 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 - [ ] Operations, observability, rollback, and recovery constraints touched by this phase follow architecture; otherwise mark N/A
 
 **Example findings:**
+
 ```
 ❌ SC-02 MAJOR: architecture.md defines routes→controller→service→repository,
    but a Prisma query is in the route handler
@@ -122,6 +124,7 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 - [ ] If a table has `Trace to`, its usage aligns with the referenced requirement
 
 **Example findings:**
+
 ```
 ❌ SC-03 BLOCKER: schema.md defines "product_categories" (snake_case, plural)
    but the query uses "ProductCategory" - production will fail
@@ -144,6 +147,7 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 - [ ] A new operation listed in `## Approved Scope Delta` is temporary approved scope, not a rogue operation; note pending formal spec sync
 
 **Example findings:**
+
 ```
 ❌ SC-04 MAJOR: api.md defines response { success, data, message }
    but the code returns { status: "ok", result: {...} } - frontend breaks
@@ -164,6 +168,7 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 - [ ] Applicable logging, migration, feature-flag, generated-code, and secret-rotation rules are followed
 
 **Example findings:**
+
 ```
 ❌ SC-05 MINOR: rules.md requires camelCase, found const user_data = ...
 ❌ SC-05 MAJOR: rules.md forbids 'any', but function processData(input: any) exists in 3 files
@@ -173,7 +178,7 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 
 ## [SC-06] StyleGuide Compliance
 
-**Read:** `project-context/StyleGuide.md` *(if present, UI code only)*
+**Read:** `project-context/StyleGuide.md` _(if present, UI code only)_
 
 - [ ] CSS framework matches the guide - do not mix Tailwind + Bootstrap
 - [ ] Colors use defined tokens - no hardcoded hex outside the list
@@ -184,6 +189,7 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 - [ ] Applicable operational states, accessibility, localization, and UI performance constraints are implemented
 
 **Example findings:**
+
 ```
 ❌ SC-06 MINOR: The button uses bg-blue-500, but StyleGuide defines Primary = bg-blue-600
 ❌ SC-06 MINOR: Card padding is 14px, outside the spacing system (should be 8px, 16px, 24px)
@@ -206,6 +212,7 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 - [ ] Every applicable Phase Definition of Done item has evidence; `N/A` items include a reason
 
 **Example findings:**
+
 ```
 ❌ SC-07 BLOCKER: Task 2.3 AC "404 when user does not exist" is not implemented
 ❌ SC-07 MAJOR: The task says to create src/services/user.service.ts - the file does not exist
@@ -231,6 +238,7 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
   - [ ] No changes to `StyleGuide.md`
 
 **Example findings:**
+
 ```
 ❌ SC-08 MAJOR: developerPreferences.scope = "frontend" but src/routes/product.ts was created
 ❌ SC-08 MAJOR: developerPreferences.scope = "backend" but src/components/Button.tsx was modified
@@ -244,7 +252,7 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 
 1. **Verify all 8 items** (SC-01 through SC-08) were actually checked - not skipped. An "OK" item must have been checked, not skipped.
 2. **Reread every finding** - is the severity proportional? Are code examples quoted accurately?
-3. **Ask yourself:** *"If the developer fixes all findings and compliance is run again, will new findings appear?"* If yes, add them now.
+3. **Ask yourself:** _"If the developer fixes all findings and compliance is run again, will new findings appear?"_ If yes, add them now.
 4. **Recheck Task.md acceptance criteria** one more time - this is the most commonly missed area.
 
 Only after self-review, create the report.
@@ -262,23 +270,26 @@ The report is shown in this session chat. Do not save it to a file unless the us
 **Scope:** [reviewed files]
 **Status:** [✅ PASS | ⚠️ MINOR ISSUES | 🔴 MAJOR ISSUES | 💥 BLOCKER]
 
-| Document | Status | Finding |
-|---------|--------|--------|
-| project-context/PRD.md | ✅ OK | — |
-| project-context/architecture.md | 🔴 MAJOR | SC-02: DB query in route handler |
-| project-context/schema.md | ✅ OK | — |
-| project-context/api.md | ⚠️ MINOR | SC-04: missing "hasNext" field |
-| project-context/rules.md | ✅ OK | — |
-| project-context/StyleGuide.md | ⚠️ MINOR | SC-06: hardcoded color |
-| project-context/Task.md | 💥 BLOCKER | SC-07: AC not met |
-| developer-config.json (scope) | ✅ OK | — |
+| Document                        | Status     | Finding                          |
+| ------------------------------- | ---------- | -------------------------------- |
+| project-context/PRD.md          | ✅ OK      | —                                |
+| project-context/architecture.md | 🔴 MAJOR   | SC-02: DB query in route handler |
+| project-context/schema.md       | ✅ OK      | —                                |
+| project-context/api.md          | ⚠️ MINOR   | SC-04: missing "hasNext" field   |
+| project-context/rules.md        | ✅ OK      | —                                |
+| project-context/StyleGuide.md   | ⚠️ MINOR   | SC-06: hardcoded color           |
+| project-context/Task.md         | 💥 BLOCKER | SC-07: AC not met                |
+| developer-config.json (scope)   | ✅ OK      | —                                |
+
 ### Detailed Findings
+
 [list findings per item - use the 4-point format below]
 
 ### Fix Manifest
-| Finding | Target | Intended change | Validation |
-|---|---|---|---|
-| [ID] | `[path]` | [bounded change] | [compliance check/test] |
+
+| Finding | Target   | Intended change  | Validation              |
+| ------- | -------- | ---------------- | ----------------------- |
+| [ID]    | `[path]` | [bounded change] | [compliance check/test] |
 ```
 
 Format each finding with the shared `finding-format.md` loaded during setup.
@@ -288,6 +299,7 @@ Format each finding with the shared `finding-format.md` loaded during setup.
 ## Execution Rules
 
 **`fix-then-report`:**
+
 ```
 💥 BLOCKER -> Fix now. After fixing, **rerun spec-compliance** before code-review.
 🔴 MAJOR   -> Fix before the next phase. After fixing, **rerun spec-compliance**.
@@ -297,10 +309,11 @@ Format each finding with the shared `finding-format.md` loaded during setup.
 ```
 
 **`report-first`:**
+
 ```
-💥 BLOCKER / 🔴 MAJOR / ⚠️ actionable MINOR -> Report all findings and the fix manifest. Show one gate. On approval, edit the approved manifest directly, validate, and rerun only affected compliance checks without another gate.
+💥 BLOCKER / 🔴 MAJOR / ⚠️ actionable MINOR -> Report all findings and the fix manifest. Show one gate ([GATE — Mode: report-first]). On approval, edit the approved manifest directly, validate, and rerun only affected compliance checks without another gate.
 ℹ️ INFO / non-actionable note -> Report only; do not include it in the fix manifest.
-✅ OK                 -> Continue to the code-review skill.
+✅ OK                 -> Present the report with Status: ✅ PASS. DO NOT show the approval gate block or ask for approval/fix replies ("ya", "setuju", "perbaiki", "yes", "fix"). Continue directly to the code-review skill.
 ```
 
 ---

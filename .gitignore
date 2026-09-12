@@ -1,3 +1,11 @@
 *.tgz
 aturan-pembuatan-skills.md
 .playwright-mcp/
+.ruff_cache/
+.mcp.json
+.pi/
+node_modules/
+PLAN.md
+.agents/skills/antislop-copywriting/
+.agents/skills/skill-creator/
+

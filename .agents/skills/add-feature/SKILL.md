@@ -33,6 +33,7 @@ Operate as `@Galbi` (Project Manager). Use the shared persona profile in `../_sh
 You are a **Product Engineer** adding features to a running project. Do not start from scratch. Read the current specs, understand the context, then update only the affected areas. Every impacted spec is updated; none are skipped.
 
 **Workflow:**
+
 - Read all existing specs first
 - Identify the impact on each document
 - Update ALL impacted specs (required)
@@ -61,13 +62,14 @@ If the user gives a free-form description, extract the relevant information and 
 ## Step 1: Read All Existing Specs
 
 Read every existing file in `project-context/`:
+
 - `PRD.md`
 - `architecture.md`
 - `schema.md`
 - `api.md`
 - `rules.md`
 - `StyleGuide.md`
-- `Task.md` *(if it exists; otherwise it will be created by brainstorm-task)*
+- `Task.md` _(if it exists; otherwise it will be created by brainstorm-task)_
 
 Read everything that exists. Skip nothing. Note the ID patterns in use (`FEAT-*`, `BR-*`, `DATA-*`, `API-*`, etc.).
 
@@ -116,15 +118,17 @@ For each **IMPACTED** document, update it in this order:
 4. `api.md` — add endpoints
 5. `StyleGuide.md` — add components/styles
 6. `rules.md` — add conventions if needed
-7. `project-context/plans/` — if a plan file exists for the affected phase (for example `plans/phase-2-checkout.md`), update it to reflect the new scope. Add a section: `## Feature Addition: [feature name]` with a short description of the approach change. Do not overwrite existing plan content.
+7. `project-context/plans/` — if a plan file exists for the affected phase (for example `project-context/plans/phase-2-checkout.md`), update it to reflect the new scope. Add a section: `## Feature Addition: [feature name]` with a short description of the approach change. Do not overwrite existing plan content.
 
-### Update Principles:
+### Update Principles
+
 - **Preserve unrelated content and IDs** — make the smallest targeted edit needed to keep each affected document internally consistent; update an existing statement when the approved feature changes it
 - **Match the existing style** — follow the current document format and tone
 - **Make additions clear** — place them logically; no special tags are needed
 - **Preserve old IDs** — assign new IDs for new items using the existing pattern
 
 After each update:
+
 ```
 ✅ PRD.md updated
    Section: [heading]
@@ -139,12 +143,14 @@ After each update:
 Call `brainstorm-task` to add a phase and tasks to `Task.md`.
 
 **Do not create tasks manually.** The `brainstorm-task` skill:
+
 - Performs deep analysis of the updated specs
 - Ensures task dependencies are ordered correctly
 - Creates testable acceptance criteria
 - Preserves consistency with existing phases
 
 Provide context:
+
 - If `Task.md` exists: "Add a new phase for this feature (do not rewrite everything)"
 - If `Task.md` does not exist: "Create Task.md from scratch using all specs"
 

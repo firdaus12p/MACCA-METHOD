@@ -47,6 +47,7 @@ Check CR-01 through CR-27 without skipping. Continue to Phase 2 only after all 2
 - **CR-24 Environment Assumptions**
 
 For **CR-23**, prefer these tags:
+
 - `delete:` dead code or unnecessary flexibility
 - `stdlib:` a standard-library replacement exists
 - `native:` a native platform/framework feature exists
@@ -84,6 +85,7 @@ Check all of these:
 ## Self-Review Before Reporting
 
 Before producing the report:
+
 1. Verify that all 27 CR checks and 10 SEC checks were actually reviewed.
 2. Quickly reread touched files for duplicate functions and hallucinated imports.
 3. Recheck severity proportionality.
@@ -101,12 +103,13 @@ Use this report structure:
 **Status:** [💥 BLOCKER | 🔴 MAJOR | ⚠️ MINOR | ✅ PASS]
 
 ### Summary
-| Category | Count |
-|----------|-------|
-| 💥 Blocker | X |
-| 🔴 Major | X |
-| ⚠️ Minor | X |
-| ℹ️ Info | X |
+
+| Category   | Count |
+| ---------- | ----- |
+| 💥 Blocker | X     |
+| 🔴 Major   | X     |
+| ⚠️ Minor   | X     |
+| ℹ️ Info    | X     |
 ```
 
 Then list findings by severity, followed by the checklist status table.
@@ -115,9 +118,10 @@ Before a report-first gate, retain this fix manifest for actionable findings:
 
 ```markdown
 ### Fix Manifest
-| Finding | Target | Intended change | Validation |
-|---|---|---|---|
-| [ID] | `[path]` | [bounded change] | [targeted check] |
+
+| Finding | Target   | Intended change  | Validation       |
+| ------- | -------- | ---------------- | ---------------- |
+| [ID]    | `[path]` | [bounded change] | [targeted check] |
 ```
 
 If the workflow will update a phase plan status or append Code Review Notes, include that plan file and mutation in the manifest. Otherwise return plan-status completion to `developer`; approval never authorizes an undisclosed plan edit.
@@ -127,13 +131,17 @@ Format every finding with the shared `finding-format.md` loaded by the parent sk
 Fix priority - follow `fixMode` from Shared Runtime Setup:
 
 **`report-first` (default):**
-Present the full report and fix manifest. Show the gate prompt from the shared runtime contract loaded by the parent skill. **End the response. DO NOT apply any fixes in the same response.** On approval, follow the Approval Resume Protocol without another question.
+
+- **When actionable findings exist (`💥 BLOCKER`, `🔴 MAJOR`, or actionable `⚠️ MINOR`):** Present the full report and fix manifest. Show the gate prompt (`[GATE — Mode: report-first]`) from the shared runtime contract (`fix-mode.md`). **End the response. DO NOT apply any fixes in the same response.** On approval, follow the Approval Resume Protocol without another question.
+- **When all checks pass (`✅ PASS` / 0 actionable findings):** Present the report with `Status: ✅ PASS`. **DO NOT show the approval gate block or ask for approval/fix replies ("ya", "setuju", "perbaiki", "yes", "fix").** Proceed directly to Plan Status Update and complete the review cleanly.
 
 **`fix-then-report`:**
+
 - `💥 BLOCKER` -> fix now
 - `🔴 MAJOR` -> fix before the next phase
 - `⚠️ MINOR` -> report and discuss
 - `ℹ️ INFO` -> backlog
+- `✅ PASS` -> no fixes needed, proceed directly to Plan Status Update
 
 ## Post-Fix Validation
 
@@ -152,6 +160,7 @@ After fixes are applied and the review is complete, check whether a plan file ex
 **Step 1 - Detect plan-level deviations.**
 
 A plan-level deviation is any finding where the implementation differs from a decision explicitly stated in the plan, for example:
+
 - The wrong library was used (the plan says Prisma, the code uses Drizzle)
 - The architectural pattern was not followed (the plan says repository pattern, the code puts queries in the controller)
 - Scope was expanded or reduced compared to the plan
@@ -163,6 +172,7 @@ Code quality findings are **not** plan deviations - naming issues, missing tests
 
 - **If plan-level deviations were found:**
   1. Add this section at the bottom of the plan file:
+
      ```markdown
      ## Code Review Notes
 
@@ -174,6 +184,7 @@ Code quality findings are **not** plan deviations - naming issues, missing tests
 
      > These deviations were identified during code review. The implementation was corrected where possible. See the review report for full detail.
      ```
+
   2. Update the plan header: `status: code-review` -> `status: done`
 
 - **If no plan-level deviations were found (only code-quality findings):**

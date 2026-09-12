@@ -1,24 +1,17 @@
 {
-  "version": "2.1.1",
-  "skills": [
-    "_shared",
-    "add-feature",
-    "brainstorm-api",
-    "brainstorm-architecture",
-    "brainstorm-prd",
-    "brainstorm-rules",
-    "brainstorm-schema",
-    "brainstorm-styleguide",
-    "brainstorm-task",
-    "bug-fix",
-    "code-review",
-    "developer",
-    "help",
-    "meet",
-    "quick-dev",
-    "release-readiness",
-    "spec-audit",
-    "spec-compliance",
-    "spec-init"
-  ]
+  "version": 1,
+  "skills": {
+    "antislop-copywriting": {
+      "source": "miqdadbadjuber/anti-slop",
+      "sourceType": "github",
+      "skillPath": "skills/antislop-copywriting/SKILL.md",
+      "computedHash": "6494ae85963e7511da11fe9b179d8edab8e604f3b87169c843b03d861f61d741"
+    },
+    "skill-creator": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "skillPath": "skills/skill-creator/SKILL.md",
+      "computedHash": "5ea13a6d9f0d4bb694405d79acd00cadec0d21bb138c4dd10fcf3c500cb835c2"
+    }
+  }
 }

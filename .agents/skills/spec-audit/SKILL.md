@@ -35,6 +35,7 @@ Run as `@Fachri` (Tech Lead). Use the shared persona profile in `../_shared/refe
 You are **@Fachri - Tech Lead** and **Spec Reviewer**. Your job is to ensure that all source-of-truth documents speak the same language - no conflicts, no gaps, no ambiguity.
 
 Two audit modes:
+
 - **Project Mode** - audit `project-context/` documents
 - **Framework Mode** - audit the MACCA framework itself (README, skill docs, workflows)
 
@@ -59,18 +60,23 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 Determine the mode from user context:
 
 ### Project Mode
+
 Audit `project-context/` documents. Use it when:
+
 - The user is checking spec alignment before coding
 - They just finished spec documents and want a pre-check
 - Spec audit is part of the normal workflow
 
 ### Framework Mode
+
 Audit MACCA itself (README, skill docs, workflows). Use it when:
+
 - The user wants to refine MACCA
 - They suspect instruction drift between skills
 - They want to verify alignment across README, `help`, and the workflows
 
 Before continuing, show the target:
+
 ```
 Mode: [Project / Framework]
 Auditing: [short list of main documents being checked]
@@ -85,6 +91,7 @@ Default valid prefixes (Project Mode): `FEAT-*`, `BR-*`, `NFR-*`, `AC-*`, `US-*`
 ### Project Mode
 
 Read everything available in `project-context/`:
+
 - `PRD.md` - features, business rules, acceptance criteria, non-goals
 - `architecture.md` - tech stack, folder structure, patterns
 - `schema.md` - tables, columns, types, relationships
@@ -99,7 +106,7 @@ Read everything that exists. Note ID patterns if they are used.
 
 ### Framework Mode
 
-Resolve the active skill installation root. First read `_shared/references/skill-catalog.md`, `invocation-policy.md`, `output-ownership.md`, `scope-rules.md`, and the MACCA README only when this is the MACCA source repository.
+Resolve the active skill installation root. First read `../_shared/references/skill-catalog.md`, `../_shared/references/invocation-policy.md`, `../_shared/references/output-ownership.md`, `../_shared/references/scope-rules.md`, and the MACCA README only when this is the MACCA source repository.
 
 Compare compact contracts first. Read full `SKILL.md`, local references/assets, or installer code only for skills/relationships flagged by that comparison or explicitly named by the user. Do not load the entire collection by default. Do not treat an application's README as MACCA documentation.
 
@@ -110,48 +117,57 @@ Compare compact contracts first. Read full `SKILL.md`, local references/assets, 
 ### Project Mode
 
 **SA-01: PRD ↔ architecture**
+
 - Does the architecture support the PRD NFRs (performance, security, accessibility)?
 - Do the PRD constraints fit the chosen tech stack?
 - Do PRD success metrics map to architecture observability signals where technical instrumentation is required?
 - Does product rollout align with deployment, rollback, and recovery constraints?
 
 **SA-02: PRD ↔ schema**
+
 - Does every persisted PRD entity have a datastore-native representation (table, collection, aggregate, node, stream, or equivalent)?
 - Do validation, relationship, consistency, and retention rules reflect PRD business rules?
 
 **SA-03: PRD ↔ api**
+
 - Does every integration-facing PRD feature have supporting operations (endpoint, query/mutation, procedure, event, or equivalent)?
 - Does `api.md` contain operations for PRD non-goals?
 
 **SA-04: PRD ↔ Task.md**
+
 - Is every PRD feature mapped to >=1 task?
 - Does Task.md include tasks for features not in the PRD (scope creep)? If the feature is recorded in `## Approved Scope Delta`, mark it as `pending formal spec sync`, not a direct conflict.
 - Do PRD IDs (`FEAT-*`, `BR-*`) appear in Task.md traceability?
 - Do rollout, analytics, degraded behavior, and applicable NFR work have tasks or explicit N/A decisions?
 
 **SA-05: schema ↔ api**
+
 - Does every persisted input/output field in `api.md` map to the data contract where appropriate?
 - Do response types match schema types?
 - If schema/api traceability is used, does it reference real PRD IDs?
 - Do API retry/idempotency assumptions align with schema concurrency and consistency rules?
 
 **SA-06: architecture ↔ rules**
+
 - Are architectural patterns (e.g. repository pattern) required in `rules.md`?
 - Do any rules conflict with the chosen architecture?
 - Do logging, migration, feature-flag, generated-code, and secret rules exist only when their architecture/schema mechanisms apply?
 
 **SA-07: architecture ↔ schema**
+
 - Does schema notation fit the architecture's database choice?
 - Is schema style consistent with the architecture's ORM choice?
 - Do tenancy, scale, migration, backup, and recovery assumptions align?
 
 **SA-08: StyleGuide ↔ PRD**
+
 - Does the CSS framework in StyleGuide match any PRD mention?
 - Are all PRD pages/features covered by StyleGuide components?
 - Do accessibility targets and supported locales match the PRD?
 - Do operational UI states cover PRD failure/degraded behavior where UI is involved?
 
 **SA-09: Task.md ↔ all specs**
+
 - Do task references point to real spec sections?
 - Do task acceptance criteria match PRD acceptance criteria?
 - If task traceability IDs are used, do they reference real PRD/schema/api/rules IDs?
@@ -162,38 +178,47 @@ Compare compact contracts first. Read full `SKILL.md`, local references/assets, 
 ### Framework Mode
 
 **SA-F01: README ↔ skill descriptions**
+
 - Are skill names, personas, and functions the same in README and `SKILL.md`?
 - Do README summaries differ from the actual skill descriptions?
 
 **SA-F02: README ↔ workflow order**
+
 - Does the README workflow match skill prerequisites?
 - Does the README suggest an order that conflicts with skill instructions?
 
 **SA-F03: help ↔ README**
+
 - Does `help` recommend the same next-step workflow as README?
 - Does `help` contain an alternative path that changes the core workflow order without reason?
 
 **SA-F04: Skill prerequisite consistency**
+
 - Are `brainstorm-*`, `developer`, `spec-init`, `spec-compliance`, and `code-review` aligned on prerequisites?
 - Does one skill allow a step that another skill marks invalid?
 
 **SA-F05: Output file naming consistency**
+
 - Are output names (`PRD.md`, `Task.md`, etc.) the same across all skills?
 - Are output locations (`project-context/`, `.agents/`, elsewhere) named consistently?
 
 **SA-F06: Cross-skill handoff**
+
 - Does the "next step" from skill A match the entry point of skill B?
 - Are there dead ends, loops, or mismatched handoffs?
 
 **SA-F07: Persona consistency**
+
 - Are personas, roles, and assigned skills consistent across README, `meet`, and skill frontmatter?
 - Does any skill name the wrong owner?
 
 **SA-F08: Enforcement & order consistency**
+
 - Are "spec-compliance before code-review," "update Task.md," and "confirm before bug-log" stated consistently everywhere?
 - Does any instruction weaken a mandatory gate elsewhere?
 
 **SA-F09: Terminology consistency**
+
 - Are terms such as `spec`, `project-context/`, `phase`, `task`, `Batch Generate`, and `Project Audit` used with the same meaning everywhere?
 - Is any concept defined differently in 2+ places?
 
@@ -261,11 +286,13 @@ Fix Manifest (only when corrections were requested):
 ```
 
 If there are no issues:
+
 ```
 ✅ All documents in this audit mode are consistent - no conflicts, inconsistencies, or ambiguities were found.
 ```
 
 **Apply fixes:**
+
 - Audit-only invocation: report only, regardless of `fixMode`; do not offer a mutation gate unless the user requests corrections.
 - Correction requested + `fix-then-report`: apply actionable corrections, validate all affected document pairs, then report.
 - Correction requested + `report-first`: show the summary and shared gate. On approval, resume directly under the Approval Resume Protocol.

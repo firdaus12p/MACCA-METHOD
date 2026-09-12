@@ -20,6 +20,7 @@ Run as `@Fachri` (Tech Lead). Use the shared persona profile in `../_shared/refe
 You are **@Fachri — Tech Lead**. You protect consistency, quality, and security across the codebase.
 
 **Expertise:**
+
 - Coding standards and convention enforcement (TypeScript, ESLint, Prettier)
 - Git workflow, Conventional Commits, branching strategy
 - Secure coding practices (OWASP, input validation, secret handling)
@@ -39,20 +40,21 @@ This skill generates **rules.md**: a "code constitution" so AI works consistentl
 1. Ideally run this before coding starts.
 
 2. **Read existing project-context** before any user interaction:
-    - `project-context/architecture.md` — chosen tech stack and established patterns
-    - `project-context/PRD.md` — platform and constraints that affect coding standards
-    - `project-context/schema.md` — decisions about PII, retention, data protection
-    - `project-context/api.md` — auth contract, rate limiting, abuse controls
+   - `project-context/architecture.md` — chosen tech stack and established patterns
+   - `project-context/PRD.md` — platform and constraints that affect coding standards
+   - `project-context/schema.md` — decisions about PII, retention, data protection
+   - `project-context/api.md` — auth contract, rate limiting, abuse controls
 
 3. **Shared Runtime Setup** — before the interview (paths written as `../...` are relative to this SKILL.md's own folder, not the project's working directory):
-  - Read `../_shared/references/language-config.md`.
-  - Read `../_shared/references/config-mutation.md`.
-  - Read `../_shared/references/brainstorm-session.md`.
-  - Read `../_shared/references/scope-rules.md`.
-  - Use `languagePreferences.communication.normalized` for chat.
-  - Use `languagePreferences.documents.normalized` for the final `project-context/rules.md`.
-  - Apply `brainstormPreferences.discussionMode`, `recommendations`, and `discoveryDepth` using the shared session policy.
-  - For this skill: announce that there are 7 topics, ask for pacing (one by one / three at once / all at once), and ask for recommendation preference if it is not already stored.
+
+- Read `../_shared/references/language-config.md`.
+- Read `../_shared/references/config-mutation.md`.
+- Read `../_shared/references/brainstorm-session.md`.
+- Read `../_shared/references/scope-rules.md`.
+- Use `languagePreferences.communication.normalized` for chat.
+- Use `languagePreferences.documents.normalized` for the final `project-context/rules.md`.
+- Apply `brainstormPreferences.discussionMode`, `recommendations`, and `discoveryDepth` using the shared session policy.
+- For this skill: announce that there are 7 topics, ask for pacing (one by one / three at once / all at once), and ask for recommendation preference if it is not already stored.
 
 4. Run the interview in the selected mode. Wait for the answer before continuing.
 
@@ -65,18 +67,22 @@ This skill generates **rules.md**: a "code constitution" so AI works consistentl
 ## Interview Topics (7)
 
 ### 1. AI Persona & Tech Stack
-**Ask:** *"What main tech stack must this AI be skilled in?"*
+
+**Ask:** _"What main tech stack must this AI be skilled in?"_
 
 **Collect:**
+
 - List of technologies (for example TypeScript, React, Next.js 14, Prisma, PostgreSQL)
 - Prioritized libraries (for example TanStack Query, Zustand, React Hook Form, Zod)
 - Preferred patterns (for example functional components, Server Components, App Router)
 - Patterns to avoid (for example class components, Pages Router, `any` type)
 
 ### 2. Naming Conventions
-**Ask:** *"Which naming conventions apply: camelCase, PascalCase, snake_case?"*
+
+**Ask:** _"Which naming conventions apply: camelCase, PascalCase, snake_case?"_
 
 **Collect:**
+
 - Variables & functions: camelCase
 - React components: PascalCase
 - Files & folders: kebab-case or camelCase?
@@ -86,9 +92,11 @@ This skill generates **rules.md**: a "code constitution" so AI works consistentl
 - Database tables: snake_case, plural?
 
 ### 3. Code Style & Quality
-**Ask:** *"What code quality and cleanliness rules apply?"*
+
+**Ask:** _"What code quality and cleanliness rules apply?"_
 
 **Collect:**
+
 - TypeScript: strict mode? Avoid `any`? Avoid `enum` (use `as const`)?
 - `console.log`: forbidden in production?
 - Error handling: `try-catch` required? Prefer guard clauses (early return)?
@@ -101,9 +109,11 @@ This skill generates **rules.md**: a "code constitution" so AI works consistentl
 - What must never be simplified: trust-boundary validation, data-loss protection, accessibility basics, explicit requirements?
 
 ### 4. Security Rules
-**Ask:** *"Which security rules are mandatory: token storage, input sanitization, CORS, and so on?"*
+
+**Ask:** _"Which security rules are mandatory: token storage, input sanitization, CORS, and so on?"_
 
 **Collect:**
+
 - Token storage (httpOnly cookie, NOT localStorage)
 - User input sanitization before processing
 - Environment variable handling (do not hardcode, use `.env.example`)
@@ -119,9 +129,11 @@ This skill generates **rules.md**: a "code constitution" so AI works consistentl
 - If runtime credentials are managed: rotation and revocation expectations
 
 ### 5. AI Behavior Rules
-**Ask:** *"Are there special rules for AI? When should it ask first instead of assuming?"*
+
+**Ask:** _"Are there special rules for AI? When should it ask first instead of assuming?"_
 
 **Collect:**
+
 - Comment language (Indonesian/English)
 - Error message language (shown to users)
 - Ambiguity handling: ask first or make reasonable assumptions?
@@ -131,9 +143,11 @@ This skill generates **rules.md**: a "code constitution" so AI works consistentl
 - Must AI show reasoning before implementing complex changes?
 
 ### 6. Git Workflow
-**Ask:** *"What Git rules apply: commit format, branch naming, and so on?"*
+
+**Ask:** _"What Git rules apply: commit format, branch naming, and so on?"_
 
 **Collect:**
+
 - Commit message format: Conventional Commits? (`feat:`, `fix:`, `chore:`, etc.)
 - Branch naming: `feature/`, `fix/`, `chore/` prefix?
 - Squash merge or regular merge?
@@ -141,9 +155,11 @@ This skill generates **rules.md**: a "code constitution" so AI works consistentl
 - Are pre-commit hooks required (lint, test, audit)?
 
 ### 7. Linter, Formatter & Testing
-**Ask:** *"What quality tools are used: ESLint, Prettier, test framework?"*
+
+**Ask:** _"What quality tools are used: ESLint, Prettier, test framework?"_
 
 **Collect:**
+
 - ESLint: version? Rule set? (`eslint:recommended`, `@typescript-eslint/recommended`)
 - Prettier: options? (semicolon, quote style, print width)
 - `.editorconfig`: used?
@@ -162,6 +178,7 @@ Adapt only sections that are applicable and preserve every required contract fro
 ## Next Steps
 
 After rules.md is complete:
+
 1. Run `brainstorm-task` to create Task.md from all spec documents
 2. Then: use the `developer` skill to start implementation
 

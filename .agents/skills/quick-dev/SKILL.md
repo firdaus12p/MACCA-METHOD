@@ -53,13 +53,17 @@ If the request meets ANY of these, do NOT proceed. Redirect to `developer`:
 Read `.agents/developer-config.json`. Extract `name` and `project`.
 
 **If both exist:**
+
 > "Back again, [name]. **Firdaus** here — ready for a quick fix on **[project]**. What needs doing?"
 
 **If name exists, project empty:**
+
 > "Back again, [name]. **Firdaus** here — ready. What needs doing?"
 
 **If name missing:**
+
 > "Hi. I am **Firdaus**. Before we start:
+>
 > 1. What is your name?
 > 2. What is the project name?"
 
@@ -81,7 +85,7 @@ Read `additionalSkills` and `availableMCPs` from `.agents/developer-config.json`
 Read `developerPreferences.scope` from `.agents/developer-config.json`.
 
 - **Exists:** show `[Scope: frontend / backend / fullstack]`. Tell the user to correct now if needed.
-- **Missing:** ask once using the same question as `developer/references/onboarding.md` § Developer Scope. Save answer.
+- **Missing:** ask once using the same question as `../developer/references/onboarding.md` § Developer Scope. Save answer.
 
 ---
 
@@ -111,6 +115,7 @@ Need confirmation before proceeding:         ← omit entire block if none
 ```
 
 **Rules:**
+
 - Omit "Need confirmation" block entirely if there are no blocking ambiguities.
 - Non-blocking ambiguities go under "Assumptions" as `[~]` — not as questions.
 - If a needed spec is missing (e.g. no `StyleGuide.md` but task touches UI), note it under Specs as `StyleGuide.md — missing, UI compliance cannot be verified`.
@@ -121,34 +126,35 @@ Need confirmation before proceeding:         ← omit entire block if none
 ## Step 2 — Read Relevant Specs
 
 Verify `project-context/` exists.
+
 - `architecture.md` → **required**. If missing, stop and ask the user to run `brainstorm-architecture` first.
 - Others → optional. If missing and needed, the gap was already noted in Step 1.
 
 Read only what the task needs:
 
-| Condition | Read |
-|---|---|
-| Always | `project-context/rules.md`, `project-context/architecture.md` |
-| Touches database / models | + `project-context/schema.md` |
-| Touches API / service endpoints | + `project-context/api.md` |
-| Touches UI / pages / components | + `project-context/StyleGuide.md` |
-| Feature or requirement is unclear | + `project-context/PRD.md` |
+| Condition                         | Read                                                          |
+| --------------------------------- | ------------------------------------------------------------- |
+| Always                            | `project-context/rules.md`, `project-context/architecture.md` |
+| Touches database / models         | + `project-context/schema.md`                                 |
+| Touches API / service endpoints   | + `project-context/api.md`                                    |
+| Touches UI / pages / components   | + `project-context/StyleGuide.md`                             |
+| Feature or requirement is unclear | + `project-context/PRD.md`                                    |
 
 Scan `[FORBIDDEN]` in `rules.md` before any coding.
 
 **Scope enforcement** — use `architecture.md` as the primary boundary:
 
-| Scope | Restriction |
-|---|---|
-| `frontend` | Do not touch backend files |
-| `backend` | Do not touch frontend files |
-| `fullstack` or missing | No restriction |
+| Scope                  | Restriction                 |
+| ---------------------- | --------------------------- |
+| `frontend`             | Do not touch backend files  |
+| `backend`              | Do not touch frontend files |
+| `fullstack` or missing | No restriction              |
 
 ---
 
 ## Step 2b — Record an Approved Scope Delta Before Coding
 
-If the task is outside `project-context/`, follow the approval flow in `developer/references/execute-task.md` § Understand and Protect Scope before editing code. After approval, create or update the lightweight `Task.md` entry immediately with `status: in-progress` and the delta details. If `Task.md` or an active phase is missing, stop and route to `developer`; do not invent a phase.
+If the task is outside `project-context/`, follow the approval flow in `../developer/references/execute-task.md` § Understand and Protect Scope before editing code. After approval, create or update the lightweight `Task.md` entry immediately with `status: in-progress` and the delta details. If `Task.md` or an active phase is missing, stop and route to `developer`; do not invent a phase.
 
 ## Step 3 — Execute
 
@@ -168,17 +174,16 @@ The approved scope delta must already exist before this step. Never defer its re
 
 Do a lightweight scan of `Task.md`: find the active phase (last phase with `[ ]` items) and any related existing item. If a pending scope-delta entry was created in Step 2b, update that same entry instead of creating another.
 
-| Condition | Action |
-|---|---|
-| Related item found, `[ ]` | Mark `[x]`, add a brief implementation note if a decision was made |
-| Related item found, `[x]` | Add a sub-note describing the refinement |
-| No related item found | Append to active phase as new `[x]` with tag `(quick-fix: YYYY-MM-DD)` |
+| Condition                 | Action                                                                 |
+| ------------------------- | ---------------------------------------------------------------------- |
+| Related item found, `[ ]` | Mark `[x]`, add a brief implementation note if a decision was made     |
+| Related item found, `[x]` | Add a sub-note describing the refinement                               |
+| No related item found     | Append to active phase as new `[x]` with tag `(quick-fix: YYYY-MM-DD)` |
 
 If a scope delta exists, record it inline:
 
 ```md
-[x] [task description]  (quick-fix: YYYY-MM-DD)
-    > Delta: [what was added/changed] — pending sync to [spec-doc].md
+[x] [task description] (quick-fix: YYYY-MM-DD) > Delta: [what was added/changed] — pending sync to [spec-doc].md
 ```
 
 ---
@@ -188,7 +193,7 @@ If a scope delta exists, record it inline:
 1. Run `spec-compliance`. Follow `fixMode` from Shared Runtime Setup.
 2. Run `code-review`. Follow `fixMode` from Shared Runtime Setup.
 
-Both follow the same `spec-compliance` -> `code-review` gate sequence as `developer/references/close-phase.md`. Do not proceed to Step 6 until both pass.
+Both follow the same `spec-compliance` -> `code-review` gate sequence as `../developer/references/close-phase.md`. Do not proceed to Step 6 until both pass.
 
 ---
 

@@ -41,7 +41,7 @@ You are a **Senior Code Reviewer** evaluating the quality and safety of new code
 
 ---
 
-**Core question:** *Is the code good and safe?*
+**Core question:** _Is the code good and safe?_
 
 > **Rule:** Run this after `spec-compliance`. Never say the phase is done without running it.
 
@@ -77,12 +77,12 @@ Ask again only for a material workspace change, conflicting findings, or newly d
 
 Before reviewing, read available files in `project-context/`:
 
-| File | Used For |
-|---|---|
-| `rules.md` | naming, code style, team conventions (always read if it exists) |
-| `architecture.md` | allowed patterns, tech stack, folder structure |
-| `schema.md` | DB naming and relation constraints if the review touches the data layer |
-| `api.md` | contract, response shape, error codes if the review touches the API |
+| File              | Used For                                                                |
+| ----------------- | ----------------------------------------------------------------------- |
+| `rules.md`        | naming, code style, team conventions (always read if it exists)         |
+| `architecture.md` | allowed patterns, tech stack, folder structure                          |
+| `schema.md`       | DB naming and relation constraints if the review touches the data layer |
+| `api.md`          | contract, response shape, error codes if the review touches the API     |
 
 Skip missing files. Do not block the review if `project-context/` is absent.
 

@@ -1,42 +1,42 @@
 {
-    "name": "macca-method",
-    "version": "2.1.1",
-    "description": "CLI installer for MACCA AI spec-driven development skills.",
-    "license": "MIT",
-    "scripts": {
-        "validate": "node --check ./bin/macca-method.js && node --check ./scripts/test-install.js && node --check ./scripts/test-upgrade-legacy.js && node --check ./scripts/run-skill-validator.js && node --check ./scripts/validate-skill-behavior.js && node ./scripts/run-skill-validator.js && node ./scripts/validate-skill-behavior.js && npm run test:install && npm run test:upgrade:legacy && npm pack --dry-run",
-        "test:install": "node ./scripts/test-install.js",
-        "test:install:published": "node ./scripts/test-install.js --published",
-        "test:upgrade:legacy": "node ./scripts/test-upgrade-legacy.js"
-    },
-    "bin": {
-        "macca-method": "bin/macca-method.js"
-    },
-    "files": [
-        "bin/",
-        ".agents/",
-        "scripts/test-install.js",
-        "scripts/test-upgrade-legacy.js",
-        "scripts/run-skill-validator.js",
-        "scripts/validate-skill-behavior.js",
-        "flow.webp",
-        "image-macca-method.webp",
-        "README.md",
-        "LICENSE"
-    ],
-    "engines": {
-        "node": ">=18"
-    },
-    "keywords": [
-        "ai",
-        "agents",
-        "skills",
-        "spec-driven-development",
-        "macca"
-    ],
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/firdaus12p/MACCA-METHOD.git"
-    },
-    "homepage": "https://github.com/firdaus12p/MACCA-METHOD#readme"
+  "name": "macca-method",
+  "version": "2.1.2",
+  "description": "CLI installer for MACCA AI spec-driven development skills.",
+  "license": "MIT",
+  "scripts": {
+    "validate": "node --check ./bin/macca-method.js && node --check ./scripts/test-install.js && node --check ./scripts/test-upgrade-legacy.js && node --check ./scripts/run-skill-validator.js && node --check ./scripts/validate-skill-behavior.js && node ./scripts/run-skill-validator.js && node ./scripts/validate-skill-behavior.js && npm run test:install && npm run test:upgrade:legacy && npm pack --dry-run",
+    "test:install": "node ./scripts/test-install.js",
+    "test:install:published": "node ./scripts/test-install.js --published",
+    "test:upgrade:legacy": "node ./scripts/test-upgrade-legacy.js"
+  },
+  "bin": {
+    "macca-method": "bin/macca-method.js"
+  },
+  "files": [
+    "bin/",
+    ".agents/",
+    "scripts/test-install.js",
+    "scripts/test-upgrade-legacy.js",
+    "scripts/run-skill-validator.js",
+    "scripts/validate-skill-behavior.js",
+    "flow.webp",
+    "image-macca-method.webp",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "ai",
+    "agents",
+    "skills",
+    "spec-driven-development",
+    "macca"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/firdaus12p/MACCA-METHOD.git"
+  },
+  "homepage": "https://github.com/firdaus12p/MACCA-METHOD#readme"
 }

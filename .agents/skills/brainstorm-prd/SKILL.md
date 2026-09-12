@@ -20,6 +20,7 @@ Run as `@Galbi` (Project Manager). Use the shared persona profile in `../_shared
 You are an experienced **Product Manager** who turns raw ideas into clear, actionable requirements.
 
 **Expertise:**
+
 - Gathering requirements and understanding real user needs
 - Defining realistic MVP scope
 - Writing testable acceptance criteria (Given/When/Then format)
@@ -53,7 +54,7 @@ Before any interview:
 1. Load this skill when the user asks to create a PRD or brainstorm a new project.
 
 2. **Read existing project-context** before any user interaction:
-    - Check whether `project-context/PRD.md` already exists to avoid duplication
+   - Check whether `project-context/PRD.md` already exists to avoid duplication
 
 3. If `.agents/developer-config.json` exists, read `developerPreferences.scope`.
    - `frontend` → PRD MUST focus on UI flows, pages, state, client validation, and backend/API dependencies
@@ -75,69 +76,85 @@ Before any interview:
 Ask the topics in order. Use conversational language.
 
 ### 1. Project Goal
-*"What is the main goal and long-term vision of this project?"*
+
+_"What is the main goal and long-term vision of this project?"_
 
 Collect:
+
 - Project name (if any)
 - Long-term vision
 - What makes this project different
 
 ### 2. Target Users
-*"Who are the target users? There may be multiple personas."*
+
+_"Who are the target users? There may be multiple personas."_
 
 Collect:
+
 - User personas (Admin, Customer, Cashier, etc.)
 - Demographics (age, role, background)
 - Multiple roles with different access?
 
 ### 3. Problem Statement
-*"What problem does this project solve?"*
+
+_"What problem does this project solve?"_
 
 Collect:
+
 - Current condition without this project
 - Current workaround and its time, cost, or reliability impact
 - Main pain points
 - Why existing solutions are not enough
 
 ### 4. Core Features
-*"What are the main features?"*
+
+_"What are the main features?"_
 
 Collect:
+
 - MVP features (release 1)
 - Future enhancements
 - Priority of each
 
 ### 5. Business Rules
-*"What business rules apply? For example: min/max values, pricing rules, special conditions."*
+
+_"What business rules apply? For example: min/max values, pricing rules, special conditions."_
 
 Collect:
+
 - Validation rules (for example password ≥ 8 characters)
 - Calculation rules (for example 10% member discount)
 - Access rules (for example only admins can delete)
 - Limits/thresholds
 
 ### 6. User Flow
-*"Describe how users move through the app from start to finish to reach their goal."*
+
+_"Describe how users move through the app from start to finish to reach their goal."_
 
 Collect:
+
 - Step-by-step user journey
 - Different flows for different roles
 - Happy path vs error scenarios
 - Expected degraded behavior when data or an external dependency is unavailable
 
 ### 7. Design & Technical Requirements
-*"What is the target platform: web, mobile, or both? Any design references or technical preferences?"*
+
+_"What is the target platform: web, mobile, or both? Any design references or technical preferences?"_
 
 Collect:
+
 - Platform (Web, iOS, Android, Desktop)
 - UI/UX references
 - Preferred tech stack
 - Third-party integrations
 
 ### 8. Non-Functional Requirements (NFR)
-*"Are there performance, security, or availability targets?"*
+
+_"Are there performance, security, or availability targets?"_
 
 Collect:
+
 - **Performance:** Load time target?
 - **Security:** Regulatory compliance? (GDPR, data privacy)
 - **Scalability:** Concurrent users?
@@ -145,9 +162,11 @@ Collect:
 - **Availability:** Uptime target?
 
 ### 9. Success Criteria
-*"What is the minimum definition of success for this project?"*
+
+_"What is the minimum definition of success for this project?"_
 
 Collect:
+
 - MVP criteria
 - Success metrics with baseline, target, timeframe, measurement source, and owner
 - Timeline/deadline
@@ -155,46 +174,58 @@ Collect:
 - Analytics events needed to measure the selected metrics, only when behavioral measurement is relevant
 
 ### 10. Acceptance Criteria
-*"For each main feature, what conditions must be met for it to count as 'done'?"*
+
+_"For each main feature, what conditions must be met for it to count as 'done'?"_
 
 Collect:
+
 - Testable conditions per feature (Given/When/Then format)
 - Edge cases (empty input, missing data, etc.)
 
 ### 11. Non-Goals / Out of Scope
-*"What is intentionally not included?"*
+
+_"What is intentionally not included?"_
 
 Collect:
+
 - Features intentionally deferred
 - Common scope misunderstandings
 - Project boundaries
 
 ### 12. Assumptions
-*"What do you assume is true but are not sure about? For example: 'Users have stable internet.'"*
+
+_"What do you assume is true but are not sure about? For example: 'Users have stable internet.'"_
 
 Collect:
+
 - Technology assumptions (modern browsers)
 - Environment assumptions (server setup)
 - Business assumptions (contract already signed)
 
 ### 13. User Stories
-*"Give user stories in this format: 'As a [role], I want [feature] so that [benefit].'"*
+
+_"Give user stories in this format: 'As a [role], I want [feature] so that [benefit].'"_
 
 Collect:
+
 - Stories per main feature
 - Ordered by priority
 - Example: "As an admin, I want to see the order list so I can process shipping"
 
 ### 14. Stakeholders
-*"Who is involved in or has a stake in this project?"*
+
+_"Who is involved in or has a stake in this project?"_
 
 Collect:
+
 - Dev team, client, other parties
 
 ### 15. Open Questions
-*"Are there unresolved decisions or known risks?"*
+
+_"Are there unresolved decisions or known risks?"_
 
 Collect:
+
 - Outstanding questions
 - Deferred decisions
 - Known risks
@@ -237,6 +268,5 @@ Each step can be skipped. Always confirm before proceeding.
 - **Topic 5 (Business Rules)** is critical. Remind the user if it is skipped.
 - **Topic 8 (NFR)** is a common source of AI hallucination. Do not skip it.
 - Render the final document in the configured document language
-
 
 ---

@@ -1,6 +1,6 @@
 ---
 name: release-readiness
-description: Produces a report-only production release readiness verdict from existing specs, quality-gate results, deployment evidence, migrations, configuration, observability, rollback, and runbooks. Use when the user asks whether a version is ready to ship, before a production release, or after all Task.md phases are complete. Never deploys or changes production.
+description: Produces a report-only production release readiness audit from existing specs, quality gates, deployment configs, migrations, observability, rollback, and runbooks. Use whenever the user asks if the project is ready to ship, asks for a pre-release or production audit, or after all Task.md phases are finished. Never deploys or alters infrastructure.
 compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources, git when reviewing diffs, and workspace file access.
 metadata:
   persona: "Fachri"
@@ -111,7 +111,7 @@ Verdicts:
 
 Use this report:
 
-````markdown
+```markdown
 # Release Readiness Report
 
 **Candidate:** [branch/commit/tag/version]
@@ -119,26 +119,30 @@ Use this report:
 **Verdict:** READY / CONDITIONAL / NOT READY
 
 ## Evidence Summary
-| Area | Status | Evidence |
-|------|--------|----------|
-| RR-01 Scope & quality gates | PASS / FAIL / NOT VERIFIED / N/A | [source] |
-| RR-02 Build, tests & smoke | ... | ... |
-| RR-03 Config & secrets | ... | ... |
-| RR-04 Migration & recovery | ... | ... |
-| RR-05 Deploy, rollback & flags | ... | ... |
-| RR-06 Observability & incidents | ... | ... |
-| RR-07 Compatibility & communication | ... | ... |
-| RR-08 UI operational experience | ... | ... |
+
+| Area                                | Status                           | Evidence |
+| ----------------------------------- | -------------------------------- | -------- |
+| RR-01 Scope & quality gates         | PASS / FAIL / NOT VERIFIED / N/A | [source] |
+| RR-02 Build, tests & smoke          | ...                              | ...      |
+| RR-03 Config & secrets              | ...                              | ...      |
+| RR-04 Migration & recovery          | ...                              | ...      |
+| RR-05 Deploy, rollback & flags      | ...                              | ...      |
+| RR-06 Observability & incidents     | ...                              | ...      |
+| RR-07 Compatibility & communication | ...                              | ...      |
+| RR-08 UI operational experience     | ...                              | ...      |
 
 ## Blockers
+
 - [blocker, evidence, owner]
 
 ## Required Before Release
+
 - [action] — owner: [role] — validation: [proof required]
 
 ## Accepted Residual Risks
+
 - [risk and explicit owner/expiry] / None
-````
+```
 
 ## Rules
 

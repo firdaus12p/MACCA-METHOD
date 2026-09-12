@@ -6,17 +6,17 @@ This file defines which skill primarily owns each persistent output, so skills d
 
 ## Primary Owners
 
-| Output | Primary Owner | Secondary / Limited Authors |
-|---|---|---|
-| `project-context/PRD.md` | `brainstorm-prd` | `add-feature`, `spec-init` |
-| `project-context/architecture.md` | `brainstorm-architecture` | `add-feature`, `spec-init` |
-| `project-context/schema.md` | `brainstorm-schema` | `add-feature`, `spec-init` |
-| `project-context/api.md` | `brainstorm-api` | `add-feature`, `spec-init` |
-| `project-context/StyleGuide.md` | `brainstorm-styleguide` | `add-feature`, `spec-init` |
-| `project-context/rules.md` | `brainstorm-rules` | `add-feature`, `spec-init` |
-| `project-context/Task.md` | `brainstorm-task` | `developer` updates progress and approved phase deltas; `quick-dev` adds one approved lightweight entry; `add-feature` hands off to `brainstorm-task` |
-| `project-context/bug-log.md` | `bug-fix` | none |
-| `project-context/plans/*.md` | `developer` | `add-feature`, `code-review` limited updates per workflow |
+| Output                            | Primary Owner             | Secondary / Limited Authors                                                                                                                                                                      |
+| --------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `project-context/PRD.md`          | `brainstorm-prd`          | `add-feature`, `spec-init`                                                                                                                                                                       |
+| `project-context/architecture.md` | `brainstorm-architecture` | `add-feature`, `spec-init`                                                                                                                                                                       |
+| `project-context/schema.md`       | `brainstorm-schema`       | `add-feature`, `spec-init`                                                                                                                                                                       |
+| `project-context/api.md`          | `brainstorm-api`          | `add-feature`, `spec-init`                                                                                                                                                                       |
+| `project-context/StyleGuide.md`   | `brainstorm-styleguide`   | `add-feature`, `spec-init`                                                                                                                                                                       |
+| `project-context/rules.md`        | `brainstorm-rules`        | `add-feature`, `spec-init`                                                                                                                                                                       |
+| `project-context/Task.md`         | `brainstorm-task`         | `developer` updates progress and approved phase deltas; `quick-dev` adds one approved lightweight entry; `add-feature` adds approved phase deltas (or hands off to `brainstorm-task` if missing) |
+| `project-context/bug-log.md`      | `bug-fix`                 | none                                                                                                                                                                                             |
+| `project-context/plans/*.md`      | `developer`               | `add-feature`, `code-review` limited updates per workflow                                                                                                                                        |
 
 ## Ownership Rules
 

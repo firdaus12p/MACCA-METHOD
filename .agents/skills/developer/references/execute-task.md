@@ -6,12 +6,12 @@ Read this file only when executing the current task.
 
 `architecture.md` is required. Read `rules.md` and architecture for every task, then conditionally:
 
-| Condition | Additional source |
-|---|---|
-| Database/data | `schema.md` |
-| API/integration | `api.md` |
-| UI | `StyleGuide.md` |
-| Product behavior unclear | `PRD.md` |
+| Condition                | Additional source |
+| ------------------------ | ----------------- |
+| Database/data            | `schema.md`       |
+| API/integration          | `api.md`          |
+| UI                       | `StyleGuide.md`   |
+| Product behavior unclear | `PRD.md`          |
 
 Scan `[FORBIDDEN]` in rules before coding. Enforce `developerPreferences.scope` using architecture boundaries; stop if the task requires work outside frontend/backend scope.
 
@@ -29,8 +29,9 @@ If requested behavior is not recorded in `project-context/`, obtain one approval
 **Affected files/docs:** [paths]
 **Traceability:** DELTA-[N]
 **Acceptance Criteria:**
+
 - [ ] [testable condition]
-**Sync requirement:** Update the formal owning spec before phase close or when requested.
+      **Sync requirement:** Update the formal owning spec before phase close or when requested.
 ```
 
 Do not code an unapproved delta.
@@ -60,6 +61,11 @@ After coding, self-review:
 ## Validate and Record
 
 Run the narrowest relevant test/build/type/lint/manual check. Repair local defects and rerun before continuing.
+
+**Anti-Loop Safeguard:**
+
+- Attempt a maximum of 2 consecutive automated repair cycles for local validation failures.
+- If validation still fails after 2 attempts, STOP immediately and report the failure evidence, root cause, and blocker to the user rather than looping endlessly.
 
 After validation:
 

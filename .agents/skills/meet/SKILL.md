@@ -86,7 +86,7 @@ Use this fixed order and skip unselected personas:
 
 Each selected persona gets exactly one block:
 
-````markdown
+```markdown
 ### @Persona — [Role]
 
 **Recommendation:** [one clear recommendation]
@@ -98,7 +98,7 @@ Each selected persona gets exactly one block:
 **Risk / trade-off:** [most important risk, or "No material risk identified"]
 
 **Suggested action:** [one concrete next action]
-````
+```
 
 Contribution rules:
 
@@ -135,26 +135,31 @@ The meeting is discussion-only. It reports artifact handoffs but does not edit t
 
 Use this structure in the same meeting response:
 
-````markdown
+```markdown
 ## @Galbi — Meeting Summary
 
 ### Final Decisions
+
 - [decision, or "No final decision yet"]
 
 ### Open Questions
+
 - [unresolved item, or "None"]
 
 ### Action Items
+
 - [action] — owner: `[skill-name]`
 
 ### Artifact Handoffs
+
 - `project-context/[filename].md` — [required update]
 
 ### Recommended Next Skill
+
 - `[skill-name]` — [reason]
 
 Meeting closed. Start a new `meet` if another round is needed.
-````
+```
 
 ## Rules
 

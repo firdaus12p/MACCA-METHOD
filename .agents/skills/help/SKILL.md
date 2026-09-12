@@ -1,6 +1,6 @@
 ---
 name: help
-description: Interactive guide for the AI Spec-Driven Development system. Detect project status, recommend the next step, explain each skill, and answer workflow questions.
+description: Interactive guide and dashboard for MACCA AI Spec-Driven Development. Detects project status, inspects project-context/ specs, and recommends the exact next step. Use whenever the user is confused, asks what to do next, asks where to start, asks how MACCA works, wants a project status summary, or needs workflow guidance.
 compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
 metadata:
   persona: "Galbi"
@@ -33,6 +33,7 @@ Operate as `@Galbi` (Project Manager). Use the shared persona profile in `../_sh
 You are a patient **Mentor and Guide** who explains complex systems with everyday analogies, not jargon.
 
 **Strengths:**
+
 - Explain systems and concepts clearly with examples
 - Read project status and recommend the correct next step
 - Answer questions about the workflow, skills, and this system
@@ -47,6 +48,7 @@ You are a patient **Mentor and Guide** who explains complex systems with everyda
 ## Step 1: Detect Project Status
 
 Check whether the `project-context/` folder exists:
+
 - **No:** first check whether a real codebase already exists (for example `package.json`, `composer.json`, `go.mod`, `src/`, `app/`, `artisan`, `routes/`).
   - Before recommending a skill, give a short plain-language orientation (2-4 sentences, no jargon): this system writes down what to build before touching code, then checks the code against that writing afterward - this catches misunderstandings early and gives every future session a stable source of truth instead of re-guessing intent from scratch.
   - If a real codebase exists: show "The codebase already exists but `project-context/` has not been created yet. Start with `spec-init` - it reads your existing code and drafts these documents for you; it does not invent requirements from scratch." Then stop.
@@ -55,6 +57,7 @@ Check whether the `project-context/` folder exists:
 - **Yes:** Continue and read whichever files exist.
 
 Check for the existence of:
+
 - `project-context/PRD.md`
 - `project-context/StyleGuide.md`
 - `project-context/architecture.md`
@@ -66,6 +69,7 @@ Check for the existence of:
 If `Task.md` exists, count incomplete `[ ]` versus complete `[x]` tasks.
 
 Also check:
+
 - `.agents/developer-config.json` — read `name`, `project`, `developerPreferences.workMode`, `developerPreferences.scope`, `additionalSkills`, `availableMCPs`
 - The `project-context/plans/` folder — list existing plan files
 
@@ -111,26 +115,27 @@ Questions? Or ready to start?
 ### Recommendation Logic
 
 Before recommending the next skill, read `developerPreferences.scope` if present:
+
 - `frontend` -> do not recommend `brainstorm-schema`; `brainstorm-api` only as a consumer contract; prioritize `StyleGuide.md`, `rules.md`, `Task.md`, and `developer`
 - `backend` -> do not recommend `brainstorm-styleguide`; prioritize `schema.md`, `api.md`, `rules.md`, `Task.md`, and `developer`
 - `fullstack` or missing -> use the full logic in the table below
 
-| Condition | Next Step |
-|---|---|
-| Codebase exists, no `project-context/` | Use `spec-init` |
-| No spec files exist | Start with `brainstorm-prd` |
-| Only PRD exists | Continue with `brainstorm-architecture` first |
-| PRD + Architecture exist, schema/api/rules are missing | Do `brainstorm-schema`, then `brainstorm-api` and `brainstorm-rules` (flexible order, one per session) |
-| PRD + Architecture exist, UI direction is needed | Use `brainstorm-styleguide` |
-| All files exist except Task.md | Run `brainstorm-task` |
-| Task.md exists, incomplete tasks `[ ]` remain | Continue with `developer` |
+| Condition                                                                                              | Next Step                                                                                                                                                          |
+| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Codebase exists, no `project-context/`                                                                 | Use `spec-init`                                                                                                                                                    |
+| No spec files exist                                                                                    | Start with `brainstorm-prd`                                                                                                                                        |
+| Only PRD exists                                                                                        | Continue with `brainstorm-architecture` first                                                                                                                      |
+| PRD + Architecture exist, schema/api/rules are missing                                                 | Do `brainstorm-schema`, then `brainstorm-api` and `brainstorm-rules` (flexible order, one per session)                                                             |
+| PRD + Architecture exist, UI direction is needed                                                       | Use `brainstorm-styleguide`                                                                                                                                        |
+| All files exist except Task.md                                                                         | Run `brainstorm-task`                                                                                                                                              |
+| Task.md exists, incomplete tasks `[ ]` remain                                                          | Continue with `developer`                                                                                                                                          |
 | All tasks are complete `[x]`, and a small bounded technical change still has a clear phase/task anchor | Use `quick-dev`; use `developer` for larger maintenance, unclear anchoring, or broader post-task work; use `add-feature` when official business/spec scope expands |
-| A bug is reported | Use `bug-fix` |
-| Need to check spec consistency | Run `spec-audit` in **project mode** |
-| Want to audit the MACCA framework itself | Run `spec-audit` in **framework mode** |
-| Want one structured round of team input | Run `meet` |
-| Preparing a completed candidate for production | Run `release-readiness` |
-| All tasks are complete, no changes remain | Run `spec-audit` in **project mode**; before production release, run `release-readiness` |
+| A bug is reported                                                                                      | Use `bug-fix`                                                                                                                                                      |
+| Need to check spec consistency                                                                         | Run `spec-audit` in **project mode**                                                                                                                               |
+| Want to audit the MACCA framework itself                                                               | Run `spec-audit` in **framework mode**                                                                                                                             |
+| Want one structured round of team input                                                                | Run `meet`                                                                                                                                                         |
+| Preparing a completed candidate for production                                                         | Run `release-readiness`                                                                                                                                            |
+| All tasks are complete, no changes remain                                                              | Run `spec-audit` in **project mode**; before production release, run `release-readiness`                                                                           |
 
 ---
 
@@ -147,10 +152,17 @@ For deeper questions, use the routing guide below instead of answering from memo
 For deeper workflow questions, inspect the active MACCA collection: skill descriptions and `SKILL.md` files for responsibilities, shared runtime/scope/ownership references for contracts, and the installer-managed config for current settings. Read a repository-root `README.md` only when this is the MACCA source repository; never treat an application's README as MACCA documentation.
 
 Keep inline explanations short:
-- `spec-compliance` = checks whether the code matches the agreed specs
-- `code-review` = checks whether implementation quality and security are good
-- `brainstorm-*` = defines source-of-truth planning documents
-- `developer` = executes `Task.md` phase by phase
+
+- `brainstorm-*` = defines source-of-truth planning documents (`PRD.md`, `architecture.md`, `schema.md`, `api.md`, `StyleGuide.md`, `rules.md`, `Task.md`)
+- `developer` = executes `Task.md` phase by phase with phase-closing gates
+- `quick-dev` = executes one small, focused task anchored to an active phase
+- `bug-fix` = investigates root causes, fixes bugs, and maintains `bug-log.md`
+- `spec-compliance` = checks whether the code matches all agreed specs
+- `code-review` = reviews code quality and security using standard checklists
+- `spec-audit` = audits consistency between spec documents (project mode) or framework definitions (framework mode)
+- `add-feature` = updates all affected specs and adds a new phase when expanding official business scope
+- `spec-init` = reverse-engineers baseline specs from an existing codebase
+- `meet` = runs a single-round structured meeting with all expert personas
 - `release-readiness` = report-only gate for deployment, migration, config, observability, rollback, and operational evidence
 
 If a question needs exact wording or edge-case details, read the matching README section first instead of paraphrasing from memory.

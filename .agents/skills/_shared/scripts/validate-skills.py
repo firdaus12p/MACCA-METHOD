@@ -6,7 +6,6 @@ import re
 import sys
 from pathlib import Path
 
-
 SKILLS_DIR = Path(__file__).resolve().parents[2]
 ALLOWED_FRONTMATTER = {
     "name",
@@ -46,12 +45,14 @@ def parse_frontmatter(path: Path, text: str) -> tuple[dict[str, object], list[st
             continue
         if line.startswith("  "):
             if current_map != "metadata" or ":" not in line:
-                issues.append(f"{path}:{line_number}: unsupported nested frontmatter value")
+                issues.append(
+                    f"{path}:{line_number}: unsupported nested frontmatter value"
+                )
                 continue
             key, value = line.strip().split(":", 1)
             metadata = data.setdefault("metadata", {})
             assert isinstance(metadata, dict)
-            metadata[key] = value.strip().strip('"\'')
+            metadata[key] = value.strip().strip("\"'")
             continue
         if ":" not in line:
             issues.append(f"{path}:{line_number}: invalid frontmatter line")
@@ -62,7 +63,7 @@ def parse_frontmatter(path: Path, text: str) -> tuple[dict[str, object], list[st
             issues.append(f"{path}:{line_number}: duplicate frontmatter key {key}")
         value = value.strip()
         if value:
-            data[key] = value.strip('"\'')
+            data[key] = value.strip("\"'")
             current_map = None
         else:
             data[key] = {}
@@ -93,20 +94,31 @@ def check_skill_file(path: Path) -> list[str]:
     if frontmatter:
         unknown = sorted(set(frontmatter) - ALLOWED_FRONTMATTER)
         if unknown:
-            issues.append(f"{path}: unsupported frontmatter fields: {', '.join(unknown)}")
+            issues.append(
+                f"{path}: unsupported frontmatter fields: {', '.join(unknown)}"
+            )
 
         name = frontmatter.get("name")
         description = frontmatter.get("description")
         if not isinstance(name, str) or not NAME_RE.fullmatch(name) or len(name) > 64:
             issues.append(f"{path}: invalid skill name {name!r}")
         elif name != path.parent.name:
-            issues.append(f"{path}: name {name!r} does not match folder {path.parent.name!r}")
-        if not isinstance(description, str) or not description or len(description) > 1024:
+            issues.append(
+                f"{path}: name {name!r} does not match folder {path.parent.name!r}"
+            )
+        if (
+            not isinstance(description, str)
+            or not description
+            or len(description) > 1024
+        ):
             issues.append(f"{path}: description must contain 1-1024 characters")
         metadata = frontmatter.get("metadata")
         if metadata is not None and (
             not isinstance(metadata, dict)
-            or any(not isinstance(key, str) or not isinstance(value, str) for key, value in metadata.items())
+            or any(
+                not isinstance(key, str) or not isinstance(value, str)
+                for key, value in metadata.items()
+            )
         ):
             issues.append(f"{path}: metadata must be a string-to-string map")
         compatibility = frontmatter.get("compatibility")
@@ -121,14 +133,24 @@ def check_skill_file(path: Path) -> list[str]:
     if "<SECURITY_REVIEW>" in text:
         issues.append(f"{path}: <SECURITY_REVIEW> placeholder was not replaced")
 
-    if re.search(r"^```markdown\s*$", text, re.MULTILINE) and re.search(
-        r"^```(?:json|text|typescript|bash)\s*$", text, re.MULTILINE
-    ):
-        issues.append(
-            f"{path}: possible broken nested fence; check and use 4 backticks for the outer template"
-        )
+    # Check for actual unclosed markdown fences containing inner fences
+    # If a ```markdown block is opened, ensure any nested ``` blocks use 4 backticks ```` or are properly closed
+    if re.search(r"^```markdown\s*$", text, re.MULTILINE):
+        # Scan if there's an inner unescaped fence before closing ```
+        parts = text.split("```markdown")
+        for part in parts[1:]:
+            inside = part.split("\n```\n")[0] if "\n```\n" in part else part
+            if re.search(
+                r"^```(?:json|text|typescript|bash)\s*$", inside, re.MULTILINE
+            ):
+                issues.append(
+                    f"{path}: possible broken nested fence inside ```markdown block; check and use 4 backticks for the outer template"
+                )
 
-    if "[GATE — Fix mode: report-first]" in text and "Approval Resume Protocol" not in text:
+    if (
+        "[GATE — Fix mode: report-first]" in text
+        or "[GATE — Mode: report-first]" in text
+    ) and "Approval Resume Protocol" not in text:
         issues.append(f"{path}: report-first gate has no approval resume protocol")
 
     issues.extend(check_local_links(path, text))

@@ -9,7 +9,7 @@ This file defines how skills must adjust documents, recommendations, and work bo
 - `frontend`
 - `backend`
 - `fullstack`
-- *(missing)* → treat as `fullstack`
+- _(missing)_ → treat as `fullstack`
 
 ## General Rules
 
