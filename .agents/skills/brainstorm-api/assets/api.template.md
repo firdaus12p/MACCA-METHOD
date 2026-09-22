@@ -1,5 +1,7 @@
 # API Documentation
 
+> **Authoring note:** This is a placeholder menu, not a checklist to build. Keep only contracts required by approved current flows and security/recovery obligations; prune inapplicable sections or mark `N/A` with a reason. Unknown mandatory decisions remain open, not `N/A`. Reuse the approved architecture and one adequate existing protocol. No automatic CRUD, versioning, webhooks, pagination, queues, or future-consumer endpoints. New components need a current requirement, why native/existing options are insufficient, cost within scale/team/budget/operations constraints, and a concrete escalation trigger. Critical depth deepens questions; native limits, retries, and idempotency apply where actual risk demands them.
+
 ## Document Role
 
 - **Source of Truth:** External API or integration contract for this project
@@ -22,14 +24,14 @@
 
 - **Style:** REST / GraphQL / RPC-tRPC / Event-driven / Mixed
 - **Entry Point:** [base URL / endpoint / router / broker/topic namespace]
-- **Versioning:** [strategy and current version]
-- **Deprecation:** [notice channel, support window, replacement, sunset criteria]
+- **Compatibility / Versioning:** [actual consumer commitments; explicit versions only if needed]
+- **Deprecation:** [notice/support/replacement/sunset only when consumer commitments require them]
 
 ## Authentication and Security Controls
 
 - **Authentication:** [method and transport]
 - **Authorization:** [role/ownership summary]
-- **Sensitive Operations:** [login / password reset / upload / webhook / payment / admin actions]
+- **Sensitive Operations:** [actual approved operations requiring protection]
 - **CSRF / Replay / Signature / Idempotency:** [applicable controls]
 - **Rate / Concurrency Limits:** [limit and client-visible signals]
 
@@ -41,7 +43,7 @@
 
 ## Reliability and SLO
 
-- **Latency Target:** [p95/p99 or N/A]
+- **Latency Target:** [approved relevant NFR; unknown required target remains an open decision]
 - **Availability/Error Target:** [target or inherited NFR]
 - **Timeout Ownership:** [client/server/gateway/consumer]
 - **Retry Policy:** [which failures, backoff, max attempts]
@@ -61,27 +63,13 @@
 
 | Environment | Base URL                            |
 | ----------- | ----------------------------------- |
-| Development | `http://localhost:3000/api/v1`      |
-| Staging     | `https://staging-api.domain.com/v1` |
-| Production  | `https://api.domain.com/v1`         |
+| [Actual environment] | [Existing/approved base URL; no presumed /v1] |
 
 ### Standard Response Format
 
-```json
-{
-  "success": true,
-  "data": {},
-  "message": "string (optional)",
-  "meta": {
-    "page": 1,
-    "limit": 20,
-    "total": 100,
-    "hasNext": true
-  }
-}
-```
+[Actual existing/protocol-native response example. Add an envelope or pagination metadata only when the approved contract requires it.]
 
-### Pagination and Filtering
+### Pagination and Filtering (Only When Required by Access Patterns)
 
 - **Type:** Offset-based / Cursor-based
 - **Defaults:** [limit/page or cursor rules]
@@ -107,7 +95,7 @@
 
 ### Endpoint and Transport
 
-- **Endpoint:** `/graphql`
+- **Endpoint:** [existing/approved endpoint]
 - **Realtime:** Subscriptions / polling / none
 
 ### Operation: [Query / Mutation / Subscription Name]

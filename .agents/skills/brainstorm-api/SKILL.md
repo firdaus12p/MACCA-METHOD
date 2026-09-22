@@ -1,6 +1,6 @@
 ---
 name: brainstorm-api
-description: Interviews users and generates `api.md` for REST, GraphQL, RPC/tRPC, event-driven, or mixed contracts, including lifecycle and reliability. Use only when the user explicitly requests an API contract after applicable architecture/data decisions.
+description: Creates or updates `api.md` for REST, GraphQL, RPC/tRPC, event-driven, or mixed contracts, including lifecycle and reliability. Use after applicable architecture/data decisions for explicit API planning, targeted completion/update user intent, or an authorized owner handoff, including spec-init Missing Decisions and approved technical sync.
 compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
 metadata:
   persona: "Fachri"
@@ -43,21 +43,21 @@ Before any interview:
 2. Read `../_shared/references/config-mutation.md`.
 3. Read `../_shared/references/brainstorm-session.md`.
 4. Read `../_shared/references/scope-rules.md`.
-5. Use `languagePreferences.communication.normalized` for chat.
-6. Use `languagePreferences.documents.normalized` for the final `project-context/api.md`.
+5. Use the resolved communication language from `language-config.md` for chat.
+6. Use the resolved document language from `language-config.md` for the final `project-context/api.md`.
 7. Apply `brainstormPreferences.discussionMode`, `recommendations`, and `discoveryDepth` using the shared session policy.
 
 ---
 
 ## How to Use This Skill
 
-1. Load after the schema is complete, or right after architecture if user scope = `frontend` and the API is documented only as a consumer contract.
+1. Select the mode in `../_shared/references/brainstorm-session.md` before startup questions. Baseline-completion, targeted update, and approved technical sync take precedence over the new-document interview below. **Architecture is required; schema is required only for a persisted-data dependency in scope.** Otherwise record schema as `N/A`: a stateless provider API is valid without schema, as is a frontend consumer contract. If an applicable dependency is unresolved, route that decision to its owner rather than inventing a schema or silently bypassing it.
 
 2. **Read existing project-context**:
    - `project-context/PRD.md` — features that need endpoints
    - `project-context/architecture.md` — tech stack and API pattern (REST/GraphQL/tRPC)
-   - `project-context/schema.md` — tables and fields available for endpoints
-   - If `.agents/developer-config.json` exists, read `developerPreferences.scope`
+   - `project-context/schema.md` — read relevant entities and fields only when the API has a persisted-data dependency in scope; provider/full mode alone does not require schema
+   - Read the configured scope value from the safe preference summary under `language-config.md`
 
 3. Determine API contract mode from scope:
    - `frontend` → **consumer contract mode**
@@ -73,11 +73,15 @@ Before any interview:
 
 6. Run the interview in the chosen mode. Wait for answers.
 
-7. After all topics, create `project-context/api.md`.
-
-   > ⚠️ **If the file already exists:** "(A) Overwrite all, (B) Cancel and review first."
+7. In new-document mode, complete applicable discovery and create `project-context/api.md`. For an existing file, follow the selected bounded mode; retain evidence, confidence, IDs, unrelated unknowns, and unrelated text. Regenerate only on an explicit request with approval of the named replacement.
 
 8. Summarize the result and suggest next steps based on scope.
+
+## Domain Applicability: Smallest Sufficient Contract
+
+Apply the shared planning principles loaded by `brainstorm-session.md`. Reuse the approved architecture and one adequate existing protocol. Additional protocols/components need a current requirement, why native/existing alternatives are insufficient, implementation/operating cost, and a concrete escalation trigger. Base choices on actual consumers, expected scale, team, budget, and operations.
+
+Derive operations only from approved flows, not automatic CRUD for every entity. Do not add speculative versions, webhooks, pagination, queues, or endpoints for possible future consumers. Critical depth means deeper contract/failure questions, not more infrastructure. Use native limits, retries, and idempotency where actual abuse, duplicate effects, or delivery risks demand them; retain required authentication, authorization, validation, and recovery safeguards. Missing mandatory decisions stay unresolved rather than `N/A`.
 
 ## Interview Topics (5 Topics)
 
@@ -93,17 +97,17 @@ Protocol mapping:
 
 ### 1. Entry Point, Versioning, Auth & Contract Status
 
-_"What is the API entry point and protocol? How is compatibility/versioning handled? How do users authenticate? Is the contract confirmed, proposed, or mock-only?"_
+_"What existing entry point and protocol serve the approved consumers? What compatibility and access requirements apply? Is the contract confirmed, proposed, or mock-only?"_
 
 Collect:
 
 - Entry point appropriate to the selected protocol (base URL, GraphQL endpoint, RPC router, channel/broker)
-- Compatibility/versioning strategy appropriate to the protocol
-- Deprecation policy for external consumers: support window, notice channel, replacement operation, and sunset criteria
-- Authentication/identity transport appropriate to the protocol
+- Compatibility requirements; explicit versioning only where consumer lifecycle requires it
+- Deprecation policy when external consumer commitments require one: support window, notice channel, replacement operation, and sunset criteria
+- Authentication/identity transport when required by access rules
 - Does cookie/session auth need CSRF protection?
-- Token lifetime, refresh, rotation, logout behavior
-- Standard response wrapper format (for example `{ success, data, message, meta }`)
+- Token lifetime, refresh, rotation, logout behavior when the chosen auth contract uses them
+- Existing/protocol-native response shape; custom wrappers only for an approved contract need
 - Contract status by area: `confirmed`, `proposed`, `mock-only`, `backend-owned`, `pending backend confirmation`
 
 ### 2. Error Catalog
@@ -113,7 +117,7 @@ _"What is the error format for the selected protocol? For REST, which HTTP statu
 Collect:
 
 - Consistent error response structure
-- Meaning of HTTP status codes:
+- For REST, select only applicable HTTP status codes; this is a reference menu:
   - `400` Bad Request — input validation failed
   - `401` Unauthorized — not logged in / token expired
   - `403` Forbidden — logged in but lacks permission
@@ -145,7 +149,7 @@ Collect by selected protocol:
 - **GraphQL:** operation name/type, arguments, selection/result type, union/error behavior
 - **RPC/tRPC:** procedure type/name, typed input/output, typed errors
 - **Event-driven:** channel/topic, producer/consumer, payload, key/order, delivery and retry semantics
-- **All modes:** field constraints, authorization/ownership, idempotency/replay, upload/payload limits, and real examples
+- **All modes:** field constraints, applicable authorization/ownership, and real examples; idempotency/replay and upload/payload limits as actual risks require
 
 ### 5. Pagination, Filtering, Rate Limiting & Abuse Protection
 
@@ -168,15 +172,12 @@ Adapt only sections that are applicable and preserve every required contract fro
 ## After api.md Is Created
 
 1. Confirm the file was created successfully
-2. Ask about UI/style guide:
-   - _"Does this project have a UI? Define a style guide?"_
-   - If yes and scope includes frontend/UI: `brainstorm-styleguide` → `brainstorm-rules` → `brainstorm-task`
-   - If no: `brainstorm-rules` → `brainstorm-task`
+2. Reuse known UI applicability; ask only if unresolved. Recommend one next step using `brainstorm-session.md`: applicable unfinished StyleGuide, then rules after all applicable inputs, then tasks. For bounded updates, return approved scope, IDs, changed sections, and evidence freshness to the caller.
 
 ## Important Notes
 
 - **Error Catalog (topic 2) and security/abuse protection (topic 5)** are often skipped. Do not skip them.
 - Ask by resource, not all endpoints at once.
-- Always ask for real JSON examples. AI infers structure from examples.
-- If the user is unclear, suggest standard CRUD endpoints from `schema.md`.
+- Ask for real protocol-native examples where they clarify the contract; do not impose JSON on every protocol.
+- If the user is unclear and recommendations are enabled, suggest operations from approved requirements and applicable evidence. Use `schema.md` only for persisted-data dependencies; do not invent CRUD or persistence for a stateless API.
 - Render the final document in the configured document language

@@ -1,5 +1,7 @@
 # Task: [Project Name]
 
+> **Authoring note:** This is a placeholder menu, not a checklist to build. Derive tasks only from approved current gaps and required verification/security/recovery work in the actual architecture. Prune inapplicable sections or mark `N/A` with a reason; unknown mandatory decisions remain open, not `N/A`. Reuse verified existing work and preserve IDs/history. No presumed setup/auth/layers, empty phases, copied example tasks, or “maybe later” features. Critical depth deepens analysis, not the task count. Return unjustified new components to their spec owner for requirement, simpler-option evidence, cost, and escalation-trigger decisions within scale/team/budget/operations constraints.
+
 > **Total Phases:** [X] | **Total Tasks:** [Y] | **Last Updated:** [date]
 
 ## Document Role
@@ -32,9 +34,9 @@
 
 | Phase | Name                    | Status | Progress |
 | ----- | ----------------------- | ------ | -------- |
-| 1     | [Setup & Configuration] | [ ]    | 0/3      |
-| 2     | [Database & Models]     | [ ]    | 0/4      |
-| 3     | [Backend: Auth]         | [ ]    | 0/3      |
+| [ID]  | [Actual approved phase] | [status] | [verified/total] |
+
+Generate only phases with real approved work. If none remains, report that outcome with no placeholder phase.
 
 ## AI Read Order
 
@@ -74,7 +76,7 @@
   - **Files:** `[path/file]`
   - **Description:** [Briefly what is done]
   - **Dependencies:** Task 1.1 must be complete first
-  - **References:** [`project-context/schema.md#users`]
+  - **References:** [`project-context/[applicable-document].md#actual-section`]
   - **Traceability IDs:** [`FEAT-01` / `DATA-01`]
   - **Acceptance Criteria:**
     - [ ] [Testable condition]
@@ -100,7 +102,7 @@
 - [ ] **Task 2.1: [Task Name]**
   - **Files:** `[path/file]`
   - **Description:** [Brief]
-  - **References:** [`project-context/api.md#auth`]
+  - **References:** [`project-context/[applicable-document].md#actual-section`]
   - **Traceability IDs:** [`FEAT-01` / `API-01` / `NFR-02`]
   - **Acceptance Criteria:**
     - [ ] [Testable condition]
@@ -109,16 +111,13 @@
 
 ## Traceability Matrix
 
-| Requirement ID | Source                      | Covering Tasks                     |
-| -------------- | --------------------------- | ---------------------------------- |
-| FEAT-01        | `project-context/PRD.md`    | `Task 1.1`, `Task 1.2`, `Task 2.1` |
-| BR-01          | `project-context/PRD.md`    | `Task 1.1`                         |
-| API-01         | `project-context/api.md`    | `Task 2.1`                         |
-| DATA-01        | `project-context/schema.md` | `Task 1.2`                         |
+| Requirement ID | Source | Classification | Covering Task or Verified Evidence |
+| -------------- | ------ | -------------- | ---------------------------------- |
+| [Existing ID] | [actual source/section] | Existing verified / Existing unverified / Gap | [evidence or approved task ID; unapproved gaps remain separate] |
 
 ## Assumptions & Open Questions
 
 - [Assumption that affects planning granularity or order]
 - [Open question that may change future phases]
 
-Repeat the `Phase Definition of Done` block for every generated phase, adapting items to the phase scope.
+Use the phase/task blocks only as formatting examples for actual approved work. Repeat `Phase Definition of Done` only for generated non-empty phases, adapting items to scope and preserving required safeguards.

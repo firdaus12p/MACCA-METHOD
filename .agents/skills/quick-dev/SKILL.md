@@ -20,9 +20,11 @@ Before any output:
 3. Read `../_shared/references/fix-mode.md`.
 4. Read `../_shared/references/human-loop.md`.
 5. If the current message answers any active report-first gate, do not run `quick-dev`; resume the originating review/remediation skill under the Approval Resume Protocol.
-6. Otherwise, read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If missing, treat as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`.
-7. Use `languagePreferences.communication.normalized` for chat.
-8. Use `languagePreferences.documents.normalized` for generated artifacts.
+6. Otherwise, read the configured fix-mode value from the safe preference summary under `language-config.md`. If missing, treat as `"report-first"`. Announce the mode once per authorized workflow under the shared interaction contract; downstream gates do not repeat it.
+7. Use the resolved communication language from `language-config.md` for chat.
+8. Use the resolved document language from `language-config.md` for generated artifacts.
+
+Follow `../_shared/references/interaction-contract.md`, loaded by `language-config.md`: reuse already-read current unchanged sources, refresh changed sources or unknown/compacted context, and use plain language outside exact keys, IDs, paths, and gate markers. A compact interaction does not omit checks or hide missing evidence.
 
 ---
 
@@ -43,83 +45,52 @@ If the request meets ANY of these, do NOT proceed. Redirect to `developer`:
 - Adds a new API endpoint
 - Adds a new primary feature or behavior not yet in `Task.md`
 - Requires creating or heavily rewriting a spec document
+- Has no current `Task.md` anchor; if all tasks are complete, create an approved post-task delta task/phase with `developer` before using `quick-dev`
 
 > "This task is too large for `quick-dev`. Use `developer` instead so it stays properly phased and traced."
 
 ---
 
-## Step 0 — Identity
+## Step 0 — Resolve the Supplied Task
 
-Read `.agents/developer-config.json`. Extract `name` and `project`.
+Use the safe preference summary from `language-config.md` for identity configured indicators only. Do not extract or display saved identity labels.
 
-**If both exist:**
+If the user already supplied a task, acknowledge that task and continue. Do not ask a generic "What needs doing?" question or make identity collection a prerequisite. A user name supplied in the conversation may be used optionally; never recover it from config. Defer missing optional identity details.
 
-> "Back again, [name]. **Firdaus** here — ready for a quick fix on **[project]**. What needs doing?"
+**If no task was supplied:** ask what needs doing. Optional identity setup may follow; do not make it block an already supplied task.
 
-**If name exists, project empty:**
-
-> "Back again, [name]. **Firdaus** here — ready. What needs doing?"
-
-**If name missing:**
-
-> "Hi. I am **Firdaus**. Before we start:
->
-> 1. What is your name?
-> 2. What is the project name?"
-
-After the user answers, create or update `.agents/developer-config.json` with `name` and `project`. Preserve all other fields.
+No identity or welcome banner is required. Save identity details only when supplied for setup, using the shared config-mutation contract and preserving all other fields.
 
 ---
 
 ## Step 0b — Additional Skills & MCP
 
-Read `additionalSkills` and `availableMCPs` from `.agents/developer-config.json`.
+Use configured/count/denied indicators from the safe preference summary under `language-config.md`. Summary counts do not authorize use. Check a requested tool's saved membership or a named skill's path through the local-only exception in `config-mutation.md`; never print raw saved names, paths, entries, or config.
 
-- **Both exist:** show `[Skills: N registered] [MCPs: ...]` on one line. Tell the user to correct now if needed.
-- **Either missing:** read `../developer/references/onboarding.md`, ask only the missing setup questions, and preserve other fields.
+- Detect available and user-authorized tools/skills from host context and saved config; availability alone is not authorization. Respect saved allowlists and explicit denials.
+- Read `../developer/references/onboarding.md` only for a material missing setup/authorization decision. Missing optional config does not require an interview, and simple work needing no MCP requires no MCP questionnaire. Do not print a skills/MCP setup banner.
 
 ---
 
 ## Step 0c — Developer Scope
 
-Read `developerPreferences.scope` from `.agents/developer-config.json`.
+Read the configured scope value from the safe preference summary under `language-config.md`.
 
-- **Exists:** show `[Scope: frontend / backend / fullstack]`. Tell the user to correct now if needed.
-- **Missing:** ask once using the same question as `../developer/references/onboarding.md` § Developer Scope. Save answer.
+- Reuse saved scope or an explicit user scope statement. Infer the bounded scope of an unambiguous task; ask in plain language only if an unresolved boundary materially affects execution. Never silently widen a saved boundary or treat a missing field as unrestricted permission.
+- Reuse the configured work-mode value from the safe preference summary; do not switch a saved `plan-first` workflow to direct execution without an explicit revision. Use `../developer/references/onboarding.md` when planning must start or a material mode decision is missing. Do not print routine scope or work-mode banners.
 
 ---
 
-## Step 1 — Pre-flight Summary
+## Step 1 — Confirm Only Material Ambiguity
 
 Parse the user's request. Identify specs and likely files from **context and spec documents only** — do NOT scan the codebase broadly here.
 
-Show:
+For a small unambiguous request, proceed without a preflight template or redundant confirmation. A concise acknowledgement of the intended scope is useful only when it adds information.
 
-```
-Quick Dev — Pre-flight
-───────────────────────
-Task   : [concise interpretation of the request]
-
-Specs  : [specs to read, e.g. rules.md + architecture.md + StyleGuide.md]
-
-Files  :
-  ~ [path/file]   (modify)
-  ~ [path/file]   (verify)
-
-Assumptions (will proceed unless corrected):
-  [~] [assumption 1]
-  [~] [assumption 2]
-
-Need confirmation before proceeding:         ← omit entire block if none
-  [?] [blocking question — short]
-```
-
-**Rules:**
-
-- Omit "Need confirmation" block entirely if there are no blocking ambiguities.
-- Non-blocking ambiguities go under "Assumptions" as `[~]` — not as questions.
-- If a needed spec is missing (e.g. no `StyleGuide.md` but task touches UI), note it under Specs as `StyleGuide.md — missing, UI compliance cannot be verified`.
-- If a blocking question exists, wait for its answer. Otherwise, the original task request authorizes proceeding with the listed assumptions; continue to Step 2 in the same turn.
+- Ask a focused question and wait only for a blocking ambiguity, unresolved business decision, or required destructive-change approval.
+- State material non-blocking assumptions briefly rather than turning them into questions.
+- If a needed spec is missing (e.g. no `StyleGuide.md` but the task touches UI), make that limitation visible: UI compliance cannot be verified. Do not invent evidence or claim PASS.
+- Otherwise, the original bounded request authorizes proceeding; continue to Step 2 in the same turn.
 
 ---
 
@@ -127,10 +98,11 @@ Need confirmation before proceeding:         ← omit entire block if none
 
 Verify `project-context/` exists.
 
-- `architecture.md` → **required**. If missing, stop and ask the user to run `brainstorm-architecture` first.
-- Others → optional. If missing and needed, the gap was already noted in Step 1.
+- `architecture.md` → **required**. If missing, stop and route to `brainstorm-architecture` first.
+- `rules.md` → **required**. If missing, stop and route to `brainstorm-rules` first. Do not code with assumed rules.
+- `schema.md`, `api.md`, `StyleGuide.md`, and `PRD.md` → conditional. If missing and needed, the gap was already noted in Step 1.
 
-Read only what the task needs:
+Ensure fresh relevant sections are in context; reuse already-read current unchanged sources rather than rereading them at each step. Read only what the task needs:
 
 | Condition                         | Read                                                          |
 | --------------------------------- | ------------------------------------------------------------- |
@@ -148,13 +120,14 @@ Scan `[FORBIDDEN]` in `rules.md` before any coding.
 | ---------------------- | --------------------------- |
 | `frontend`             | Do not touch backend files  |
 | `backend`              | Do not touch frontend files |
-| `fullstack` or missing | No restriction              |
+| `fullstack`            | Stay within the explicit task scope |
+| missing               | Use explicit bounded request; resolve only material boundary ambiguity |
 
 ---
 
 ## Step 2b — Record an Approved Scope Delta Before Coding
 
-If the task is outside `project-context/`, follow the approval flow in `../developer/references/execute-task.md` § Understand and Protect Scope before editing code. After approval, create or update the lightweight `Task.md` entry immediately with `status: in-progress` and the delta details. If `Task.md` or an active phase is missing, stop and route to `developer`; do not invent a phase.
+If the requested change is not represented in the specs, read `../_shared/references/scope-delta.md` and follow `../developer/references/execute-task.md` § Understand and Protect Scope before editing code. An explicit bounded technical request supplies approval; do not ask again merely because it is unrecorded. Preserve separate business/destructive decision gates. Create or update the lightweight `Task.md` entry immediately with `status: in-progress`, `## Approved Scope Delta`, and the required evidence/sync checklist. This Task.md record is sufficient; no separate phase plan is required. If `Task.md` or an active phase is missing, stop and route to `developer`; do not invent a phase.
 
 ## Step 3 — Execute
 
@@ -166,13 +139,13 @@ Read `../developer/references/execute-task.md` and follow its task execution wor
 - Use additional skills, MCP, shared implementation principles, and project testing policy.
 - Self-review and validate.
 
-The approved scope delta must already exist before this step. Never defer its record until after coding.
+When a scope delta is needed, its approved record must already exist before this step. Never defer its record until after coding.
 
 ---
 
 ## Step 4 — Update Task.md
 
-Do a lightweight scan of `Task.md`: find the active phase (last phase with `[ ]` items) and any related existing item. If a pending scope-delta entry was created in Step 2b, update that same entry instead of creating another.
+Do a lightweight scan of `Task.md`: find the phase containing the selected task and its related existing item. If the anchor is ambiguous, resolve it before updating status; do not infer the active phase merely from the last unchecked item. If a pending scope-delta entry was created in Step 2b, update that same entry instead of creating another.
 
 | Condition                 | Action                                                                 |
 | ------------------------- | ---------------------------------------------------------------------- |
@@ -186,31 +159,23 @@ If a scope delta exists, record it inline:
 [x] [task description] (quick-fix: YYYY-MM-DD) > Delta: [what was added/changed] — pending sync to [spec-doc].md
 ```
 
+Keep the canonical delta evidence and owning-skill sync checklist attached. `[x]` records verified implementation; quality gates remain pending until Step 5 succeeds. Do not mark the phase complete.
+
 ---
 
 ## Step 5 — Quality Gates
 
-1. Run `spec-compliance`. Follow `fixMode` from Shared Runtime Setup.
-2. Run `code-review`. Follow `fixMode` from Shared Runtime Setup.
+1. Run `spec-compliance` with review unit `task`, the selected task/AC, changed files, and canonical delta evidence. Follow `fixMode` from Shared Runtime Setup.
+2. Run `code-review` for the same task scope after compliance passes. Follow `fixMode` from Shared Runtime Setup.
 
-Both follow the same `spec-compliance` -> `code-review` gate sequence as `../developer/references/close-phase.md`. Do not proceed to Step 6 until both pass.
+Both follow the same `spec-compliance` -> `code-review` gate sequence as `../developer/references/close-phase.md`, but not phase-close scope. Unfinished sibling tasks and phase-wide DoD do not block this task review. Retain `quick-dev` as the origin and the next return step at a report-first pause. After approval and successful verification, resume here, then Step 6; do not rerun preflight. Do not proceed to Step 6 until both pass. Report pending formal spec sync with its owner; developer must complete it before phase closure.
+
+Pass the review unit, origin/return step, approved scope/files and IDs, criteria, checked sources/freshness, validation evidence, pending issues, and next action. Delegates read the relevant skill/reference pointer and refresh unknown source context. Keep this context in the session, without secrets or a new state file. All applicable SC, CR, and SEC checks run internally; clean results return here for Step 6, without separate tables or repeated mode announcements. Findings retain the shared four-point format, actionable manifest, and one eligible gate. Missing evidence remains visible; `N/A` means genuinely inapplicable with a reason, not unverified.
 
 ---
 
 ## Step 6 — Final Report
 
-```
-Quick Dev — Done
-─────────────────
-Task      : [task description]
-Files     : [files changed]
-Validated : [command / check and result]
-
-Assumptions used:
-  [~] [assumption that was applied]
-
-Remaining ambiguities:         ← omit if none
-  [!] [unresolved item worth noting for follow-up]
-```
+Show one combined concise summary: result, files changed, actual validation and compliance/review results, plus material assumptions, pending sync, or limitations when present. Omit empty headings and clean-check tables. Keep detailed evidence available on request; never report a check as passed when it was not run or could not be verified. If blocked before completion, report the blocker and completed work without a "Done" or PASS claim.
 
 Do not offer a next phase. Do not suggest continuing. Wait for the user's next instruction.

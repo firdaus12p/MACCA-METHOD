@@ -1,6 +1,6 @@
 ---
 name: brainstorm-task
-description: Generates or updates project-context/Task.md with phased, verifiable tasks derived directly from completed specs. Use after architecture.md and relevant domain specs exist, when planning sprint tasks, or when adding an approved phase from add-feature. Do NOT use to brainstorm new product scope from scratch.
+description: Generates or updates project-context/Task.md with phased, verifiable tasks derived from completed applicable specs. Use for sprint planning, targeted completion/update user intent, or an authorized owner handoff, including an approved add-feature phase or spec-init baseline planning. Do NOT use to invent new product scope or resolve another owner's Missing Decisions.
 compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
 metadata:
   persona: "Galbi"
@@ -19,9 +19,9 @@ Before starting:
 2. Read `../_shared/references/config-mutation.md`.
 3. Read `../_shared/references/brainstorm-session.md`.
 4. Read `../_shared/references/scope-rules.md`.
-5. Use `languagePreferences.communication.normalized` for chat.
-6. Use `languagePreferences.documents.normalized` for the final `project-context/Task.md`.
-7. Apply `brainstormPreferences.recommendations` and `discoveryDepth` using the shared session policy.
+5. Use the resolved communication language from `language-config.md` for chat.
+6. Use the resolved document language from `language-config.md` for the final `project-context/Task.md`.
+7. Apply `brainstormPreferences.discussionMode`, `recommendations`, and `discoveryDepth` using the shared session policy.
 
 ## Character
 
@@ -51,15 +51,36 @@ This skill generates **Task.md**: a work plan derived from existing spec documen
 
 ## Important Approach
 
-`Task.md` is **NOT brainstormed from scratch**. Tasks must be **derived from existing spec documents** (`PRD.md`, `architecture.md`, `schema.md`, `api.md`, `rules.md`). AI generates the tasks; the user does not restart the planning process.
+`Task.md` is **NOT brainstormed from scratch**. Tasks must be **derived from existing applicable spec documents** (`PRD.md`, `architecture.md`, `schema.md`, `api.md`, `rules.md`). AI generates the tasks; the user does not restart the planning process.
+
+## Domain Applicability: Smallest Sufficient Plan
+
+Apply the shared planning principles loaded by `brainstorm-session.md`. Derive tasks only for approved current gaps and required verification, security, or recovery obligations. Reuse the actual approved architecture and existing implementation; do not create tasks to simplify mature components without an approved need. Expected scale, team capacity, budget, and operational constraints determine the smallest useful work breakdown.
+
+Do not infer controller/service/repository layers, libraries, auth, CRUD, or infrastructure from template examples. No empty phases or tasks for “maybe later” features. A proposed component lacking a current requirement, evidence that simpler options fail, cost, and an escalation trigger returns to the owning spec decision rather than becoming a task. Critical depth means deeper dependency/risk analysis, not more phases. Unknown mandatory decisions remain open rather than `N/A`.
 
 ## Usage Steps
 
-**Detect mode before starting:**
-Check whether `project-context/Task.md` already exists.
+**Detect mode before startup questions:**
+First follow `../_shared/references/brainstorm-session.md` for baseline-completion, targeted update, or approved technical sync intent. Route unresolved upstream `Missing Decisions` to their owners; task planning does not settle product policy. Then check whether `project-context/Task.md` contains a usable plan.
 
 - **Does not exist yet** → follow the steps below (New Generate Mode).
-- **Already exists** (usually called from `add-feature`) → enter **Add Phase Mode**: skip clarification topics 1 and 3, ask only topic 2, append the approved phases/tasks, and update header counts/date, Progress Overview, dependencies, and Traceability Matrix. Preserve unrelated existing phases and IDs.
+- **Already exists, approved additional phase** (usually called from `add-feature`) → enter **Add Phase Mode**: reuse established priority, execution rules, and granularity; ask topic 2 only if granularity is unresolved. Append the approved phases/tasks and update header counts/date, Progress Overview, dependencies, and Traceability Matrix. Preserve unrelated existing phases and IDs.
+- **Existing plan, targeted completion/update** → edit only the approved tasks/sections and affected counts, dependencies, or traceability. Do not append a new phase merely because the file exists; preserve evidence, confidence, IDs, unrelated unknowns, and unrelated text. Never overwrite/regenerate unless explicitly requested and approved.
+
+For an owner handoff, require approved scope, IDs, changed sections, input evidence and freshness, unresolved decisions, and the authorization boundary. Reuse unchanged current evidence; refresh affected sections and material dependencies before task derivation. An add-feature approval can authorize the named Task.md addition; ask again only for a materially new decision or changed scope.
+
+### Brownfield Classification (Existing Code or spec-init Handoff)
+
+Before deriving implementation tasks, classify each requirement using current code, tests, input evidence, confidence, and existing Task.md:
+
+- **Existing verified:** acceptance criteria are evidenced; preserve completed work and IDs, or record verified baseline completion with its evidence. Do not recreate setup/auth/features already satisfied.
+- **Existing unverified:** behavior exists but evidence is incomplete; create verification or decision tasks, not duplicate implementation tasks. Do not mark completion merely from high confidence or a feature's presence.
+- **Gaps:** demonstrated differences from approved requirements; only approved gaps become implementation tasks. Keep unapproved gaps and missing decisions separate for the owning skill/user.
+
+This classification applies in both New Generate and Add Phase modes and takes precedence over the generic greenfield decomposition below. Preserve IDs, `[x]` history, and completion evidence; never reset completed work during generation. If evidence contradicts a completed item, report the discrepancy and obtain a decision rather than silently reopening it. Recompute counts without renumbering prior tasks.
+
+Show these three categories in the scope summary and traceability matrix. Existing verified work can satisfy traceability without a new task. Offer only the first pending approved task; if no approved work remains, report that outcome without inventing a phase or offering Task 1.1.
 
 **Scope rules:**
 
@@ -67,30 +88,26 @@ Check whether `project-context/Task.md` already exists.
 - `backend` → generate backend tasks only
 - `fullstack` → generate the full task set
 
-**Session setup (ask before clarification):**
+**Session setup:**
 
-Run the shared runtime setup first. Announce how many clarification topics apply in the current mode, then apply the stored pacing and recommendation preferences. If they are not stored yet, ask both before starting:
+Use shared mode selection and setup only. Reuse saved preferences and current answers; ask only missing preferences when an interview needs them. Count only unanswered applicable clarification topics. An approved handoff with settled planning decisions proceeds without onboarding.
 
-```
-This session has [N] clarification topics.
-1. Pacing: (A) one by one  (B) three at once  (C) all at once
-2. Answer recommendations: Should AI suggest answers for each question? (Y/N)
-```
-
-1. **READ all spec documents** in `project-context/`:
+1. **Read fresh applicable spec sections** in `project-context/` and their material dependencies; reuse cached reads only when unchanged and backed by current evidence:
    - `project-context/PRD.md` — features, business rules, acceptance criteria
    - `project-context/StyleGuide.md` — CSS framework, components, spacing (for styling/UI setup tasks)
-   - `project-context/architecture.md` — tech stack, folder structure
-   - `project-context/schema.md` — database tables
-   - `project-context/api.md` — endpoints to build
+   - `project-context/architecture.md` — required tech stack, folder structure
+   - `project-context/schema.md` — database/persistence contract when applicable
+   - `project-context/api.md` — API/event contract when applicable
    - `project-context/rules.md` — coding standards
-   - If `.agents/developer-config.json` exists, read `developerPreferences.scope`
+   - Read the configured scope value from the safe preference summary under `language-config.md`
+
+   Documents outside the declared scope are `N/A` and do not block task generation. A document required by the scope must be created or explicitly approved for continuation before `Task.md` is generated.
 
 2. **Analyze deeply** and identify all required work.
 
-3. **Ask for clarification** (topics below), then create `project-context/Task.md`.
+3. **Ask only unresolved applicable clarifications** (topics below), then create or update `project-context/Task.md` within the approved scope.
 
-4. After `Task.md` is ready, offer to start the first task.
+4. After `Task.md` is ready, offer the first pending approved task only if one exists. Generation itself does not start implementation.
 
 ## Clarification Topics (4 Short)
 
@@ -98,7 +115,7 @@ _This is not a fresh brainstorm. It is only clarification before task generation
 
 ### 1. Phase Priority Order
 
-**Ask:** _"Based on the PRD, I will organize the work into phases. Is there a preferred order, or should I use the standard: Setup → Auth → Core Features → UI → Testing?"_
+**Ask:** _"Which approved gaps should come first given their actual dependencies, value, and deadlines?"_
 
 **Collect:**
 
@@ -145,16 +162,16 @@ If another document required by the declared scope is missing, inform the user a
 
 Before writing `Task.md`, analyze internally:
 
-1. Read `project-context/PRD.md` → list all MVP features → this is the task scope
-2. Read `project-context/StyleGuide.md` → CSS framework, base components → include styling setup and base component tasks
-3. Read `project-context/architecture.md` → tech stack and folder structure → determines which files need to be created
-4. Read `project-context/schema.md` → map each datastore-native entity/collection/aggregate/stream to the migrations, validation, model, projection, or infrastructure tasks its architecture actually requires
-5. Read `project-context/api.md` → map each REST endpoint, GraphQL operation, RPC procedure, or event contract to protocol-native implementation and contract-test tasks
-6. Read `project-context/rules.md` → coding standards → include tasks for ESLint, Prettier, tsconfig setup?
-7. Identify task dependencies (database before model, model before service, service before controller)
+1. Read `project-context/PRD.md` → list approved MVP requirements → apply Brownfield Classification when code exists; only approved gaps need implementation
+2. Read `project-context/StyleGuide.md` when frontend/UI is in scope → identify styling/component gaps only for approved surfaces; reuse satisfied conventions
+3. Read `project-context/architecture.md` → existing approved structure and actual gaps → determine which files need changes
+4. Read `project-context/schema.md` when backend/fullstack persistence is in scope → map each datastore-native entity/collection/aggregate/stream to the migrations, validation, model, projection, or infrastructure tasks its architecture actually requires
+5. Read `project-context/api.md` when an API or event contract is in scope → map each REST endpoint, GraphQL operation, RPC procedure, or event contract to protocol-native implementation and contract-test tasks
+6. Read `project-context/rules.md` → include tooling/configuration tasks only for approved unsatisfied requirements
+7. Identify dependencies from actual architecture and data flow; do not presume model/service/controller layers
 8. **Testing workflow:** Follow the policy in `rules.md`. If it requires test-first/TDD, precede implementation with a test task. Otherwise pair each behavior change with the test/verification task required by the approved rules. Do not force TDD against project policy.
-9. If the specs mention security controls, create explicit security tasks — do not leave them implicit. Examples: auth guards, ownership checks, input validation, secure cookie config, rate limiting, CSRF protection, audit logs, data masking.
-10. Create a **traceability matrix**: every main requirement (`FEAT-*`, `BR-*`, `NFR-*`, `API-*`, `DATA-*`) must have at least one task that references it.
+9. For required security controls, explicitly track unsatisfied implementation or verification work; retain evidence for controls already verified rather than recreating them.
+10. Create a **traceability matrix**: every main requirement (`FEAT-*`, `BR-*`, `NFR-*`, `API-*`, `DATA-*`) maps to a task or evidenced existing verified baseline; distinguish verification work and unapproved gaps.
 11. Derive a phase Definition of Done from applicable specs. Do not ask another question: include tests/checks, security, migration/backfill, observability, documentation, rollout/rollback evidence, spec-compliance, and code-review only when relevant.
 
 After analysis, **show the scope summary to the user**:
@@ -177,7 +194,7 @@ Security controls to implement:
 Is this scope correct? Anything to add or remove?
 ```
 
-Wait for user confirmation before creating Task.md.
+Obtain scope confirmation before creating or updating Task.md unless the current explicit approval or authorized handoff already covers the exact bounded change. Do not ask for the same approval again; ask only if scope changes or a material conflict appears.
 
 ## Task.md Output
 
@@ -191,8 +208,7 @@ Adapt only sections that are applicable and preserve every required contract fro
 
 1. Confirm `project-context/Task.md` was created.
 2. Show the progress overview (phases + task counts).
-3. Offer to start:
-   > "All spec documents are ready! Task.md has been created. Start Task 1.1?"
+3. If pending approved work exists, offer its actual ID and purpose (verification or implementation). If none remains, report completion of planning without offering coding. Preserve the user's execution authorization boundary.
 
 ## Critical Notes
 
@@ -200,7 +216,7 @@ Adapt only sections that are applicable and preserve every required contract fro
 - Every task must have **testable acceptance criteria**, not just a description.
 - Mark **task dependencies** clearly. AI cannot skip tasks.
 - **Testing:** Task order follows the approved testing workflow in `rules.md`; test-first is required only when that policy requires it.
-- If the specs mention security controls, create explicit security tasks. Do not assume they "happen automatically."
+- Explicitly cover required security controls through gap/verification tasks or evidenced existing completion. Do not assume they "happen automatically."
 - Every task must have **Traceability IDs** that reference real upstream requirements or artifacts.
 - A **Traceability Matrix** is required for auditability.
 - Task granularity must be **atomic**: completable and verifiable in one session.

@@ -14,7 +14,7 @@ metadata:
 Paths written as `../...` below are relative to this SKILL.md's own folder, not the project's working directory - resolve them as a sibling of the folder that contains this file.
 
 1. Read `../_shared/references/language-config.md`.
-2. Use the configured communication language.
+2. Use the resolved communication language from `language-config.md`.
 3. This skill is report-only. Do not edit files, run deployment, publish packages, rotate secrets, apply migrations, or change infrastructure.
 
 ## Role and Boundary

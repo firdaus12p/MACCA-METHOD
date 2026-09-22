@@ -1,6 +1,10 @@
 # Shared Implementation Principles
 
+Read and follow `workspace-safety.md` before any mutation or validation command.
+
 Before writing code, stop at the first sufficient option:
+
+"Sufficient" includes applicable best practices: correctness, secure defaults, data integrity, maintainability, and meaningful validation. The ladder is a preference order, not permission to choose unsafe shortcuts or replace a maintained specialist library with risky custom code. Verify version-specific behavior with current authorized evidence; disclose what could not be verified. Fewer lines or dependencies alone do not establish quality.
 
 1. Do not build what is not needed.
 2. Search for and reuse existing project behavior.

@@ -1,5 +1,7 @@
 # Architecture
 
+> **Authoring note:** This is a placeholder menu, not a checklist to build. Keep only sections justified by approved current requirements and security/recovery obligations; prune inapplicable sections or mark `N/A` with a reason. Unknown mandatory decisions remain open, not `N/A`. Reuse mature approved architecture and native/existing capabilities. Critical depth adds questions, not components. New components need a current requirement, why simpler options are insufficient, cost within scale/team/budget/operations constraints, and a concrete future escalation trigger; no topology or technology is mandatory by default.
+
 > **Version:** 1.0 | **Date:** [date]
 
 ## Document Role
@@ -23,7 +25,7 @@
 
 ## 1. System Context
 
-**Users:** [End Users, Admins, etc.]
+**Users:** [Actual users from approved requirements]
 
 **External Services:**
 
@@ -41,18 +43,24 @@
 | ORM      | [ORM]       | [Version] | [Notes] |
 | Language | [Language]  | [Version] | [Notes] |
 
+Include only layers actually needed; an ORM or separate frontend/backend is not presumed.
+
+**Constraints:** [expected workload, team capacity, budget, operational ownership]
+
 ### Strategic Dependency Evaluation
 
 | Dependency/Vendor | Why Needed | Native/Existing Alternative | License & Health | Lock-in / Exit Path | Decision            |
 | ----------------- | ---------- | --------------------------- | ---------------- | ------------------- | ------------------- |
 | [name]            | [reason]   | [alternative]               | [evidence]       | [migration/removal] | Accepted / Proposed |
 
+For each new component, record the approved requirement, evidence that native/existing options are insufficient, implementation/operating cost, and future escalation trigger.
+
 ## 3. State Management
 
-- **Client State:** [Zustand / Redux / Context API]
-- **Server State:** [TanStack Query / SWR]
-- **Forms:** [React Hook Form / Formik]
-- **Persistence:** [localStorage / sessionStorage / none]
+- **Client State:** [needed state and native/existing mechanism]
+- **Server State:** [needed synchronization and native/existing mechanism]
+- **Forms:** [needed behavior and native/existing mechanism]
+- **Persistence:** [required lifetime and safe storage, only if needed]
 
 ## 4. API Design
 
@@ -73,17 +81,16 @@
 
 ## 6. Design Pattern
 
-- **Main Pattern:** MVC / Feature-based / Clean Architecture
-- **Layers:** routes → controller → service → repository
+- **Main Pattern:** [existing approved pattern or justified minimal structure]
+- **Boundaries:** [actual responsibilities; controller/service/repository layers and DI only if justified]
 - **Notes:** [Special rules]
 
 ## 7. Authentication & Authorization
 
-- **Method:** JWT / Session / OAuth
-- **Provider:** Google / GitHub / Custom
-- **Token Storage:** httpOnly cookie
-- **RBAC:** Yes / No
-- **Roles:** [List with access levels]
+- **Access Requirement:** [approved restricted actions/data, or N/A with reason]
+- **Method / Provider:** [existing/native mechanism if required]
+- **Credential / Session Protection:** [platform-appropriate storage, transport, and lifecycle]
+- **Authorization:** [required ownership/permission checks; roles only if needed]
 
 ## 8. Security & Abuse Cases
 
@@ -97,10 +104,10 @@
 
 ## 9. Deployment & Infrastructure
 
-- **Platform:** Vercel / Railway / Docker+VPS / etc.
-- **Environments:** development → staging → production
-- **CI/CD:** GitHub Actions / etc.
-- **CDN/Storage:** Cloudflare / S3 / etc.
+- **Platform:** [existing or justified runtime/hosting]
+- **Environments:** [only those needed for approved delivery and recovery]
+- **CI/CD:** [existing or justified delivery mechanism]
+- **CDN/Storage:** [only if required, with justification]
 - **Domain:** [Planned domain]
 
 ### Operations & Observability
@@ -140,6 +147,7 @@
 - **Rationale:** [Why this option]
 - **Trade-off:** [Accepted downside]
 - **Rejected Alternatives:** [What else was considered and why it was rejected]
+- **Cost / Escalation Trigger:** [implementation/operations burden and evidence threshold for a more complex design]
 
 ---
 

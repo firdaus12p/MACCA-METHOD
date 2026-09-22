@@ -3,6 +3,11 @@ name: CI
 on:
   push:
   pull_request:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
 
 jobs:
   validate:
@@ -10,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        node: [18, 22]
+        node: [22, 24]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
@@ -21,3 +26,26 @@ jobs:
         with:
           python-version: "3.x"
       - run: npm run validate
+
+  published-smoke:
+    if: github.event_name == 'release'
+    needs: validate
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: [22, 24]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.release.tag_name }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - run: npm run test:install:published
+        env:
+          MACCA_PUBLISHED_VERSION: ${{ github.event.release.tag_name }}

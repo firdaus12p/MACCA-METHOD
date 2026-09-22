@@ -11,6 +11,10 @@ const readline = require("node:readline");
 const PACKAGE_ROOT = path.resolve(__dirname, "..");
 const SOURCE_AGENTS_DIR = path.join(PACKAGE_ROOT, ".agents");
 const SOURCE_SKILLS_DIR = path.join(SOURCE_AGENTS_DIR, "skills");
+const { assertValidConfig } = require(path.join(
+  SOURCE_SKILLS_DIR, "_shared", "scripts", "config-validator.js",
+));
+const operation = { stage: "not started", targetDir: null, recoveryChanged: false };
 const SOURCE_MANAGED_SKILLS_FILE = path.join(
   SOURCE_AGENTS_DIR,
   "macca-managed-skills.txt",
@@ -122,10 +126,15 @@ function main() {
       return;
     }
 
+    if (command === "doctor") {
+      runDoctor(args);
+      return;
+    }
+
     ensurePackagedFiles();
 
     if (command === "install") {
-      runInstall(args).catch((error) => exitWithError(error.message));
+      runInstall(args).catch(exitWithError);
       return;
     }
 
@@ -136,7 +145,7 @@ function main() {
 
     exitWithError(`Unknown command: ${command}`);
   } catch (error) {
-    exitWithError(error.message);
+    exitWithError(error);
   }
 }
 
@@ -256,6 +265,9 @@ function parseArgs(argv) {
     args._.push(token);
   }
 
+  if (args._.length > 1) {
+    throw new Error("Unexpected positional arguments. Use --directory <path> for the target project.");
+  }
   return args;
 }
 
@@ -291,6 +303,7 @@ function printHelp() {
       "Usage:",
       "  npx macca-method@latest install [options]",
       "  npx macca-method@latest upgrade [options]",
+      "  macca-method doctor [--directory <path>]  Read-only installation check (no repair).",
       "  npx macca-method@latest --list-tools",
       "",
       "Install options:",
@@ -301,11 +314,12 @@ function printHelp() {
       "      --name <value>               Developer name.",
       "      --project <value>            Project name.",
       "      --communication-language <value>",
-      "      --document-language <value>",
+      "      --document-language <value>  Defaults to the communication language on first install.",
+      "  Requires Node.js >=22; Node.js 22 and 24 are supported runtimes in the configured CI matrix.",
       "",
       "Examples:",
       "  npx macca-method@latest install",
-      "  npx macca-method@latest install --tool github-copilot --tool codex --yes",
+      "  npx macca-method@latest install --tool github-copilot --tool codex --name \"Your Name\" --project \"Your Project\" --yes",
       "  npx macca-method@latest upgrade",
       "",
     ].join("\n"),
@@ -332,27 +346,29 @@ function resolveTargetDirectory(rawDirectory) {
 }
 
 function assertSafeTargetDirectory(rawDirectory) {
+  if (path.sep === "\\" && /^[\\/]{2}/.test(rawDirectory || process.cwd())) {
+    throw Object.assign(new Error("Windows UNC/device paths are unsupported. Use a local drive path such as C:\\projects\\app."), { code: "MACCA_UNSUPPORTED_PATH", path: rawDirectory });
+  }
   const requested = rawDirectory
     ? path.resolve(process.cwd(), rawDirectory)
     : process.cwd();
   const absolute = path.isAbsolute(requested)
     ? requested
     : path.resolve(requested);
-  const segments = absolute.split(path.sep).filter(Boolean);
-  let current = absolute.startsWith(path.sep)
-    ? path.sep
-    : segments.shift() || absolute;
+  const root = path.parse(absolute).root;
+  if (path.sep === "\\" && /^[\\/]{2}/.test(root)) {
+    throw Object.assign(new Error("Windows UNC/device paths are unsupported. Use a local drive path."), { code: "MACCA_UNSUPPORTED_PATH", path: absolute });
+  }
+  const segments = absolute.slice(root.length).split(path.sep).filter(Boolean);
+  let current = root;
 
-  if (fs.existsSync(current) && fs.lstatSync(current).isSymbolicLink()) {
+  if (isSymlink(current)) {
     throw new Error(`Refusing symlinked target project ancestor: ${current}`);
   }
 
   for (const segment of segments) {
-    current =
-      current === path.sep
-        ? path.join(current, segment)
-        : path.join(current, segment);
-    if (fs.existsSync(current) && fs.lstatSync(current).isSymbolicLink()) {
+    current = path.join(current, segment);
+    if (isSymlink(current)) {
       throw new Error(`Refusing symlinked target project ancestor: ${current}`);
     }
   }
@@ -442,12 +458,22 @@ function normalizeLanguage(value) {
     case "bahasa inggris":
       return "english";
     default:
-      return lowered;
+      return "indonesian";
   }
 }
 
 function ensureDirectory(directoryPath) {
+  operation.stage = "writing";
   fs.mkdirSync(directoryPath, { recursive: true });
+}
+
+function isSymlink(candidate) {
+  try {
+    return fs.lstatSync(candidate).isSymbolicLink();
+  } catch (error) {
+    if (error.code === "ENOENT") return false;
+    throw error;
+  }
 }
 
 function assertSafeProjectPath(targetDir, destination) {
@@ -455,14 +481,14 @@ function assertSafeProjectPath(targetDir, destination) {
   const resolvedDestination = path.resolve(destination);
   if (
     resolvedDestination !== targetRoot &&
-    !resolvedDestination.startsWith(`${targetRoot}${path.sep}`)
+    !resolvedDestination.startsWith(targetRoot.endsWith(path.sep) ? targetRoot : `${targetRoot}${path.sep}`)
   ) {
     throw new Error(
       `Refusing destination outside target project: ${destination}`,
     );
   }
 
-  if (fs.existsSync(targetRoot) && fs.lstatSync(targetRoot).isSymbolicLink()) {
+  if (isSymlink(targetRoot)) {
     throw new Error(`Refusing symlinked target project: ${targetRoot}`);
   }
 
@@ -470,7 +496,7 @@ function assertSafeProjectPath(targetDir, destination) {
   let current = targetRoot;
   for (const segment of relative.split(path.sep).filter(Boolean)) {
     current = path.join(current, segment);
-    if (fs.existsSync(current) && fs.lstatSync(current).isSymbolicLink()) {
+    if (isSymlink(current)) {
       throw new Error(
         `Refusing symlinked skill destination component: ${current}`,
       );
@@ -561,6 +587,86 @@ function hashDirectory(directoryPath) {
   return hashText(JSON.stringify(getDirectoryFileHashes(directoryPath)));
 }
 
+// Payload fingerprints intentionally omit caches. Destructive operations need
+// a separate snapshot that includes every entry, including empty directories.
+function hashSnapshot(targetPath, kind) {
+  const stat = fs.lstatSync(targetPath);
+  if (
+    stat.isSymbolicLink() ||
+    (kind === "directory" ? !stat.isDirectory() : !stat.isFile())
+  ) {
+    throw new Error(`Refusing unexpected managed path type: ${targetPath}`);
+  }
+  if (kind === "file") return hashFile(targetPath);
+
+  const entries = [];
+  function walk(directory, relative = "") {
+    for (const name of fs.readdirSync(directory).sort()) {
+      const candidate = path.join(directory, name);
+      const entryPath = relative ? `${relative}/${name}` : name;
+      const entryStat = fs.lstatSync(candidate);
+      if (entryStat.isSymbolicLink()) {
+        throw new Error(`Refusing symlink inside managed skill: ${candidate}`);
+      }
+      if (entryStat.isDirectory()) {
+        entries.push([entryPath, "directory"]);
+        walk(candidate, entryPath);
+      } else if (entryStat.isFile()) {
+        entries.push([entryPath, "file", hashFile(candidate)]);
+      } else {
+        throw new Error(
+          `Unsupported file type inside managed skill: ${candidate}`,
+        );
+      }
+    }
+  }
+  walk(targetPath);
+  return hashText(JSON.stringify(entries));
+}
+
+function getUnhashedEntries(directoryPath) {
+  const omitted = [];
+  function walk(directory, relative = "") {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      if (!relative && entry.name === OWNERSHIP_MARKER) continue;
+      const entryPath = path.join(relative, entry.name);
+      const candidate = path.join(directory, entry.name);
+      if (
+        shouldIgnoreDirectoryEntry(entry.name) ||
+        (entry.isDirectory() && fs.readdirSync(candidate).length === 0)
+      ) {
+        omitted.push(entryPath);
+      } else if (entry.isDirectory()) {
+        walk(candidate, entryPath);
+      }
+    }
+  }
+  walk(directoryPath);
+  return omitted;
+}
+
+function preserveUnhashedEntries(targetPath, stagingPath) {
+  for (const relative of getUnhashedEntries(targetPath)) {
+    const source = path.join(targetPath, relative);
+    const destination = path.join(stagingPath, relative);
+    if (fs.existsSync(destination)) {
+      const kind = fs.lstatSync(source).isDirectory() ? "directory" : "file";
+      if (hashSnapshot(source, kind) !== hashSnapshot(destination, kind)) {
+        throw new Error(
+          `Refusing to overwrite preserved skill content: ${source}`,
+        );
+      }
+    } else {
+      ensureDirectory(path.dirname(destination));
+      fs.cpSync(source, destination, {
+        recursive: true,
+        errorOnExist: true,
+        force: false,
+      });
+    }
+  }
+}
+
 function getLegacyPayloadHashes() {
   if (!fs.existsSync(SOURCE_LEGACY_PAYLOADS_FILE)) return {};
   const releases = readJsonObject(
@@ -611,46 +717,107 @@ function buildInstalledLock(managedSkills) {
 }
 
 function compareSemver(left, right) {
-  const parse = (value) =>
-    String(value || "0.0.0")
-      .split("-")[0]
-      .split(".")
-      .map((part) => Number.parseInt(part, 10) || 0);
-  const a = parse(left);
-  const b = parse(right);
-  const length = Math.max(a.length, b.length);
-  for (let index = 0; index < length; index += 1) {
-    const diff = (a[index] || 0) - (b[index] || 0);
+  const parse = (value, label) => {
+    const match = typeof value === "string" && value.match(
+      /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/,
+    );
+    const prerelease = match && match[4] ? match[4].split(".") : [];
+    if (!match || match[0] !== value || prerelease.some((part) => /^0[0-9]+$/.test(part))) {
+      throw Object.assign(new Error(
+        `Invalid semantic version for ${label}: expected MAJOR.MINOR.PATCH with optional prerelease/build metadata; numeric version and prerelease identifiers must not have leading zeros.`,
+      ), { code: "MACCA_VERSION_INVALID" });
+    }
+    return { core: match.slice(1, 4), prerelease };
+  };
+  // Keep numeric identifiers as decimal strings: SemVer does not bound their size.
+  const compareNumeric = (a, b) => a.length !== b.length
+    ? (a.length < b.length ? -1 : 1)
+    : (a === b ? 0 : a < b ? -1 : 1);
+  const a = parse(left, "left version");
+  const b = parse(right, "right version");
+  for (let index = 0; index < 3; index += 1) {
+    const diff = compareNumeric(a.core[index], b.core[index]);
     if (diff !== 0) return diff;
+  }
+  if (!a.prerelease.length || !b.prerelease.length) {
+    return a.prerelease.length === b.prerelease.length ? 0 : a.prerelease.length ? -1 : 1;
+  }
+  for (let index = 0; index < Math.min(a.prerelease.length, b.prerelease.length); index += 1) {
+    const x = a.prerelease[index];
+    const y = b.prerelease[index];
+    if (x === y) continue;
+    const xNumeric = /^[0-9]+$/.test(x);
+    const yNumeric = /^[0-9]+$/.test(y);
+    if (xNumeric && yNumeric) return compareNumeric(x, y);
+    if (xNumeric !== yNumeric) return xNumeric ? -1 : 1;
+    return x < y ? -1 : 1;
+  }
+  if (a.prerelease.length !== b.prerelease.length) {
+    return a.prerelease.length < b.prerelease.length ? -1 : 1;
   }
   return 0;
 }
 
-function assertPackageNotOlderThanInstalled(agentsDirectory) {
-  const installedLockPath = path.join(agentsDirectory, "macca-lock.json");
-  if (!fs.existsSync(installedLockPath)) {
-    return;
-  }
-
+function assertPackageNotOlderThanInstalled(agentsDirectory, includeRecovery = false) {
   const packagedLock = readJsonObject(SOURCE_LOCK_FILE, "packaged MACCA lock");
-  const installedLock = readJsonObject(
-    installedLockPath,
-    "installed MACCA lock",
-  );
   const packagedVersion = packagedLock.version;
-  const installedVersion = installedLock.version;
-  if (
-    typeof packagedVersion !== "string" ||
-    typeof installedVersion !== "string"
-  ) {
-    return;
-  }
+  const targetDir = path.dirname(agentsDirectory);
+  const installedLockPath = path.join(agentsDirectory, "macca-lock.json");
+  const assertRegularLock = (lockPath) => {
+    assertSafeProjectPath(targetDir, lockPath);
+    if (!fs.lstatSync(lockPath).isFile()) {
+      throw new Error(`Invalid MACCA lock at ${lockPath}: expected a regular file.`);
+    }
+  };
+  const checkVersion = (lockPath) => {
+    let installedVersion = packagedVersion;
+    if (lockPath) {
+      assertRegularLock(lockPath);
+      installedVersion = readJsonObject(lockPath, "installed MACCA lock").version;
+    }
+    let comparison;
+    try {
+      comparison = compareSemver(packagedVersion, installedVersion);
+    } catch (error) {
+      if (error.code !== "MACCA_VERSION_INVALID") throw error;
+      throw Object.assign(new Error(
+        `Cannot verify MACCA downgrade safety: ${error.message} ` +
+          `Check the version fields in the packaged MACCA lock (${SOURCE_LOCK_FILE}, left) and installed MACCA lock (${lockPath || installedLockPath}, right) before retrying.`,
+      ), { code: error.code });
+    }
 
-  if (compareSemver(packagedVersion, installedVersion) < 0) {
-    throw new Error(
-      `Refusing to downgrade MACCA from ${installedVersion} to ${packagedVersion}. ` +
-        "Publish or use a newer package before running install/upgrade.",
-    );
+    if (comparison < 0) {
+      throw new Error(
+        `Refusing to downgrade MACCA from ${installedVersion} to ${packagedVersion}. ` +
+          "Publish or use a newer package before running install/upgrade.",
+      );
+    }
+  };
+  // Validate the package even on first install, before a target can be created.
+  checkVersion(null);
+  assertSafeProjectPath(targetDir, installedLockPath);
+  if (fs.existsSync(installedLockPath)) checkVersion(installedLockPath);
+  if (!includeRecovery) return;
+
+  const journalPath = path.join(agentsDirectory, TRANSACTION_FILE);
+  assertSafeProjectPath(targetDir, journalPath);
+  if (!fs.existsSync(journalPath)) return;
+  const journal = readJsonObject(journalPath, "MACCA transaction journal");
+  const entries = validateTransactionEntries(targetDir, journal);
+  // Recovery may restore a newer lock or delete version evidence. Inspect only
+  // the whitelisted lock entry, after validating its paths and recovery hashes.
+  for (const entry of entries) {
+    if (path.resolve(entry.targetPath) !== path.resolve(installedLockPath)) continue;
+    if (fs.existsSync(entry.backupPath)) {
+      assertRegularLock(entry.backupPath);
+      assertTransactionBackup(entry, journal.phase);
+      checkVersion(entry.backupPath);
+    }
+    if (entry.stagingPath && fs.existsSync(entry.stagingPath)) {
+      assertRegularLock(entry.stagingPath);
+      assertTransactionPayload(entry, journal.transactionId, entry.stagingPath);
+      checkVersion(entry.stagingPath);
+    }
   }
 }
 
@@ -659,12 +826,24 @@ function readOwnershipMarker(
   expectedSkill = path.basename(targetPath),
 ) {
   const markerPath = path.join(targetPath, OWNERSHIP_MARKER);
-  if (!fs.existsSync(markerPath)) {
-    return null;
+  let stat;
+  try {
+    stat = fs.lstatSync(markerPath);
+  } catch (error) {
+    if (error.code === "ENOENT") return null;
+    throw error;
+  }
+  // Payload hashing omits this metadata file. Check its type independently so
+  // ownership checks never follow a symlink or try to read a pipe/device.
+  if (stat.isSymbolicLink() || !stat.isFile()) {
+    throw Object.assign(new Error(
+      `Unsafe ownership marker at ${JSON.stringify(markerPath)}: expected a regular non-symlink file. Back up and review this path before retrying.`,
+    ), { code: "MACCA_UNSAFE_MARKER", path: markerPath });
   }
 
+  const content = fs.readFileSync(markerPath, "utf8");
   try {
-    const marker = JSON.parse(fs.readFileSync(markerPath, "utf8"));
+    const marker = JSON.parse(content);
     if (marker.owner !== "macca-method" || marker.skill !== expectedSkill) {
       return null;
     }
@@ -691,7 +870,7 @@ function assertManagedDirectoryUnchanged(targetPath, force = false) {
   if (!marker.payloadHash || marker.payloadHash !== hashDirectory(targetPath)) {
     throw new Error(
       `Refusing to overwrite locally modified managed skill: ${targetPath}. ` +
-        "Run upgrade with --force to overwrite local modifications.",
+        "Back up and review local modifications first. --force destructively overwrites managed local modifications.",
     );
   }
 }
@@ -704,7 +883,8 @@ function readJsonObject(filePath, label) {
     }
     return value;
   } catch (error) {
-    throw new Error(`Invalid ${label} at ${filePath}: ${error.message}`);
+    if (error.code) throw error;
+    throw Object.assign(new Error(`Invalid ${label} at ${filePath}: expected a JSON object.`), { path: filePath, code: "MACCA_METADATA_INVALID" });
   }
 }
 
@@ -722,7 +902,7 @@ function assertManagedFilesUnchanged(agentsDirectory, force = false) {
     if (!fs.existsSync(filePath) || hashFile(filePath) !== expectedHash) {
       throw new Error(
         `Refusing to overwrite locally modified MACCA metadata: ${filePath}. ` +
-          "Run upgrade with --force to overwrite local modifications.",
+          "Back up and review local modifications first. --force destructively overwrites managed local modifications.",
       );
     }
   }
@@ -737,13 +917,20 @@ function buildStateContent(files) {
 }
 
 function writeJsonAtomic(filePath, value) {
-  const temporaryPath = `${filePath}.tmp-${process.pid}`;
-  fs.writeFileSync(
-    temporaryPath,
-    `${JSON.stringify(value, null, 2)}\n`,
-    "utf8",
-  );
-  fs.renameSync(temporaryPath, filePath);
+  const temporaryPath = `${filePath}.tmp-${process.pid}-${crypto.randomBytes(16).toString("hex")}`;
+  let descriptor;
+  let created = false;
+  try {
+    descriptor = fs.openSync(temporaryPath, "wx", 0o600);
+    created = true;
+    fs.writeFileSync(descriptor, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+    fs.closeSync(descriptor);
+    descriptor = undefined;
+    fs.renameSync(temporaryPath, filePath);
+  } finally {
+    if (descriptor !== undefined) fs.closeSync(descriptor);
+    if (created) fs.rmSync(temporaryPath, { force: true });
+  }
 }
 
 function removeManagedPath(targetPath, kind) {
@@ -759,23 +946,54 @@ function assertTransactionPayload(entry, transactionId, candidatePath) {
       candidatePath,
       path.basename(entry.targetPath),
     );
-    if (!marker || marker.transactionId !== transactionId) {
+    if (
+      !marker ||
+      marker.transactionId !== transactionId ||
+      !entry.stagedHash ||
+      hashDirectory(candidatePath) !== entry.stagedHash
+    ) {
       throw new Error(
         `Refusing recovery of directory without matching transaction evidence: ${candidatePath}`,
       );
     }
-    return;
-  }
-  if (!entry.stagedHash || hashFile(candidatePath) !== entry.stagedHash) {
+    if (!entry.stagedSnapshotHash && getUnhashedEntries(candidatePath).length) {
+      throw new Error(
+        `Refusing legacy recovery with unhashed directory content: ${candidatePath}`,
+      );
+    }
+  } else if (!entry.stagedHash || hashFile(candidatePath) !== entry.stagedHash) {
     throw new Error(
       `Refusing recovery of file without matching transaction hash: ${candidatePath}`,
     );
   }
+  const snapshot = hashSnapshot(candidatePath, entry.kind);
+  if (entry.stagedSnapshotHash && snapshot !== entry.stagedSnapshotHash) {
+    throw new Error(
+      `Refusing recovery of modified transaction payload: ${candidatePath}`,
+    );
+  }
 }
 
-function assertTransactionBackup(entry) {
+function assertTransactionBackup(entry, phase) {
   if (!fs.existsSync(entry.backupPath)) {
     return;
+  }
+  const snapshot = hashSnapshot(entry.backupPath, entry.kind);
+  if (
+    !entry.hadTarget ||
+    (entry.originalHash && snapshot !== entry.originalHash)
+  ) {
+    throw new Error(
+      `Refusing recovery from modified transaction backup: ${entry.backupPath}`,
+    );
+  }
+  if (entry.originalHash) return;
+  // Old journals lack a pre-transaction snapshot. A file backup can be restored
+  // without discarding its contents, but cannot safely be deleted on commit.
+  if (entry.kind === "file" && phase === "committed") {
+    throw new Error(
+      `Refusing cleanup of legacy backup without a snapshot: ${entry.backupPath}`,
+    );
   }
   if (entry.kind === "directory") {
     const marker = readOwnershipMarker(
@@ -789,7 +1007,10 @@ function assertTransactionBackup(entry) {
     const validLegacy =
       entry.legacySkillName &&
       isLegacyDirectoryUnchanged(entry.backupPath, entry.legacySkillName);
-    if (!validManaged && !validLegacy) {
+    if (
+      (!validManaged && !validLegacy) ||
+      getUnhashedEntries(entry.backupPath).length
+    ) {
       throw new Error(
         `Refusing recovery from unowned or modified backup directory: ${entry.backupPath}`,
       );
@@ -799,7 +1020,7 @@ function assertTransactionBackup(entry) {
 
 function validateTransactionEntries(targetDir, journal) {
   if (
-    journal.version !== 1 ||
+    ![1, 2].includes(journal.version) ||
     !["committing", "committed"].includes(journal.phase)
   ) {
     throw new Error("Unsupported MACCA transaction journal version or phase");
@@ -866,6 +1087,19 @@ function validateTransactionEntries(targetDir, journal) {
     ) {
       throw new Error("Transaction staged payload hash is missing or invalid");
     }
+    for (const [field, required] of [
+      ["originalHash", entry.hadTarget],
+      ["stagedSnapshotHash", entry.stagingPath !== null],
+    ]) {
+      if ((journal.version === 2 && required) || entry[field] != null) {
+        if (
+          typeof entry[field] !== "string" ||
+          !/^[a-f0-9]{64}$/.test(entry[field])
+        ) {
+          throw new Error(`Transaction ${field} is missing or invalid`);
+        }
+      }
+    }
 
     const targetPath = path.resolve(entry.targetPath);
     const parent = path.dirname(targetPath);
@@ -931,7 +1165,7 @@ function recoverInterruptedTransaction(targetDir) {
   const journal = readJsonObject(journalPath, "MACCA transaction journal");
   const entries = validateTransactionEntries(targetDir, journal);
   for (const entry of entries) {
-    assertTransactionBackup(entry);
+    assertTransactionBackup(entry, journal.phase);
     if (
       journal.phase === "committed" ||
       fs.existsSync(entry.backupPath) ||
@@ -942,13 +1176,38 @@ function recoverInterruptedTransaction(targetDir) {
     if (entry.stagingPath && fs.existsSync(entry.stagingPath)) {
       assertTransactionPayload(entry, journal.transactionId, entry.stagingPath);
     }
+    if (
+      journal.phase === "committing" &&
+      entry.hadTarget &&
+      !fs.existsSync(entry.backupPath) &&
+      entry.originalHash &&
+      (!fs.existsSync(entry.targetPath) ||
+        hashSnapshot(entry.targetPath, entry.kind) !== entry.originalHash)
+    ) {
+      throw new Error(
+        `Refusing recovery of modified original target: ${entry.targetPath}`,
+      );
+    }
+  }
+  // Recovery can restore a config different from the visible one. Validate the
+  // candidate after evidence checks, but before the first rollback/cleanup.
+  for (const entry of entries) {
+    if (entry.targetPath === path.join(targetDir, ".agents", "developer-config.json")) {
+      const candidate = journal.phase === "committing" && fs.existsSync(entry.backupPath)
+        ? entry.backupPath : entry.targetPath;
+      readDeveloperConfig(candidate);
+    }
   }
   if (journal.phase === "committed") {
+    operation.stage = "recovery";
+    operation.recoveryChanged = true;
     for (const entry of entries) {
       removeManagedPath(entry.backupPath, entry.kind);
       if (entry.stagingPath) removeManagedPath(entry.stagingPath, entry.kind);
     }
   } else {
+    operation.stage = "recovery";
+    operation.recoveryChanged = true;
     for (const entry of [...entries].reverse()) {
       if (fs.existsSync(entry.backupPath)) {
         removeManagedPath(entry.targetPath, entry.kind);
@@ -979,7 +1238,6 @@ function getUniqueDestinations(targetDir, tools) {
 function applySkillTransaction(entries, targetDir, force = false) {
   const suffix = `${process.pid}-${Date.now()}-${crypto.randomBytes(8).toString("hex")}`;
   const prepared = [];
-  const committed = [];
   const journalPath = path.join(targetDir, ".agents", TRANSACTION_FILE);
 
   for (const entry of entries) {
@@ -1009,7 +1267,10 @@ function applySkillTransaction(entries, targetDir, force = false) {
       }
       if (kind === "directory") {
         if (isMaccaOwned(targetPath)) {
-          assertManagedDirectoryUnchanged(targetPath, force);
+          assertManagedDirectoryUnchanged(
+            targetPath,
+            force && Boolean(sourcePath),
+          );
         } else if (
           !legacySkillName ||
           !isLegacyDirectoryUnchanged(targetPath, legacySkillName)
@@ -1018,12 +1279,20 @@ function applySkillTransaction(entries, targetDir, force = false) {
             `Refusing to overwrite or remove unowned skill directory: ${targetPath}`,
           );
         }
+        if (!sourcePath && getUnhashedEntries(targetPath).length) {
+          throw new Error(
+            `Refusing to remove skill with unhashed content: ${targetPath}`,
+          );
+        }
       }
     }
     prepared.push({
       ...entry,
       kind,
       hadTarget: fs.existsSync(targetPath),
+      originalHash: fs.existsSync(targetPath)
+        ? hashSnapshot(targetPath, kind)
+        : null,
       stagingPath:
         sourcePath || content !== undefined
           ? path.join(parent, `.${targetName}.macca-stage-${suffix}`)
@@ -1046,6 +1315,9 @@ function applySkillTransaction(entries, targetDir, force = false) {
         }
       } else {
         fs.cpSync(entry.sourcePath, entry.stagingPath, { recursive: true });
+        if (entry.hadTarget) {
+          preserveUnhashedEntries(entry.targetPath, entry.stagingPath);
+        }
         const payloadHash = hashDirectory(entry.stagingPath);
         writeTextFile(
           path.join(entry.stagingPath, OWNERSHIP_MARKER),
@@ -1066,10 +1338,11 @@ function applySkillTransaction(entries, targetDir, force = false) {
         entry.kind === "file"
           ? hashFile(entry.stagingPath)
           : hashDirectory(entry.stagingPath);
+      entry.stagedSnapshotHash = hashSnapshot(entry.stagingPath, entry.kind);
     }
 
     writeJsonAtomic(journalPath, {
-      version: 1,
+      version: 2,
       phase: "committing",
       transactionId: suffix,
       entries: prepared.map(
@@ -1080,6 +1353,8 @@ function applySkillTransaction(entries, targetDir, force = false) {
           kind,
           hadTarget,
           stagedHash,
+          stagedSnapshotHash,
+          originalHash,
           legacySkillName,
         }) => ({
           targetPath,
@@ -1088,6 +1363,8 @@ function applySkillTransaction(entries, targetDir, force = false) {
           kind,
           hadTarget,
           stagedHash: stagingPath ? stagedHash : null,
+          stagedSnapshotHash: stagingPath ? stagedSnapshotHash : null,
+          originalHash,
           legacySkillName,
         }),
       ),
@@ -1095,15 +1372,19 @@ function applySkillTransaction(entries, targetDir, force = false) {
 
     for (const entry of prepared) {
       if (entry.hadTarget) {
+        if (hashSnapshot(entry.targetPath, entry.kind) !== entry.originalHash) {
+          throw new Error(
+            `Managed path changed during transaction: ${entry.targetPath}`,
+          );
+        }
         fs.renameSync(entry.targetPath, entry.backupPath);
       }
-      committed.push(entry);
       if (entry.sourcePath || entry.content !== undefined) {
         fs.renameSync(entry.stagingPath, entry.targetPath);
       }
     }
     writeJsonAtomic(journalPath, {
-      version: 1,
+      version: 2,
       phase: "committed",
       transactionId: suffix,
       entries: prepared.map(
@@ -1114,6 +1395,8 @@ function applySkillTransaction(entries, targetDir, force = false) {
           kind,
           hadTarget,
           stagedHash,
+          stagedSnapshotHash,
+          originalHash,
           legacySkillName,
         }) => ({
           targetPath,
@@ -1122,40 +1405,44 @@ function applySkillTransaction(entries, targetDir, force = false) {
           kind,
           hadTarget,
           stagedHash: stagingPath ? stagedHash : null,
+          stagedSnapshotHash: stagingPath ? stagedSnapshotHash : null,
+          originalHash,
           legacySkillName,
         }),
       ),
     });
   } catch (error) {
-    for (const entry of [...committed].reverse()) {
-      fs.rmSync(entry.targetPath, {
-        recursive: entry.kind === "directory",
-        force: true,
-      });
-      if (entry.hadTarget && fs.existsSync(entry.backupPath)) {
-        fs.renameSync(entry.backupPath, entry.targetPath);
+    try {
+      if (fs.existsSync(journalPath)) {
+        // Live failures and crash recovery must use the same preflight checks.
+        // A conflict leaves the journal and every remaining path for recovery.
+        recoverInterruptedTransaction(targetDir);
+      } else {
+        const staged = prepared.filter(
+          (entry) => entry.stagingPath && fs.existsSync(entry.stagingPath),
+        );
+        // A partially written stage has no trustworthy snapshot. Validate all
+        // completed stages before deleting any; retain partial/conflicting work.
+        for (const entry of staged) {
+          if (!entry.stagedSnapshotHash) {
+            throw new Error(
+              `Preserving incomplete transaction staging: ${entry.stagingPath}`,
+            );
+          }
+          assertTransactionPayload(entry, suffix, entry.stagingPath);
+        }
+        for (const entry of staged) {
+          removeManagedPath(entry.stagingPath, entry.kind);
+        }
       }
+    } catch (recoveryError) {
+      error.message = `${error.message}; ${recoveryError.message}`;
+      throw error;
     }
-    fs.rmSync(journalPath, { force: true });
     throw error;
-  } finally {
-    for (const entry of prepared) {
-      if (entry.stagingPath) {
-        fs.rmSync(entry.stagingPath, {
-          recursive: entry.kind === "directory",
-          force: true,
-        });
-      }
-    }
   }
 
-  for (const entry of committed) {
-    fs.rmSync(entry.backupPath, {
-      recursive: entry.kind === "directory",
-      force: true,
-    });
-  }
-  fs.rmSync(journalPath, { force: true });
+  recoverInterruptedTransaction(targetDir);
 }
 
 function normalizeToolList(values) {
@@ -1214,11 +1501,12 @@ function mergeObjects(existing, update) {
 
   const merged = { ...existing };
   for (const [key, value] of Object.entries(update)) {
-    if (value && typeof value === "object" && !Array.isArray(value)) {
-      merged[key] = mergeObjects(existing[key], value);
-    } else {
-      merged[key] = value;
-    }
+    Object.defineProperty(merged, key, {
+      value: value && typeof value === "object" && !Array.isArray(value)
+        ? mergeObjects(Object.hasOwn(existing, key) ? existing[key] : undefined, value)
+        : value,
+      enumerable: true, writable: true, configurable: true,
+    });
   }
   return merged;
 }
@@ -1230,13 +1518,59 @@ function readDeveloperConfig(filePath) {
 
   try {
     const value = JSON.parse(fs.readFileSync(filePath, "utf8"));
-    if (!value || typeof value !== "object" || Array.isArray(value)) {
-      throw new Error("root value must be an object");
-    }
+    assertValidConfig(value, filePath);
     return value;
   } catch (error) {
-    throw new Error(`Cannot preserve malformed ${filePath}: ${error.message}`);
+    if (error.code) {
+      error.path = filePath;
+      throw error;
+    }
+    throw Object.assign(new Error(`Cannot preserve malformed ${filePath}: $ must contain valid JSON.`), {
+      code: "MACCA_CONFIG_INVALID", field: "$", fields: ["$"], path: filePath,
+    });
   }
+}
+
+const promptStates = new WeakMap();
+
+function cancellation() {
+  return Object.assign(new Error("Setup cancelled."), { code: "MACCA_CANCELLED" });
+}
+
+function preparePrompt(prompt) {
+  if (promptStates.has(prompt)) return promptStates.get(prompt);
+  const state = { lines: [], pending: null, error: null };
+  const fail = (error) => {
+    state.error = error;
+    if (state.pending) {
+      state.pending.reject(error);
+      state.pending = null;
+    }
+  };
+  const onLine = (line) => {
+    if (state.pending) {
+      state.pending.resolve(line);
+      state.pending = null;
+    } else state.lines.push(line);
+  };
+  const onCancel = () => fail(cancellation());
+  const onError = (error) => fail(Object.assign(new Error("Interactive input failed. Check your terminal and retry."), { code: error.code || "MACCA_INPUT_ERROR" }));
+  prompt.on("line", onLine);
+  prompt.on("SIGINT", onCancel);
+  prompt.on("close", onCancel);
+  prompt.on("error", onError);
+  prompt.input?.on("error", onError);
+  state.dispose = () => {
+    prompt.close();
+    prompt.removeListener("line", onLine);
+    prompt.removeListener("SIGINT", onCancel);
+    prompt.removeListener("close", onCancel);
+    prompt.removeListener("error", onError);
+    prompt.input?.removeListener("error", onError);
+    promptStates.delete(prompt);
+  };
+  promptStates.set(prompt, state);
+  return state;
 }
 
 function createPrompt() {
@@ -1246,45 +1580,54 @@ function createPrompt() {
     );
   }
 
-  return readline.createInterface({
+  const prompt = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
   });
+  preparePrompt(prompt);
+  return prompt;
 }
 
 function askQuestion(prompt, question) {
-  return new Promise((resolve) => {
-    prompt.question(question, resolve);
+  const state = preparePrompt(prompt);
+  return new Promise((resolve, reject) => {
+    if (state.error) return reject(state.error);
+    state.pending = { resolve, reject };
+    try {
+      prompt.setPrompt(question);
+      prompt.prompt();
+      if (state.lines.length && state.pending) {
+        state.pending = null;
+        resolve(state.lines.shift());
+      }
+    } catch (error) {
+      state.pending = null;
+      reject(error);
+    }
   });
 }
 
-async function promptForTools() {
-  const prompt = createPrompt();
+async function promptForTools(prompt) {
+  process.stdout.write("\nPilih AI tool yang mau dipasang:\n");
+  TOOL_DEFINITIONS.forEach((tool, index) => {
+    process.stdout.write(
+      `  ${index + 1}. ${tool.label} -> ${tool.displayDestination}\n`,
+    );
+  });
+  process.stdout.write("\n");
 
-  try {
-    process.stdout.write("\nPilih AI tool yang mau dipasang:\n");
-    TOOL_DEFINITIONS.forEach((tool, index) => {
-      process.stdout.write(
-        `  ${index + 1}. ${tool.label} -> ${tool.displayDestination}\n`,
-      );
-    });
-    process.stdout.write("\n");
-
-    while (true) {
-      const answer = await askQuestion(
-        prompt,
-        "Masukkan nomor/nama tool (pisahkan dengan koma, 'all', kosong = codex): ",
-      );
-      const parsed = parseInteractiveToolSelection(answer);
-      if (parsed.error) {
-        process.stdout.write(`  ${parsed.error}\n`);
-        continue;
-      }
-
-      return parsed.tools;
+  while (true) {
+    const answer = await askQuestion(
+      prompt,
+      "Masukkan nomor/nama tool (pisahkan dengan koma, 'all', kosong = codex): ",
+    );
+    const parsed = parseInteractiveToolSelection(answer);
+    if (parsed.error) {
+      process.stdout.write(`  ${parsed.error}\n`);
+      continue;
     }
-  } finally {
-    prompt.close();
+
+    return parsed.tools;
   }
 }
 
@@ -1326,44 +1669,54 @@ function parseInteractiveToolSelection(answer) {
   return { tools: unique(tools) };
 }
 
-async function promptForMetadata(seed) {
-  const prompt = createPrompt();
+async function promptForMetadata(seed, prompt) {
+  const communication =
+    seed.communicationLanguage !== undefined
+      ? seed.communicationLanguage
+      : await askQuestion(
+          prompt,
+          "Bahasa komunikasi yang anda inginkan? (Kosong = Bahasa Indonesia): ",
+        );
+  const documents =
+    seed.documentLanguage !== undefined
+      ? seed.documentLanguage
+      : await askQuestion(
+          prompt,
+          "Bahasa dokumen yang dihasilkan? (Kosong = sama dengan komunikasi): ",
+        );
 
-  try {
-    const name =
-      seed.name !== undefined
-        ? seed.name
-        : await askQuestion(
-            prompt,
-            "Kamu mau dipanggil apa? (Kosong = Skip): ",
-          );
-    const project =
-      seed.project !== undefined
-        ? seed.project
-        : await askQuestion(prompt, "Nama project ini apa? (Kosong = Skip): ");
-    const communication =
-      seed.communicationLanguage !== undefined
-        ? seed.communicationLanguage
-        : await askQuestion(
-            prompt,
-            "Bahasa komunikasi yang anda inginkan? (Kosong = Bahasa Indonesia): ",
-          );
-    const documents =
-      seed.documentLanguage !== undefined
-        ? seed.documentLanguage
-        : await askQuestion(
-            prompt,
-            "Bahasa dokumen yang dihasilkan? (Kosong = Bahasa Indonesia): ",
-          );
+  return {
+    name: seed.name,
+    project: seed.project,
+    communicationLanguage: communication || "Bahasa Indonesia",
+    documentLanguage: documents || communication || "Bahasa Indonesia",
+  };
+}
 
-    return {
-      name: name || "",
-      project: project || "",
-      communicationLanguage: communication || "Bahasa Indonesia",
-      documentLanguage: documents || "Bahasa Indonesia",
-    };
-  } finally {
-    prompt.close();
+function addRetiredSkills(entries, targetDir, destination, skillNames) {
+  assertSafeProjectPath(targetDir, destination);
+  for (const skillName of skillNames) {
+    const targetPath = resolveOwnedSkillPath(destination, skillName);
+    if (!fs.existsSync(targetPath)) continue;
+    try {
+      assertSafeProjectPath(targetDir, targetPath);
+      hashSnapshot(targetPath, "directory");
+      if (isMaccaOwned(targetPath)) {
+        // Retirement never needs to discard local edits, even with --force.
+        assertManagedDirectoryUnchanged(targetPath);
+      } else if (!isLegacyDirectoryUnchanged(targetPath, skillName)) {
+        throw new Error("ownership could not be verified");
+      }
+      if (getUnhashedEntries(targetPath).length) {
+        throw new Error("directory contains unhashed content");
+      }
+    } catch (error) {
+      process.stderr.write(
+        `Preserving obsolete skill directory: ${targetPath} (${error.message})\n`,
+      );
+      continue;
+    }
+    entries.push({ sourcePath: null, targetPath, legacySkillName: skillName });
   }
 }
 
@@ -1371,7 +1724,10 @@ function applyInstall(targetDir, tools, metadata, options = {}) {
   const force = Boolean(options.force);
   const managedSkills = getSourceManagedSkills();
   const agentsDirectory = path.join(targetDir, ".agents");
-  ensureDirectory(targetDir);
+  const configPath = path.join(agentsDirectory, "developer-config.json");
+  assertSafeProjectPath(targetDir, configPath);
+  const config = mergeObjects(readDeveloperConfig(configPath), buildDeveloperConfig(metadata));
+  assertValidConfig(config, configPath);
   assertSafeProjectPath(targetDir, agentsDirectory);
   assertPackageNotOlderThanInstalled(agentsDirectory);
   for (const fileName of [
@@ -1388,6 +1744,10 @@ function applyInstall(targetDir, tools, metadata, options = {}) {
     readNonEmptyLines(path.join(agentsDirectory, "macca-managed-skills.txt")),
     ".agents/macca-managed-skills.txt",
   );
+  tools = unique([
+    ...readNonEmptyLines(path.join(agentsDirectory, "macca-tools.txt")),
+    ...tools,
+  ]);
   const entries = [];
   for (const destination of getUniqueDestinations(targetDir, tools)) {
     for (const skillName of managedSkills) {
@@ -1397,12 +1757,21 @@ function applyInstall(targetDir, tools, metadata, options = {}) {
         legacySkillName: skillName,
       });
     }
+    addRetiredSkills(
+      entries,
+      targetDir,
+      destination,
+      previousManagedSkills.filter((name) => !managedSkills.includes(name)),
+    );
   }
-  const configPath = path.join(agentsDirectory, "developer-config.json");
-  const config = mergeObjects(
-    readDeveloperConfig(configPath),
-    buildDeveloperConfig(metadata),
-  );
+  if (tools.includes("opencode")) {
+    addRetiredSkills(
+      entries,
+      targetDir,
+      path.join(targetDir, ".opencode", "skill"),
+      previousManagedSkills,
+    );
+  }
   const managedContent = fs.existsSync(SOURCE_MANAGED_SKILLS_FILE)
     ? fs.readFileSync(SOURCE_MANAGED_SKILLS_FILE, "utf8")
     : `${managedSkills.join("\n")}\n`;
@@ -1447,6 +1816,9 @@ function applyUpgrade(targetDir, options = {}) {
   const force = Boolean(options.force);
   const agentsDirectory = path.join(targetDir, ".agents");
   assertSafeProjectPath(targetDir, agentsDirectory);
+  const configPath = path.join(agentsDirectory, "developer-config.json");
+  assertSafeProjectPath(targetDir, configPath);
+  readDeveloperConfig(configPath);
   assertPackageNotOlderThanInstalled(agentsDirectory);
   for (const fileName of [
     "macca-managed-skills.txt",
@@ -1482,50 +1854,21 @@ function applyUpgrade(targetDir, options = {}) {
       });
     }
 
-    for (const skillName of previousManagedSkills.filter(
-      (name) => !nextManagedSkills.includes(name),
-    )) {
-      const oldPath = resolveOwnedSkillPath(destination, skillName);
-      if (fs.existsSync(oldPath) && isMaccaOwned(oldPath)) {
-        assertManagedDirectoryUnchanged(oldPath, force);
-        entries.push({ sourcePath: null, targetPath: oldPath });
-      } else if (isLegacyDirectoryUnchanged(oldPath, skillName)) {
-        entries.push({
-          sourcePath: null,
-          targetPath: oldPath,
-          legacySkillName: skillName,
-        });
-      } else if (fs.existsSync(oldPath)) {
-        process.stderr.write(
-          `Preserving unmarked legacy skill directory: ${oldPath}\n`,
-        );
-      }
-    }
+    addRetiredSkills(
+      entries,
+      targetDir,
+      destination,
+      previousManagedSkills.filter((name) => !nextManagedSkills.includes(name)),
+    );
   }
 
   if (tools.includes("opencode")) {
-    const legacyOpenCodeRoot = path.join(targetDir, ".opencode", "skill");
-    assertSafeProjectPath(targetDir, legacyOpenCodeRoot);
-    for (const skillName of previousManagedSkills) {
-      const oldPath = resolveOwnedSkillPath(legacyOpenCodeRoot, skillName);
-      if (fs.existsSync(oldPath) && isMaccaOwned(oldPath)) {
-        assertManagedDirectoryUnchanged(oldPath, force);
-        entries.push({ sourcePath: null, targetPath: oldPath });
-      } else if (isLegacyDirectoryUnchanged(oldPath, skillName)) {
-        entries.push({
-          sourcePath: null,
-          targetPath: oldPath,
-          legacySkillName: skillName,
-        });
-      } else if (fs.existsSync(oldPath)) {
-        if (!force) {
-          throw new Error(
-            `Legacy OpenCode skill was modified; move or back it up before upgrade: ${oldPath}. ` +
-              "Run upgrade with --force to overwrite local modifications.",
-          );
-        }
-      }
-    }
+    addRetiredSkills(
+      entries,
+      targetDir,
+      path.join(targetDir, ".opencode", "skill"),
+      previousManagedSkills,
+    );
   }
   const managedContent = fs.existsSync(SOURCE_MANAGED_SKILLS_FILE)
     ? fs.readFileSync(SOURCE_MANAGED_SKILLS_FILE, "utf8")
@@ -1605,85 +1948,246 @@ function printInstallSummary(action, tools) {
 }
 
 async function runInstall(args) {
-  let tools = normalizeToolList(args.tools);
-  if (tools.length === 0) {
-    tools = args.yes ? ["codex"] : await promptForTools();
-  }
-
+  assertSupportedRuntime();
+  operation.stage = "not started";
+  operation.recoveryChanged = false;
+  operation.targetDir = resolveTargetDirectory(args.directory);
   const targetDir = assertSafeTargetDirectory(args.directory);
-  ensureDirectory(targetDir);
-  assertSafeProjectPath(targetDir, path.join(targetDir, ".agents"));
-  recoverInterruptedTransaction(targetDir);
+  const configPath = path.join(targetDir, ".agents", "developer-config.json");
+  assertSafeProjectPath(targetDir, configPath);
+  assertSafeProjectPath(targetDir, path.join(targetDir, ".agents", "macca-tools.txt"));
+  const existingConfig = readDeveloperConfig(configPath);
   const existingTools = readNonEmptyLines(
     path.join(targetDir, ".agents", "macca-tools.txt"),
   );
-  tools = unique([...existingTools, ...tools]);
-  const configPath = path.join(targetDir, ".agents", "developer-config.json");
-  const existingConfig = readDeveloperConfig(configPath);
   const hasExistingConfig = fs.existsSync(configPath);
-  const metadata = args.yes
-    ? {
-        name:
-          args.name !== undefined
-            ? args.name
-            : hasExistingConfig
-              ? undefined
-              : "",
-        project:
-          args.project !== undefined
-            ? args.project
-            : hasExistingConfig
-              ? undefined
-              : "",
-        communicationLanguage:
-          args.communicationLanguage !== undefined
-            ? args.communicationLanguage
-            : hasExistingConfig
-              ? undefined
-              : "Bahasa Indonesia",
-        documentLanguage:
-          args.documentLanguage !== undefined
-            ? args.documentLanguage
-            : hasExistingConfig
-              ? undefined
-              : "Bahasa Indonesia",
+  let tools = normalizeToolList(args.tools);
+  let metadata;
+  let prompt;
+  try {
+    const getPrompt = () => (prompt ||= createPrompt());
+    if (!tools.length) {
+      tools = args.yes ? (existingTools.length ? existingTools : ["codex"]) : await promptForTools(getPrompt());
+    }
+    tools = unique([...existingTools, ...tools]);
+    const seed = {
+      name: args.name,
+      project: args.project,
+      communicationLanguage: args.communicationLanguage,
+      documentLanguage: args.documentLanguage,
+    };
+    if (args.yes) {
+      metadata = { ...seed };
+      if (!hasExistingConfig) {
+        metadata.communicationLanguage ??= "Bahasa Indonesia";
+        metadata.documentLanguage ??= metadata.communicationLanguage;
       }
-    : await promptForMetadata({
-        ...args,
-        name: args.name !== undefined ? args.name : existingConfig.name,
-        project:
-          args.project !== undefined ? args.project : existingConfig.project,
-        communicationLanguage:
-          args.communicationLanguage !== undefined
-            ? args.communicationLanguage
-            : existingConfig.languagePreferences?.communication?.raw,
-        documentLanguage:
-          args.documentLanguage !== undefined
-            ? args.documentLanguage
-            : existingConfig.languagePreferences?.documents?.raw,
-      });
+    } else {
+      // Reusing a saved section must not rewrite its raw/normalized pair.
+      const saved = existingConfig.languagePreferences || {};
+      const communication = seed.communicationLanguage ?? saved.communication?.raw ?? saved.communication?.normalized;
+      const documents = seed.documentLanguage ?? saved.documents?.raw ?? saved.documents?.normalized;
+      metadata = await promptForMetadata({ ...seed, communicationLanguage: communication, documentLanguage: documents },
+        communication === undefined || documents === undefined ? getPrompt() : prompt);
+      if (seed.communicationLanguage === undefined && saved.communication) delete metadata.communicationLanguage;
+      if (seed.documentLanguage === undefined && saved.documents) delete metadata.documentLanguage;
+    }
+    assertValidConfig(mergeObjects(existingConfig, buildDeveloperConfig(metadata)), configPath);
+    getUniqueDestinations(targetDir, tools);
+    if (prompt && promptStates.get(prompt).error) throw promptStates.get(prompt).error;
+  } finally {
+    if (prompt) promptStates.get(prompt).dispose();
+  }
 
+  assertPackageNotOlderThanInstalled(path.join(targetDir, ".agents"), true);
+  recoverInterruptedTransaction(targetDir);
+  // A crash can leave the config only in its backup. First-install defaults
+  // must not overwrite settings restored by recovery on an unattended retry.
+  if (args.yes && !hasExistingConfig && fs.existsSync(configPath)) {
+    if (args.communicationLanguage === undefined) delete metadata.communicationLanguage;
+    if (args.documentLanguage === undefined) delete metadata.documentLanguage;
+  }
   applyInstall(targetDir, tools, metadata, { force: Boolean(args.force) });
 
+  operation.stage = "complete";
   printInstallSummary("installed", tools);
-  process.stdout.write(`  Target project: ${targetDir}\n\n`);
+  printSetupHint(targetDir);
 }
 
 function runUpgrade(args) {
+  assertSupportedRuntime();
+  operation.stage = "not started";
+  operation.recoveryChanged = false;
+  operation.targetDir = resolveTargetDirectory(args.directory);
   const targetDir = assertSafeTargetDirectory(args.directory);
-  assertSafeProjectPath(targetDir, path.join(targetDir, ".agents"));
+  const configPath = path.join(targetDir, ".agents", "developer-config.json");
+  assertSafeProjectPath(targetDir, configPath);
+  readDeveloperConfig(configPath);
+  assertPackageNotOlderThanInstalled(path.join(targetDir, ".agents"), true);
   recoverInterruptedTransaction(targetDir);
+  assertSafeProjectPath(targetDir, path.join(targetDir, ".agents", "macca-tools.txt"));
   const tools = readNonEmptyLines(
     path.join(targetDir, ".agents", "macca-tools.txt"),
   );
   applyUpgrade(targetDir, { force: Boolean(args.force) });
+  operation.stage = "complete";
   printInstallSummary("updated", tools);
-  process.stdout.write(`  Target project: ${targetDir}\n\n`);
+  printSetupHint(targetDir);
 }
 
-function exitWithError(message) {
-  process.stderr.write(`\nError: ${message}\n`);
-  process.exit(1);
+function printSetupHint(targetDir) {
+  process.stdout.write(`  Target project: ${targetDir}\n  Restart your AI host to load the skills. Run the setup-macca-method skill for setup; name/project are optional.\n\n`);
+}
+
+function assertSupportedRuntime() {
+  const major = Number(process.versions.node.split(".")[0]);
+  if (major < 22) {
+    throw Object.assign(new Error("Unsupported Node.js runtime. Install Node.js 22 or 24, then retry."), { code: "MACCA_NODE_UNSUPPORTED" });
+  }
+  if (![22, 24].includes(major)) process.stderr.write("Notice: this Node.js runtime is unverified; CI verifies Node.js 22 and 24.\n");
+}
+
+function runDoctor(args) {
+  operation.stage = "read-only diagnosis";
+  operation.targetDir = resolveTargetDirectory(args.directory);
+  let failures = 0;
+  let warnings = 0;
+  const report = (level, message, filePath) => {
+    if (level === "FAIL") failures += 1;
+    if (level === "WARN") warnings += 1;
+    process.stdout.write(`${level}: ${message}${filePath ? ` Path: ${JSON.stringify(filePath)}` : ""}\n`);
+  };
+  const inspect = (filePath, check) => {
+    try { return check(); } catch (error) {
+      report("FAIL", error.message, filePath);
+      return undefined;
+    }
+  };
+  const major = Number(process.versions.node.split(".")[0]);
+  report(major < 22 ? "FAIL" : [22, 24].includes(major) ? "OK" : "WARN",
+    major < 22 ? "Unsupported Node.js runtime; use Node.js 22 or 24." :
+      [22, 24].includes(major) ? "Node.js runtime is supported." : "Node.js runtime is unverified; CI verifies 22 and 24.");
+  const targetDir = inspect(operation.targetDir, () => assertSafeTargetDirectory(args.directory));
+  if (targetDir) {
+    const metadata = (name) => path.join(targetDir, ".agents", name);
+    const required = (filePath) => {
+      assertSafeProjectPath(targetDir, filePath);
+      const stat = fs.lstatSync(filePath);
+      if (!stat.isFile()) throw new Error("Required installed file is not a regular file.");
+    };
+    inspect(targetDir, () => {
+      if (!fs.statSync(targetDir).isDirectory()) throw new Error("Target project is not a directory.");
+    });
+    const journalPath = metadata(TRANSACTION_FILE);
+    inspect(journalPath, () => {
+      assertSafeProjectPath(targetDir, journalPath);
+      if (fs.existsSync(journalPath)) report("FAIL", "Interrupted transaction retained. Back up the project and journal, then rerun install/upgrade for validated recovery; do not delete the journal.", journalPath);
+    });
+    inspect(metadata("developer-config.json"), () => {
+      required(metadata("developer-config.json"));
+      readDeveloperConfig(metadata("developer-config.json"));
+      report("OK", "Developer config is valid (values hidden).");
+    });
+    const tools = inspect(metadata("macca-tools.txt"), () => {
+      required(metadata("macca-tools.txt"));
+      const selected = readNonEmptyLines(metadata("macca-tools.txt"));
+      if (!selected.length || selected.some((key) => !TOOL_BY_KEY.has(key))) throw new Error("Selected tools are missing or unsupported; review macca-tools.txt.");
+      report("OK", `Selected tools: ${unique(selected).join(", ")}.`);
+      return unique(selected);
+    });
+    const skills = inspect(metadata("macca-managed-skills.txt"), () => {
+      required(metadata("macca-managed-skills.txt"));
+      const names = validateManagedSkillNames(readNonEmptyLines(metadata("macca-managed-skills.txt")), "installed manifest");
+      if (!names.length || !names.includes("_shared")) throw new Error("Installed managed-skill manifest is empty or missing _shared.");
+      return names;
+    });
+    const lock = inspect(metadata("macca-lock.json"), () => {
+      required(metadata("macca-lock.json"));
+      const value = readJsonObject(metadata("macca-lock.json"), "installed lock");
+      if (typeof value.version !== "string" || !value.version) throw new Error("Installed lock version is missing or invalid.");
+      if (!Array.isArray(value.skills) || !value.skills.length || value.skills.some((name) => typeof name !== "string")) throw new Error("Installed lock skill list is missing or invalid.");
+      validateManagedSkillNames(value.skills, "installed lock");
+      if (skills && (value.skills.some((name) => !skills.includes(name)) || skills.some((name) => !value.skills.includes(name)))) throw new Error("Installed lock and managed-skill manifest disagree.");
+      if (value.payloadFiles !== undefined && (!value.payloadFiles || typeof value.payloadFiles !== "object" || Array.isArray(value.payloadFiles))) throw new Error("Installed lock payloadFiles must be an object.");
+      return value;
+    });
+    inspect(metadata(STATE_FILE), () => {
+      assertSafeProjectPath(targetDir, metadata(STATE_FILE));
+      if (!fs.existsSync(metadata(STATE_FILE))) {
+        report("WARN", "Installation state is absent; metadata integrity cannot be verified.", metadata(STATE_FILE));
+        return;
+      }
+      required(metadata(STATE_FILE));
+      const state = readJsonObject(metadata(STATE_FILE), "MACCA state");
+      for (const name of ["macca-tools.txt", "macca-managed-skills.txt", "macca-lock.json"]) {
+        required(metadata(name));
+        if (!/^[a-f0-9]{64}$/.test(state.files?.[name] || "")) throw new Error("Installation state is missing a valid metadata fingerprint.");
+        if (hashFile(metadata(name)) !== state.files[name]) report("WARN", "Local metadata drift; back up and review before upgrade.", metadata(name));
+      }
+    });
+    if (tools && skills && lock) {
+      if (!lock.payloadFiles) report("WARN", "Installed lock has no payloadFiles; checking current packaged references/assets for existence only. Upgrade after backup to establish fingerprints.", metadata("macca-lock.json"));
+      const destinations = inspect(targetDir, () => getUniqueDestinations(targetDir, tools));
+      for (const destination of destinations || []) {
+        for (const skill of skills) {
+          const skillPath = resolveOwnedSkillPath(destination, skill);
+          inspect(skillPath, () => {
+            assertSafeProjectPath(targetDir, skillPath);
+            const actual = getDirectoryFileHashes(skillPath);
+            if (skill !== "_shared") required(path.join(skillPath, "SKILL.md"));
+            const expected = lock.payloadFiles ? lock.payloadFiles[skill] : getDirectoryFileHashes(path.join(SOURCE_SKILLS_DIR, skill));
+            if (!expected || typeof expected !== "object" || Array.isArray(expected) || !Object.keys(expected).length) throw new Error("Installed lock is missing valid payload fingerprints for this skill.");
+            if (skill === "_shared" && !Object.keys(expected).some((name) => name.startsWith("references/"))) throw new Error("Shared references are missing from installed lock.");
+            for (const [relative, hash] of Object.entries(expected)) {
+              if (!relative || relative.includes("\\") || relative.split("/").some((part) => !part || part === "." || part === "..") || path.isAbsolute(relative) || /^[A-Za-z]:/.test(relative) || typeof hash !== "string" || !/^[a-f0-9]{64}$/.test(hash)) throw new Error("Invalid payload path or hash in installed lock.");
+              const filePath = path.join(skillPath, relative);
+              if (!Object.hasOwn(actual, relative)) report("FAIL", "Required installed payload file is missing.", filePath);
+              else if (lock.payloadFiles && actual[relative] !== hash) report("WARN", "Local skill drift; back up and review before upgrade.", filePath);
+            }
+            if (lock.payloadFiles && Object.keys(actual).some((relative) => !Object.hasOwn(expected, relative))) report("WARN", "Additional local skill files; back up and review before upgrade.", skillPath);
+            const marker = readOwnershipMarker(skillPath, skill);
+            const markerPath = path.join(skillPath, OWNERSHIP_MARKER);
+            if (!marker) {
+              report("WARN", "Ownership marker is absent or invalid; upgrade may require review.", markerPath);
+            } else if (typeof marker.payloadHash !== "string" ||
+                !/^[a-f0-9]{64}$/.test(marker.payloadHash) ||
+                marker.payloadHash !== hashText(JSON.stringify(actual))) {
+              report("WARN", "Ownership marker payload fingerprint is missing, malformed, or mismatched; ordinary upgrade will refuse this skill. Back up and review the skill and marker; doctor does not repair them.", markerPath);
+            }
+          });
+        }
+      }
+    }
+  }
+  process.stdout.write(`Doctor: ${failures} failure(s), ${warnings} warning(s). Read-only; no files changed.\n`);
+  if (failures) process.stdout.write("Next: review the reported paths and back up existing files before install/upgrade.\n");
+  process.exitCode = failures ? 1 : 0;
+}
+
+function exitWithError(error) {
+  if (typeof error === "string") error = new Error(error);
+  const nextSteps = {
+    EACCES: "Check permissions and ownership of the reported path; choose a writable project directory.",
+    EPERM: "Check permissions or file locks at the reported path; close programs holding it and retry.",
+    EBUSY: "Close programs holding the reported path, then retry.",
+    ENOSPC: "Free space on the target volume, then retry; preserve transaction files for recovery.",
+    ENOENT: "Check the reported path and parent directory. Restore missing package files or run install for a missing installation.",
+    MACCA_CONFIG_INVALID: "Back up developer-config.json, correct the listed fields without sharing secret values, then retry. --force cannot bypass config validation.",
+    MACCA_CANCELLED: "Rerun install when ready, or use --yes with explicit flags.",
+    MACCA_INPUT_ERROR: "Open a working terminal, or use --yes with explicit flags.",
+    MACCA_NODE_UNSUPPORTED: "Use Node.js 22 or 24, then retry.",
+  };
+  let next = nextSteps[error.code] || "Review the reported path and back up local files before retrying. Use doctor for a read-only check.";
+  if (/symlink/i.test(error.message)) next = "Symlinked paths are rejected conservatively. Resolve the real path (including macOS aliases such as /var or /tmp), review it, and pass that real directory with --directory.";
+  let pending = false;
+  if (operation.targetDir) {
+    try { pending = fs.existsSync(path.join(operation.targetDir, ".agents", TRANSACTION_FILE)); } catch { /* Error reporting must not mask the original error. */ }
+  }
+  const stage = operation.stage === "not started" ? "not started; no files changed by this attempt" :
+    operation.stage === "read-only diagnosis" ? "read-only diagnosis; no files changed" :
+      `${operation.stage}; files may have changed${operation.recoveryChanged ? "; recovery may have changed files" : ""}`;
+  process.stderr.write(`\nError [${error.code || "MACCA_ERROR"}]: ${error.message}\nPath: ${JSON.stringify(error.path || operation.targetDir || process.cwd())}\nChange stage: ${stage}.\n${pending ? "Pending transaction journal retained; back up and review it before retrying recovery.\n" : ""}Next: ${next}\n`);
+  process.exitCode = error.code === "MACCA_CANCELLED" ? 130 : 1;
 }
 
 main();

@@ -9,6 +9,8 @@ metadata:
 
 # Add Feature
 
+Read `../_shared/references/planning-principles.md` before impact analysis and recommendations. Add only the approved feature and necessary supporting controls, not speculative infrastructure or adjacent features. Deferred suggestions are not task authorization.
+
 ## Shared Runtime Setup
 
 Paths written as `../...` below are relative to this SKILL.md's own folder, not the project's working directory - resolve them as a sibling of the folder that contains this file.
@@ -18,7 +20,9 @@ At startup:
 1. Read `../_shared/references/language-config.md`.
 2. Read `../_shared/references/output-ownership.md`.
 3. Read `../_shared/references/scope-rules.md`.
-4. Use `languagePreferences.communication.normalized` for feature analysis and reports.
+4. Use the resolved communication language from `language-config.md` for feature analysis and reports.
+
+Follow `interaction-contract.md`, loaded automatically through `language-config.md`, for compact reports and handoff context. Reuse cached reads only when unchanged and backed by current evidence; refresh changed, stale, or uncertain applicable sections.
 
 ---
 
@@ -34,10 +38,10 @@ You are a **Product Engineer** adding features to a running project. Do not star
 
 **Workflow:**
 
-- Read all existing specs first
+- Establish fresh evidence for applicable spec sections and their material dependencies
 - Identify the impact on each document
 - Update ALL impacted specs (required)
-- Add a phase and tasks to Task.md
+- Delegate all Task.md authoring to `brainstorm-task`
 - Hand off to `developer`
 - Use a subagent for deep codebase analysis or implementation-pattern research
 
@@ -45,7 +49,7 @@ You are a **Product Engineer** adding features to a running project. Do not star
 
 ## Step 0: Get the Feature Description
 
-Ask the user:
+Reuse the supplied feature description and current approval first. On an approval reply such as "oke mari perbaiki", resume the approved bounded update without onboarding or asking for the description again. Ask only missing material information:
 
 ```
 Describe the new feature:
@@ -55,13 +59,13 @@ Describe the new feature:
 - Why it is needed: [problem it solves]
 ```
 
-If the user gives a free-form description, extract the relevant information and confirm understanding before continuing.
+If the user gives a free-form description, extract the relevant information; clarify only gaps or conflicts. Use the impact-analysis approval for confirmation rather than adding a redundant gate.
 
 ---
 
-## Step 1: Read All Existing Specs
+## Step 1: Establish Fresh Applicable Spec Context
 
-Read every existing file in `project-context/`:
+Inventory document roles, then read fresh applicable sections and dependencies from `project-context/`:
 
 - `PRD.md`
 - `architecture.md`
@@ -71,7 +75,7 @@ Read every existing file in `project-context/`:
 - `StyleGuide.md`
 - `Task.md` _(if it exists; otherwise it will be created by brainstorm-task)_
 
-Read everything that exists. Skip nothing. Note the ID patterns in use (`FEAT-*`, `BR-*`, `DATA-*`, `API-*`, etc.).
+Assess every document's applicability and potential impact, but do not indiscriminately reread unrelated text. Reuse cached reads only when unchanged and backed by current evidence; refresh affected or uncertain sections. Note the ID patterns in use (`FEAT-*`, `BR-*`, `DATA-*`, `API-*`, etc.) and existing completion evidence. Resolve scope from explicit user context or saved scope; if absent, announce the fullstack working default without persisting it as consent. Persist only user-provided scope through `config-mutation.md`, clarifying conflicts first.
 
 ---
 
@@ -104,7 +108,7 @@ Impact analysis for "[feature name]":
    New phase: Phase [N+1] — [phase name]
 ```
 
-Pause for user confirmation. If the user corrects the analysis, adjust it before continuing.
+Obtain approval of the bounded impact analysis before writing. Reuse an explicit approval already covering that same scope; pause only for a materially new decision, changed scope, or conflict. If the user corrects the analysis, adjust it before continuing.
 
 ---
 
@@ -127,7 +131,7 @@ For each **IMPACTED** document, update it in this order:
 - **Make additions clear** — place them logically; no special tags are needed
 - **Preserve old IDs** — assign new IDs for new items using the existing pattern
 
-After each update:
+After the bounded updates, report changed sections and IDs together rather than repeating a report after every file:
 
 ```
 ✅ PRD.md updated
@@ -142,9 +146,9 @@ After each update:
 
 Call `brainstorm-task` to add a phase and tasks to `Task.md`.
 
-**Do not create tasks manually.** The `brainstorm-task` skill:
+**Delegate all Task.md authoring to brainstorm-task**, whether the file exists or is missing. Do not create tasks manually, edit existing tasks, or update counts/traceability here. The `brainstorm-task` skill:
 
-- Performs deep analysis of the updated specs
+- Analyzes fresh applicable sections of the updated specs and their material dependencies
 - Ensures task dependencies are ordered correctly
 - Creates testable acceptance criteria
 - Preserves consistency with existing phases
@@ -152,7 +156,9 @@ Call `brainstorm-task` to add a phase and tasks to `Task.md`.
 Provide context:
 
 - If `Task.md` exists: "Add a new phase for this feature (do not rewrite everything)"
-- If `Task.md` does not exist: "Create Task.md from scratch using all specs"
+- If `Task.md` does not exist: "Create `project-context/Task.md` using applicable approved specs and brownfield classification; do not recreate existing verified work"
+- In both cases carry **approved scope, IDs, changed sections, evidence freshness**, current input evidence, unresolved decisions, preserved completion history, and the exact Task-authoring authorization. Include settled priority/granularity/execution preferences so the receiver asks only missing material questions.
+- The receiver validates freshness and reads affected sections and dependencies; unchanged current evidence may be reused. New decisions or conflicts return to the owner. A task-planning handoff is not implementation authorization.
 
 Reference format (informational only; `brainstorm-task` decides the actual tasks):
 
@@ -179,9 +185,9 @@ After everything is complete:
 Feature "[name]" is ready to build.
 
 Updated Specs:
-- ✅ PRD.md — [change summary]
-- ✅ schema.md — [change summary]
-- ✅ api.md — [change summary]
+- ✅ `project-context/PRD.md` — [change summary]
+- ✅ `project-context/schema.md` — [change summary]
+- ✅ `project-context/api.md` — [change summary]
 
 New Tasks:
 - Phase [N]: [name] — [number of tasks] tasks
@@ -193,9 +199,9 @@ To start building, call `developer`.
 
 ## Required Rules
 
-1. **Read all specs before impact analysis** — no assumptions
+1. **Establish fresh applicable evidence before impact analysis** — assess each document's impact, reuse unchanged current evidence, and refresh affected sections
 2. **Every impacted spec MUST be updated** — no exceptions
-3. **Get user approval after impact analysis** — before making changes
+3. **Get user approval after impact analysis** — before making changes; reuse an existing explicit approval for the same bounded scope
 4. **Preserve unrelated content** — update stale affected statements instead of appending contradictions
 5. **Update Task.md last** — via `brainstorm-task` after all specs are done
 6. **Acceptance criteria must be testable** — not vague descriptions

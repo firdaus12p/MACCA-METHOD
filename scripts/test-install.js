@@ -3,10 +3,12 @@
 "use strict";
 
 const fs = require("node:fs");
+const assert = require("node:assert/strict");
 const crypto = require("node:crypto");
 const os = require("node:os");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
+const { resolveNpmCommand } = require("./lib/npm-command.js");
 
 const rootDir = path.resolve(__dirname, "..");
 const mode = process.argv.includes("--published") ? "published" : "local";
@@ -19,12 +21,11 @@ const symlinkDir = path.join(tmpDir, "symlink-project");
 const driftDir = path.join(tmpDir, "drift-project");
 let packageSpec = "macca-method";
 
-function commandName(base) {
-  if (process.platform !== "win32") {
-    return base;
-  }
-
-  return base === "npm" || base === "npx" ? `${base}.cmd` : base;
+function publishedPackageSpec() {
+  const version = String(process.env.MACCA_PUBLISHED_VERSION || "")
+    .trim()
+    .replace(/^v/, "");
+  return version ? `macca-method@${version}` : "macca-method@latest";
 }
 
 function resolveTempRoot() {
@@ -37,22 +38,13 @@ function resolveTempRoot() {
 }
 
 function runNpm(args, options = {}) {
-  const npmExecPath = process.env.npm_execpath;
-  if (npmExecPath && /\.c?js$/i.test(npmExecPath)) {
-    return capture(process.execPath, [npmExecPath, ...args], options);
-  }
-
-  return capture(commandName("npm"), args, options);
+  const npm = resolveNpmCommand(args);
+  return capture(npm.command, npm.args, options);
 }
 
 function runNpmWithInheritedStdio(args, options = {}) {
-  const npmExecPath = process.env.npm_execpath;
-  if (npmExecPath && /\.c?js$/i.test(npmExecPath)) {
-    run(process.execPath, [npmExecPath, ...args], options);
-    return;
-  }
-
-  run(commandName("npm"), args, options);
+  const npm = resolveNpmCommand(args);
+  run(npm.command, npm.args, options);
 }
 
 function run(command, args, options = {}) {
@@ -60,6 +52,7 @@ function run(command, args, options = {}) {
     cwd: rootDir,
     stdio: "inherit",
     ...options,
+    shell: false,
   });
 }
 
@@ -68,6 +61,7 @@ function capture(command, args, options = {}) {
     cwd: rootDir,
     encoding: "utf8",
     ...options,
+    shell: false,
   });
 }
 
@@ -77,7 +71,7 @@ function runCli(args) {
       "exec",
       "--yes",
       "--package",
-      "macca-method@latest",
+      publishedPackageSpec(),
       "--",
       "macca-method",
       ...args,
@@ -104,7 +98,7 @@ function expectCliFailure(args, expectedText) {
           "exec",
           "--yes",
           "--package",
-          "macca-method@latest",
+          publishedPackageSpec(),
           "--",
           "macca-method",
           ...args,
@@ -141,6 +135,14 @@ function assertPathExists(targetPath) {
   if (!fs.existsSync(targetPath)) {
     throw new Error(`Missing expected path: ${targetPath}`);
   }
+}
+
+function assertInstalledSkills(skillsRoot) {
+  const expected = JSON.parse(fs.readFileSync(path.join(rootDir, ".agents", "macca-lock.json"), "utf8")).skills;
+  for (const skill of expected.filter((name) => name !== "_shared")) {
+    assertPathExists(path.join(skillsRoot, skill, "SKILL.md"));
+  }
+  assertPathExists(path.join(skillsRoot, "_shared", "scripts", "config-validator.js"));
 }
 
 function readNonEmptyLines(filePath) {
@@ -183,7 +185,7 @@ function ensureExpectedTools(filePath) {
 }
 
 function resolveLocalPackage() {
-  const packOutput = runNpm(["pack", "--json", "--pack-destination", tmpDir]);
+  const packOutput = runNpm(["pack", "--json", "--ignore-scripts", "--pack-destination", tmpDir]);
   const packageList = JSON.parse(packOutput);
 
   if (
@@ -195,6 +197,7 @@ function resolveLocalPackage() {
   }
 
   packageSpec = path.join(tmpDir, packageList[0].filename);
+  run(process.execPath, [path.join(rootDir, "scripts", "validate-package.js"), packageSpec]);
 }
 
 function main() {
@@ -269,16 +272,26 @@ function main() {
       const outerReal = path.join(tmpDir, "outer-real-project");
       const outerLink = path.join(tmpDir, "outer-link-project");
       fs.mkdirSync(outerReal, { recursive: true });
+      let junctionCreated = false;
       try {
-        run(commandName("cmd"), ["/c", "mklink", "/J", outerLink, outerReal]);
+        fs.symlinkSync(outerReal, outerLink, "junction");
+        junctionCreated = true;
+      } catch (error) {
+        if (!["EPERM", "EACCES"].includes(error.code)) throw error;
+        process.stdout.write(
+          "  Skipping Windows junction ancestry test (junction creation not permitted)\n",
+        );
+      }
+      if (junctionCreated) {
         expectCliFailure(
           ["install", "--yes", "--tool", "codex", "--directory", outerLink],
           "Refusing symlinked target project ancestor",
         );
-      } catch {
-        process.stdout.write(
-          "  Skipping Windows junction ancestry test (mklink unavailable or not permitted)\n",
-        );
+        if (fs.readdirSync(outerReal).length !== 0) {
+          throw new Error(
+            "Target directory junction test wrote into the real directory",
+          );
+        }
       }
     }
 
@@ -308,6 +321,14 @@ function main() {
       "github-copilot",
       "--directory",
       projectDir,
+      "--name",
+      "Initial User",
+      "--project",
+      "Initial Project",
+      "--communication-language",
+      "Unsupported Language",
+      "--document-language",
+      "Unsupported Language",
     ]);
 
     const configPath = path.join(
@@ -316,6 +337,12 @@ function main() {
       "developer-config.json",
     );
     const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    if (
+      config.languagePreferences.communication.normalized !== "indonesian" ||
+      config.languagePreferences.documents.normalized !== "indonesian"
+    ) {
+      throw new Error("Unknown language did not use the Indonesian fallback");
+    }
     config.name = "Preserved Name";
     config.project = "Preserved Project";
     config.languagePreferences.communication = {
@@ -341,7 +368,7 @@ function main() {
       projectDir,
     ]);
 
-    run(commandName("node"), [
+    run(process.execPath, [
       path.join(rootDir, "scripts", "run-skill-validator.js"),
       path.join(
         projectDir,
@@ -359,6 +386,11 @@ function main() {
       "macca-managed-skills.txt",
     );
     const originalManaged = fs.readFileSync(managedPath, "utf8");
+    assert.deepEqual(
+      readNonEmptyLines(managedPath).sort(),
+      readNonEmptyLines(path.join(rootDir, ".agents", "macca-managed-skills.txt")).sort(),
+      "Installed manifest must include every official managed skill",
+    );
     fs.writeFileSync(managedPath, `${originalManaged}../../outside\n`, "utf8");
     expectCliFailure(
       ["upgrade", "--directory", projectDir],
@@ -537,6 +569,7 @@ function main() {
       path.join(projectDir, ".opencode", "skills"),
     ]) {
       assertPathExists(path.join(skillsRoot, "meet", "SKILL.md"));
+      assertInstalledSkills(skillsRoot);
     }
     assertPathExists(customSkill);
     assertPathExists(path.join(projectDir, ".agents", "macca-lock.json"));
@@ -577,6 +610,7 @@ function main() {
       path.join(allToolsDir, ".kilo", "skills", "meet", "SKILL.md"),
     ]) {
       assertPathExists(expectedPath);
+      assertInstalledSkills(path.dirname(path.dirname(expectedPath)));
     }
 
     if (mode === "local") {

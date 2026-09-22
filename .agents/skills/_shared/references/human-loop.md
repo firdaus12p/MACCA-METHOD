@@ -4,6 +4,8 @@
 
 This file defines shared pause-and-confirm behavior across MACCA skills.
 
+Read and follow `workspace-safety.md` before any mutation or validation command.
+
 ## Two Distinct Interaction Types
 
 ### 1. Interview Pace

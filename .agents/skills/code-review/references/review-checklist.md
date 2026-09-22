@@ -1,5 +1,7 @@
 # Code Review Checklist
 
+Follow `../../_shared/references/interaction-contract.md` loaded through the parent skill. Reuse current unchanged sources already read; refresh changed sources or unknown/compacted context. Delegates must read this checklist before reviewing. All checks below remain mandatory to assess internally: perform applicable checks, retain evidence, and mark only genuinely inapplicable checks `N/A` with a reason. Missing required evidence is `NOT VERIFIED`, never `N/A` or an assumed pass.
+
 ## Table of Contents
 
 1. Phase 1 - 27 Code Quality Points
@@ -7,7 +9,8 @@
 3. Self-Review Before Reporting
 4. Phase 3 - Report & Fix
 5. Post-Fix Validation
-6. Key Points
+6. Completion Handoff
+7. Key Points
 
 ## Phase 1 - 27 Code Quality Points (All Required)
 
@@ -56,6 +59,8 @@ For **CR-23**, prefer these tags:
 
 Never mark a single smoke test, regression test, or safety guard as bloat.
 
+Assess CR-22 and CR-23 together: the smallest design must still satisfy current requirements, applicable security/integrity controls, maintainability, and meaningful validation. Justify a "best practice" finding with relevant project evidence or version-appropriate official guidance, not taste or novelty. Do not recommend custom high-risk replacements merely to remove a dependency. Escalate severity according to concrete impact; an under-engineered security or correctness failure is not automatically MINOR.
+
 ### Level 4: INFO
 
 - **CR-25 Missing Comments**
@@ -87,20 +92,22 @@ Check all of these:
 Before producing the report:
 
 1. Verify that all 27 CR checks and 10 SEC checks were actually reviewed.
-2. Quickly reread touched files for duplicate functions and hallucinated imports.
+2. Recheck touched code for duplicate functions and hallucinated imports using fresh source already in context; read changed or missing sections instead of repeating unchanged file I/O.
 3. Recheck severity proportionality.
 4. Ask whether rerunning after fixing the current findings would reveal new findings. If yes, include them now.
 
 ## Phase 3 - Report & Fix
 
-Use this report structure:
+**Clean result:** Return evidence internally to developer, quick-dev, or bug-fix for one combined summary at the origin. Do not print the full clean checklist, zero-count table, or another mode announcement. A standalone review shows a compact result with reviewed scope, actual status, validation evidence, and limitations. Detailed check evidence remains available on request.
+
+**Findings or requested detail:** Use this report structure for findings; expand the internal checklist/evidence when requested. Missing required evidence and its owner must always be visible, even with zero findings. Omit empty headings and zero-count tables unless useful.
 
 ```markdown
 ## Code Review Report
 
 **Task/Phase:** [name]
 **Scope:** [reviewed files]
-**Status:** [💥 BLOCKER | 🔴 MAJOR | ⚠️ MINOR | ✅ PASS]
+**Status:** [💥 BLOCKER | 🔴 MAJOR | ⚠️ MINOR | NOT VERIFIED | ✅ PASS]
 
 ### Summary
 
@@ -112,7 +119,7 @@ Use this report structure:
 | ℹ️ Info    | X     |
 ```
 
-Then list findings by severity, followed by the checklist status table.
+Then list all findings by severity using the shared four-point format. Include affected or unverified checks; include the full checklist status table only on request. Do not suppress findings to make a report compact.
 
 Before a report-first gate, retain this fix manifest for actionable findings:
 
@@ -124,7 +131,7 @@ Before a report-first gate, retain this fix manifest for actionable findings:
 | [ID]    | `[path]` | [bounded change] | [targeted check] |
 ```
 
-If the workflow will update a phase plan status or append Code Review Notes, include that plan file and mutation in the manifest. Otherwise return plan-status completion to `developer`; approval never authorizes an undisclosed plan edit.
+Return plan-status completion and deviation notes to `developer`. Do not add a status-only finding to obtain mutation approval. An explicitly requested bounded plan correction must be disclosed as such; it does not authorize marking a whole phase done.
 
 Format every finding with the shared `finding-format.md` loaded by the parent skill. Keep exact technical targets and validation in the fix manifest, not as a fifth finding point.
 
@@ -132,8 +139,9 @@ Fix priority - follow `fixMode` from Shared Runtime Setup:
 
 **`report-first` (default):**
 
-- **When actionable findings exist (`💥 BLOCKER`, `🔴 MAJOR`, or actionable `⚠️ MINOR`):** Present the full report and fix manifest. Show the gate prompt (`[GATE — Mode: report-first]`) from the shared runtime contract (`fix-mode.md`). **End the response. DO NOT apply any fixes in the same response.** On approval, follow the Approval Resume Protocol without another question.
-- **When all checks pass (`✅ PASS` / 0 actionable findings):** Present the report with `Status: ✅ PASS`. **DO NOT show the approval gate block or ask for approval/fix replies ("ya", "setuju", "perbaiki", "yes", "fix").** Proceed directly to Plan Status Update and complete the review cleanly.
+- **When actionable findings exist (`💥 BLOCKER`, `🔴 MAJOR`, or actionable `⚠️ MINOR`):** Present all findings and the fix manifest. Show the gate prompt (`[GATE — Mode: report-first]`) from the shared runtime contract (`fix-mode.md`) once. **End the response. DO NOT apply any fixes in the same response.** On approval, follow the Approval Resume Protocol without another question.
+- **When all applicable required checks pass (including INFO-only reports):** Return `Status: ✅ PASS`, notes, and evidence to the origin for its combined summary; show a compact result if standalone. **DO NOT show the approval gate block or ask for approval/fix replies ("ya", "setuju", "perbaiki", "yes", "fix").** Do not edit plan status.
+- **When required evidence is missing:** Report `NOT VERIFIED`, identify the evidence/owner, and apply shared Gate Eligibility. Zero actionable findings is not sufficient for PASS; do not fabricate a fix manifest.
 
 **`fix-then-report`:**
 
@@ -141,11 +149,11 @@ Fix priority - follow `fixMode` from Shared Runtime Setup:
 - `🔴 MAJOR` -> fix before the next phase
 - `⚠️ MINOR` -> report and discuss
 - `ℹ️ INFO` -> backlog
-- `✅ PASS` -> no fixes needed, proceed directly to Plan Status Update
+- `✅ PASS` -> no fixes needed, return evidence to the origin without editing plan status
 
 ## Post-Fix Validation
 
-Before updating plan status or claiming completion:
+Before claiming remediation completion:
 
 1. Run the narrowest relevant tests and available type/lint/build checks.
 2. Recheck the approved findings and directly affected CR/SEC items only.
@@ -153,43 +161,15 @@ Before updating plan status or claiming completion:
 4. Report every approved ID as `resolved`, `partial`, or `unresolved`, with command/check evidence.
 5. Do not start a fresh unbounded finding pass. Newly noticed unrelated work is reported separately and is not auto-fixed.
 
-## Plan Status Update (run after all fixes are done)
+## Completion Handoff
 
-After fixes are applied and the review is complete, check whether a plan file exists for this phase (`project-context/plans/phase-[N]-*.md`). If it does:
+Retain the review unit, origin/return step, approved scope/files and IDs, criteria, checked sources/freshness, validation evidence, pending issues, and next action. Keep this context in the session without secrets or a new state file. A clean result is consolidated at the origin; findings and missing evidence are shown when discovered. Use plain language outside exact keys, IDs, paths, and gate markers.
 
-**Step 1 - Detect plan-level deviations.**
+- **Standalone:** End with the report. Do not mutate Task.md or plan status automatically, even when every check passes or a phase plan exists.
+- **Task or bug review:** Return evidence to quick-dev, developer's selected task, or bug-fix at the retained return step. A task review never marks the whole phase done.
+- **Phase review:** Return the result and any plan-level deviations to developer's `close-phase.md`. Developer owns status completion after all phase tasks, formal spec sync, applicable DoD, and both gates pass.
 
-A plan-level deviation is any finding where the implementation differs from a decision explicitly stated in the plan, for example:
-
-- The wrong library was used (the plan says Prisma, the code uses Drizzle)
-- The architectural pattern was not followed (the plan says repository pattern, the code puts queries in the controller)
-- Scope was expanded or reduced compared to the plan
-- The approach changed during implementation without a plan update
-
-Code quality findings are **not** plan deviations - naming issues, missing tests, performance, formatting, and security hardening do not count as plan deviations even if marked BLOCKER/MAJOR.
-
-**Step 2 - Update the plan file.**
-
-- **If plan-level deviations were found:**
-  1. Add this section at the bottom of the plan file:
-
-     ```markdown
-     ## Code Review Notes
-
-     **Reviewed:** [YYYY-MM-DD]
-     **Plan deviations found:**
-
-     - [Deviation 1 - short description of what differed and how it was resolved]
-     - [Deviation 2 - ...]
-
-     > These deviations were identified during code review. The implementation was corrected where possible. See the review report for full detail.
-     ```
-
-  2. Update the plan header: `status: code-review` -> `status: done`
-
-- **If no plan-level deviations were found (only code-quality findings):**
-  1. Update only the plan header: `status: code-review` -> `status: done`
-  2. Do not add a notes section.
+Plan deviations mean disagreement with an explicit plan decision (library, architecture, scope, or approach), not merely naming, formatting, tests, performance, or security findings. Report what differed and how it was resolved; the phase owner records useful Code Review Notes. Do not create an artifact for a standalone report unless requested.
 
 ## Key Points
 

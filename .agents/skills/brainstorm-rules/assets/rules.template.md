@@ -1,5 +1,7 @@
 # Coding Standards (Rules)
 
+> **Authoring note:** This is a placeholder menu, not a checklist to build. Keep rules justified by approved current requirements and real project risks; prune inapplicable sections or mark `N/A` with a reason. Unknown mandatory decisions remain open, not `N/A`. Reuse mature conventions and native/existing tooling. Do not impose universal strict mode, naming, coverage percentages, frameworks, or tools. New tooling needs a current requirement, why simpler options fail, cost within scale/team/budget/operations constraints, and an escalation trigger. Critical depth deepens questions; required security, integrity/recovery, and accessibility safeguards stay intact.
+
 ## Document Role
 
 - **Source of Truth:** Coding standards, AI behavior constraints, and implementation security rules
@@ -39,10 +41,10 @@
 - **Error Handling:** [stack-native strategy confirmed by the project]
 - **Control flow:** [confirmed readability rule]
 - **Import/dependency order:** [confirmed convention if applicable]
-- **Max function length:** [X lines]
-- **Comments:** [JSDoc required / minimal]
+- **Size limits:** [only if justified and approved]
+- **Comments:** [confirmed language-native documentation needs]
 - **Dependency ladder:** Reuse existing code first, then standard library, native platform, installed dependencies, and only then add new dependencies.
-- **Intentional simplification:** Mark with a `tradeoff:` comment that states the ceiling and upgrade trigger.
+- **Intentional simplification:** [agreed way to document material ceilings and upgrade triggers; no boilerplate comment for ordinary simple code]
 - **Never simplify:** trust-boundary validation, data-loss protection, accessibility basics, or explicitly requested behavior.
 
 Add a language-specific example only when it communicates a confirmed rule better than prose.
@@ -105,13 +107,11 @@ Add a language-specific example only when it communicates a confirmed rule bette
 | `perf:`     | Performance improvement                       |
 | `ci:`       | CI/CD config changes                          |
 
-**Example:** `feat(auth): add Google OAuth login`
+**Example:** [actual project change using the confirmed convention]
 
 **Branch naming:**
 
-- `feature/[feature-name]`
-- `fix/[bug-name]`
-- `chore/[task-name]`
+- [Existing/confirmed convention; no new branching scheme by default]
 
 ---
 
@@ -121,7 +121,7 @@ Add a language-specific example only when it communicates a confirmed rule bette
 - **Formatter:** [existing tool/options; omit if none].
 - **Editor settings:** [existing settings; omit if none].
 - **Test Framework:** [existing project framework]
-- **Minimum Coverage:** [X%]
+- **Coverage / Verification:** [risk-based checks; numeric threshold only if justified and approved]
 - **Test Requirement:** [project policy: test-first, test-with-change, or another explicit workflow].
 
 ---

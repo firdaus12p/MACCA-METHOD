@@ -1,5 +1,7 @@
 # Database Schema
 
+> **Authoring note:** This is a placeholder menu, not a checklist to build. Keep entities, fields, indexes, and projections only for approved current requirements, integrity obligations, and actual access patterns. Prune inapplicable sections or mark `N/A` with a reason; unknown mandatory decisions remain open, not `N/A`. Reuse the approved datastore and native guarantees; no automatic soft delete, version/history, tenant columns, or future event store. New components need a current requirement, why simpler options fail, cost within scale/team/budget/operations constraints, and an escalation trigger. Critical depth deepens questions; preserve necessary integrity, concurrency, security, retention, and recovery protection.
+
 ## Document Role
 
 - **Source of Truth:** Data model and persistence contract
@@ -9,10 +11,10 @@
 ## Persistence Profile
 
 - **Model:** Relational / Document / Key-value / Graph / Event store / Mixed
-- **Identity Strategy:** [UUID / key format / aggregate ID / stream ID]
+- **Identity Strategy:** [selected datastore-native identity justified by current needs]
 - **Naming:** [datastore-native naming rules]
-- **Audit / Version Metadata:** [timestamps/version/event metadata]
-- **Deletion / Retention:** [soft delete / archival / tombstone / immutable event / retention policy]
+- **Audit / Version Metadata:** [only metadata required by current behavior, integrity, or audit obligations]
+- **Deletion / Retention:** [required deletion and retention behavior; no automatic soft delete/history]
 - **Timezone:** [UTC/local/N/A]
 
 ## Entity / Storage Map
@@ -25,18 +27,18 @@
 
 | Structure/Field | Category | Protection           | Retention        | Notes   |
 | --------------- | -------- | -------------------- | ---------------- | ------- |
-| [users.email]   | PII      | [encrypt/mask/plain] | [retention rule] | [notes] |
+| [actual field] | [sensitivity] | [required protection] | [retention rule] | [notes] |
 
 ## Scale, Tenancy & Concurrency
 
 - **Expected Scale/Growth:** [records, payload, growth]
 - **Tenant Isolation:** [N/A or enforcement model]
-- **Concurrency Strategy:** [transaction/version/lock/idempotency]
+- **Concurrency Strategy:** [actual conflicting-write/duplicate-effect risk and native guarantee; extra mechanisms only if needed]
 
 ## Schema Evolution & Migration
 
 - **Compatibility:** [backward/forward policy]
-- **Migration Order:** [expand/backfill/switch/contract or equivalent]
+- **Migration Order:** [steps required for actual data and compatibility constraints]
 - **Backfill & Validation:** [strategy]
 - **Failure Recovery:** [rollback or roll-forward]
 - **Zero-Downtime Constraint:** [if applicable]
@@ -53,7 +55,6 @@
 
 | Column   | Type   | Nullable | Default           | Constraint   | Notes   |
 | -------- | ------ | -------- | ----------------- | ------------ | ------- |
-| id       | UUID   | No       | gen_random_uuid() | PRIMARY KEY  |         |
 | [column] | [type] | [Yes/No] | [default]         | [constraint] | [notes] |
 
 **Relationships:**
@@ -62,7 +63,7 @@
 
 **Indexes:**
 
-- [column/index purpose]
+- [column/index, actual access pattern or integrity requirement, expected scale]
 
 ---
 

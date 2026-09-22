@@ -18,9 +18,11 @@ Before continuing:
 1. Read `../_shared/references/language-config.md`.
 2. Read `../_shared/references/fix-mode.md`.
 3. Read `../_shared/references/human-loop.md`.
-4. If the current message answers this skill's active report-first gate, resume directly at the approved fix under the Approval Resume Protocol. Do not repeat diagnosis or ask again.
-5. Otherwise, read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If it is missing, treat it as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`.
-6. Use `languagePreferences.communication.normalized` for all chat output.
+4. If the current message answers this skill's active report-first gate, resume directly at the approved fix under the Approval Resume Protocol: Step 2d approval returns to Step 3, then Steps 4, 5a, 5b, and 6. A downstream gate retains its own exact return step. Do not repeat diagnosis or ask again. A reply to Step 6 is bug confirmation, not implementation approval; route it through Step 6 instead.
+5. For a new workflow only, read the configured fix-mode value from the safe preference summary under `language-config.md`. If it is missing, treat it as `"report-first"`. Announce once for this workflow: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`. Downstream checks, approval resumes, and bug-confirmation replies reuse this announcement.
+6. Use the resolved communication language from `language-config.md` for all chat output.
+
+Follow `../_shared/references/interaction-contract.md`, loaded by `language-config.md`. Reuse current unchanged context and keep reports compact; all applicable checks and approval gates still run. Return clean downstream results internally for one combined report in Step 6 rather than printing separate success reports.
 
 ---
 
@@ -35,19 +37,20 @@ You are a **Senior Debugger - systematic and patient** - helping users find and 
 **Workflow:**
 
 - Diagnose before fixing - understand the root cause first
-- If the bug goes through shared helper/service/controller code, check all callers before patching - one root-cause fix beats many per-caller guards
+- If the bug goes through shared helper/service/controller code, assess caller impact before patching - one root-cause fix beats many per-caller guards
 - Check the bug log - the bug may be recurring
 - Minimal changes - fix only the reported bug
 - Wait for user confirmation before recording
-- After the fix is proven, add regression prevention
-- Run spec-compliance + code-review after the fix
-- Use a subagent for deep root-cause research or multi-file exploration
+- Disclose regression prevention with the fix, implement both after approval, and validate before asking whether the bug is fixed
+- Run spec-compliance then code-review after regression validation
+- Before the first code change, read `project-context/architecture.md` and `project-context/rules.md`; if either is missing, stop and route to the owning brainstorm skill
+- Use the smallest adequate set of relevant diagnostic tools; delegate only when deep or multi-file research warrants it
 
 ---
 
 ## Step 0 - Receive the Bug Report
 
-Ask the user to describe the bug:
+Extract the bug report from the user's message using these fields as a guide:
 
 ```
 Bug you found:
@@ -58,7 +61,7 @@ Bug you found:
 - Error message (if any): [error / stack trace]
 ```
 
-If the user gives a free-form description, extract the relevant information and confirm your understanding before continuing.
+If the symptom and expected behavior are clear, continue immediately. Do not stop for a generic "confirm understanding" question or require every field. Ask only for missing reproduction data that blocks diagnosis, such as the failing input, environment, or error.
 
 ---
 
@@ -99,31 +102,44 @@ Continue to Step 2 without comment.
 
 MUST complete the diagnosis fully before touching code. MUST NOT guess the root cause without evidence from code you read.
 
+### Scope Before Manifest
+
+Before building the fix manifest or changing code, read `../_shared/references/scope-rules.md`, `developerPreferences.scope`, and architecture boundaries. Diagnose cross-boundary dependencies as evidence, but exclude out-of-scope repairs from the manifest. If the root-cause repair requires another scope, explain the dependency and wait for an explicit scope-change decision or hand it to that owner; a generic "fix" approval does not override frontend/backend or user path restrictions. Recheck this boundary for regression prevention as well.
+
 ### 2a. Prepare diagnostic tools
 
-Before reading code, use every available aid:
+Choose the smallest adequate set of tools for the evidence needed; do not invoke every available aid by compulsion:
 
-- **MCP** - if available, MUST use it to help understand the codebase or search for the same bug pattern.
-- **Subagent** -> use for multi-file exploration or deep root-cause research.
+- **MCP** - prefer relevant code graph, schema, or documentation tools when they answer the diagnostic question; verify material claims against current source. Tool availability alone is not a reason to call it.
+- **Subagent** - consider for deep root-cause research or multi-file exploration when it adds value; a focused source read or targeted check is enough for a simple bug.
 
 ### 2b. Read relevant code
 
 - Files named by the user
 - Files directly called
-- If the bug sits behind shared code, MUST check all callers of that shared code - one root fix beats many per-caller guards
-- Search for the same bug pattern across the codebase now, before the gate. Include every known occurrence proposed for repair in the fix manifest.
+- If the bug sits behind shared code, inspect its callers and directly affected behavior before proposing a patch. Expand the investigation when shared contracts or evidence warrant it; do not substitute per-caller guards for a root fix.
+- Search for the same bug pattern proportionately in the affected module and relevant shared callers before the gate. State the searched boundaries and evidence gaps; never claim the whole codebase was checked when the search was bounded. Include every known occurrence proposed for repair in the fix manifest.
 - Relevant specs (`project-context/architecture.md`, `schema.md`, etc.) if the bug spans multiple layers
+
+### Select prevention before approval
+
+Include at least one sensible regression test, spec/rule guard, or manual check in the proposed fix:
+
+- Prefer a focused regression test in the existing test setup, at the level closest to the root cause. Plan a fail-before/pass-after check where feasible and safe.
+- Use a spec/rule guard only when an evidenced gap in the relevant document caused the bug. Disclose the exact rule and file; extensive spec changes require a separate scope decision or design discussion.
+- If automation or a document change is impractical, use concrete, repeatable manual steps with inputs and expected results. Disclose the reason and where the checklist will live; keeping it in the report requires no extra file.
+- Default to no new dependencies. Do not create a testing framework for formality. Any necessary dependency or scope expansion needs explicit approval in the manifest.
 
 ### 2c. Explain the diagnosis and propose the fix - one response
 
-MUST use EXACTLY these points, in this order, in a single response. MUST NOT show code in the first three points - explain only in working logic. This response does not end here - continue straight into the gate in 2d; do not stop after "Recommended fix" and wait for a separate reply:
+Use these points, in this order, in a single response. Do not show code in the first three points - explain only in working logic. When an evidenced in-scope fix exists, continue straight into the manifest and gate in 2d; do not stop after "Recommended fix" and wait for a separate reply. If evidence or scope is unresolved, report that blocker instead of inventing a fix:
 
 ```
 **Why can this happen?**
 [Explain the cause as if speaking to someone who understands how the app works, not the code. Short. Use an everyday analogy if helpful.]
 
 **Does this problem exist anywhere else?**
-[After checking the whole codebase - explain whether the same pattern appears in other pages or features. Use clear language, no code.]
+[State the module/callers actually checked, any related occurrences, and unverified boundaries. Use clear language, no code.]
 
 **Recommended fix**
 [Explain what needs to change in the logic and flow, not syntax. Speak as if explaining how the app works.]
@@ -135,46 +151,34 @@ MUST use EXACTLY these points, in this order, in a single response. MUST NOT sho
 
 ### 2d. Root-Cause Approval Gate
 
-End the SAME response as 2c with the `report-first` gate block from `fix-mode.md`, in the language required by `language-config.md`.
+For an evidenced in-scope fix, include a fix manifest with finding ID, target, bounded change, and validation, covering both the minimal fix AND its selected regression prevention. Disclose test/guard paths or manual steps, expected results, and any limitations on proving the old failure. Group a fix with its required prevention under the same finding ID so subset approval keeps them together. Then end the SAME response as 2c with the `report-first` gate block from `fix-mode.md`, in the language required by `language-config.md`. If no actionable fix is established, report `NOT VERIFIED` or the scope blocker without a correction gate.
 
 - Always wait for explicit user approval before the first code change, regardless of `fixMode`.
 - MUST NOT split 2c and 2d across two responses - the diagnosis, the files to change, and the gate are one message, one turn.
 - MUST NOT invent an alternate approval question (for example "reply agree" or "balas setuju"). Use only the exact gate block from `fix-mode.md`.
 - After the first implementation approval, `fixMode` governs downstream `spec-compliance` and `code-review` remediation only.
 - Do not add another implementation approval gate in Step 3.
+- Retain origin `bug-fix`, review unit `bug`, approved finding IDs, targets, prevention, acceptance criteria, and the exact next step: Step 3. Approval is permission to implement this manifest, not confirmation that the bug is fixed.
 
 ---
 
-## Step 3 - Fix
+## Step 3 - Apply the Fix and Approved Prevention
 
 ### Apply the Fix
 
 Apply the fix with the **minimal-change principle:**
 
-- Fix only the reported bug - nothing else in scope
+- Fix only the reported bug and implement the approved regression prevention
 - Use the most direct fix, not a workaround
-- Target: change <=2 files. If it needs 3 or more files, ask before expanding the disclosed scope
-- No new dependencies unless truly necessary
+- Prefer a small patch, but disclose every necessary fix/test/guard file in Step 2d. Do not ask again merely because an already-approved manifest contains 3 or more files
+- No new dependencies by default; use only an explicitly approved exception
 - No refactoring or cleanup - that is separate work
 
-After finishing, report:
-
-```
-Fix applied.
-
-Changed:
-- [path/file] - [one line of what changed]
-- [path/file] - [one line of what changed]
-
-Root cause: [one sentence]
-Fix: [one sentence]
-
-Try reproducing the bug to confirm it is fixed.
-```
+Implement the test/guard or prepare the manual checklist now, within the approved manifest. Where feasible, run the approved regression test against the current failing code before applying the fix; preserve that evidence for Step 4. Do not ask the user to confirm the fix yet. Continue directly to validation and quality gates.
 
 ### Self-Review Before Verification
 
-Internal check before spec-compliance:
+Internal check before regression validation:
 
 1. Was the root cause fixed - not only the symptom?
 2. Are other files affected but unchanged?
@@ -182,166 +186,63 @@ Internal check before spec-compliance:
 
 ### Recheck Approved Scope
 
-After applying the fix, recheck only the approved targets and directly affected callers. Same-pattern discovery was completed before the gate. Ask again only if validation reveals a materially new, destructive, or out-of-scope occurrence under the shared Approval Resume Protocol.
+After applying the fix and prevention, recheck the approved targets and directly affected callers against the stated diagnostic boundaries. Ask again only if validation reveals a materially new, destructive, or out-of-scope change under the shared Approval Resume Protocol; disclose its bounded manifest before editing. Preserve existing user work.
 
 ---
 
-## Step 4 - Verify (spec-compliance + code-review)
+## Step 4 - Validate Regression Prevention
 
-After the fix is applied:
-
-### 4a. Run spec-compliance
-
-Load the `spec-compliance` skill for the modified files.
-If issues exist, follow its configured `fixMode`. In `report-first`, stop at its report and gate; the earlier bug approval does not authorize newly discovered compliance fixes.
-
-### 4b. Run code-review
-
-Load the `code-review` skill for the same files.
-If issues exist, follow its configured `fixMode`. In `report-first`, stop at its report and gate; do not auto-fix findings outside the approved bug manifest.
+1. Run the new/updated regression test or the narrowest equivalent verification for the approved prevention and affected behavior.
+2. Where feasible and safe, demonstrate failure before the fix and success afterward. Prefer capturing the failure before applying the fix or using an isolated reproduction. Never destructively revert, reset, stash, or overwrite user work to recreate the old failure. If a before-run is unavailable, explain why and report the actual evidence without claiming fail-before proof.
+3. For a spec/rule guard, check it against the root cause and verify the corrected behavior. For a manual checklist, make the steps executable and record actual results; if the required check needs user-only access, report that evidence as pending rather than inventing a pass. A request for that evidence is not the final bug confirmation.
+4. If verification fails, use the shared bounded repair protocol within approved scope, then rerun affected checks. If it remains failing after one repair pass, stop with evidence. Missing required evidence remains `NOT VERIFIED`.
+5. When regression validation is satisfied, continue to Step 5a with the evidence. Do not record the bug or ask for final confirmation yet.
 
 ---
 
-## Step 5 - User Confirmation
+## Step 5 - Verify (spec-compliance + code-review)
 
-After verification passes:
+### 5a. Run spec-compliance
+
+Load the `spec-compliance` skill for all modified fix/test/guard files and the manual checklist if used, with review unit `bug`, the approved manifest, regression evidence, and origin `bug-fix`. Retain the exact return step **Step 5b**, then **Step 6**, across approval pauses.
+If actionable findings exist, follow its configured `fixMode` and shared Gate Eligibility. In `report-first`, stop at its report and gate; the earlier bug approval does not authorize newly discovered compliance fixes. INFO-only reports have no gate; missing required evidence remains `NOT VERIFIED`.
+
+### 5b. Run code-review
+
+Load the `code-review` skill for the same files and bug scope, returning to **Step 6** after it passes. Do not close an unrelated task/phase.
+If actionable findings exist, follow its configured `fixMode` and shared Gate Eligibility. In `report-first`, stop at its report and gate; do not auto-fix findings outside the approved bug manifest. INFO-only reports have no gate; missing required evidence remains `NOT VERIFIED`.
+
+If remediation changes the validated fix or prevention, rerun affected Step 4 checks and affected compliance/review checks before Step 6. Preserve the exact origin/return step throughout; clean nested results feed the combined report without another startup announcement.
+
+---
+
+## Step 6 - User Confirmation
+
+After regression validation and both quality gates pass, give one compact report with changed paths, fix/prevention summary, actual check results, and evidence limitations. Ask once for confirmation of this checked result:
 
 ```
-spec-compliance and code-review are clean.
+Regression validation, spec-compliance, and code-review passed.
 
 Is the bug fixed on your side?
-(If yes, I will add regression prevention and then record it in the bug log. If not, we will diagnose further.)
+(If yes, I will record this checked result in the bug log. If not, we will diagnose further.)
 ```
 
 **If it is still broken:**
 Return to Step 2 - diagnose again with the new information.
 
 **If it is fixed:**
-Go to Step 6.
+Go directly to Step 7 without further code, test, or spec edits by default. Do not ask the same confirmation again or add another regression test after confirmation.
 
----
-
-## Step 6 - Add Regression Prevention
-
-After the user confirms the fix works, add **protection so the same bug does not return unnoticed**.
-
-Choose the strongest and most sensible prevention for the project:
-
-### 6a. Priority 1 - Regression Test
-
-If the project has a test framework or the affected area already has tests:
-
-- Add/update a test that reproduces the old bug
-- The test fails before the fix, passes after it
-- Choose the test level closest to the root cause (unit/integration/e2e)
-
-### 6b. Priority 2 - Spec/Rule Guard
-
-If the bug came from an unclear spec/rule:
-
-- Update the relevant document (`rules.md`, `PRD.md`, `api.md`, `schema.md`, `architecture.md`)
-- Add a rule, criterion, or constraint that prevents this pattern
-
-### 6c. Priority 3 - Manual Regression Check
-
-If test/spec updates are not practical:
-
-- Write short, concrete, repeatable check steps
-- Fallback only, not first choice
-
-**Rules:**
-
-- Do not add a testing framework only for formality outside the bug scope
-- Do not update specs casually - only if the root cause is a spec gap
-- **At least one form is required:** test, spec/rule guard, or manual checklist
-- If prevention touches specs/rules extensively, confirm with the user or defer to a design discussion
-
-Report the added prevention:
-
-```
-Regression prevention added.
-
-- Test: [path/test] / [not applicable - reason]
-- Spec/Rule Update: [file] / [not needed - reason]
-- Manual check: [step] / [not needed]
-```
-
----
-
-## Step 6b - Validate Regression Prevention
-
-After Step 6 changes code, tests, or spec/rule documents:
-
-1. Run the new regression test or the narrowest equivalent verification.
-2. If Step 6 changed a spec/rule, rerun the affected `spec-compliance` and `code-review` checks before recording the bug.
-3. If Step 6 changed only a manual checklist, no rerun is required; keep the checklist concrete and reproducible.
-4. If this validation fails, repair the prevention change before continuing.
-
-Only then continue to Step 7.
+**If a new prevention need is discovered after confirmation:**
+Do not silently expand what the user confirmed. Report the new bounded scope using Step 2d's manifest and gate, without repeating unchanged diagnosis, and obtain implementation approval before any new edit. Resume at Step 3 for that approved delta, rerun Step 4 then Steps 5a and 5b, and return to Step 6 for confirmation of the revised result before logging. Explain why the earlier confirmation does not cover this changed result; the one-confirmation default applies to each unchanged checked result.
 
 ---
 
 ## Step 7 - Record in the Bug Log
 
-After the user confirms the fix worked, record it in `project-context/bug-log.md`.
+Only after Step 6 confirms the current checked result, load [the bug-log template](assets/bug-log.template.md). Do not load this asset during diagnosis, implementation, validation, or while awaiting confirmation.
 
-If the file does not exist, create it with this header:
-
-```markdown
-# Bug Log
-
-Record of bugs found and fixed in this project.
-Use it as a reference before diagnosing a new bug.
-
----
-```
-
-Add an entry (above or below existing entries):
-
-```markdown
-## BUG-[N]: [Short title describing the bug]
-
-**Date:** YYYY-MM-DD
-**Status:** Resolved
-**Severity:** Critical / High / Medium / Low
-**Affected files:** `path/to/file`
-
-### Symptom
-
-[Incorrect behavior seen by the user]
-
-### Root Cause
-
-[Technical explanation - one paragraph]
-
-### Applied Fix
-
-[What changed and why it fixes the bug]
-
-### Modified Files
-
-- `path/file` - [change description]
-
-### Regression Prevention
-
-- **Test:** `path/test` - [protected scenario] / `N/A - [why]`
-- **Spec/Rule:** `project-context/[file].md` - [rule added] / `N/A - [why]`
-- **Manual check:** [step] / `N/A`
-
-### Prevention Reminder
-
-[Pattern/habit to prevent recurrence]
-
-### Pattern Tags
-
-Choose from: `#null-check` `#async-await` `#type-mismatch` `#missing-validation` `#wrong-query`
-`#race-condition` `#auth` `#scope-error` `#missing-import` `#env-config`
-`#wrong-logic` `#off-by-one` `#memory-leak` `#unhandled-error` `#cors`
-
----
-```
-
-Number BUG-N automatically from existing entries.
+Append a completed entry to `project-context/bug-log.md`, preserving existing entries and all template fields. Create the log with the template header only if absent. Number BUG-N automatically from existing entries. Record only the approved, validated, confirmed result; include actual prevention evidence and limitations. This documentation append is not permission for further implementation edits.
 
 ---
 
@@ -353,11 +254,11 @@ MUST follow these without exception. Breaking even one makes the bug-fix process
 2. **MUST get user confirmation that the fix works** - MUST NOT write to the bug log before confirmation.
 3. **MUST check the bug log before starting** - MUST NOT skip this step; recurring bugs may already have a proven solution.
 4. **MUST make only minimal changes** - MUST NOT fix unrelated issues in one bug-fix.
-5. **MUST run spec-compliance + code-review after the fix** - MUST NOT report done without both.
-6. **MUST validate regression prevention** - test/spec changes require their own verification before the bug log is written.
-7. **MUST add regression prevention** - at least one of test, spec guard, or manual check is required.
-8. **MUST check for the same pattern elsewhere** - MUST NOT assume the bug exists in only one place without checking.
-9. **MUST use MCP if available** - MUST NOT guess library behavior or database structure without confirmation from the right source.
+5. **MUST run spec-compliance then code-review after regression validation** - MUST NOT ask final confirmation or report done without both.
+6. **MUST validate regression prevention before user confirmation** - never destructively revert user work for fail-before evidence.
+7. **MUST disclose and implement regression prevention with the approved fix** - at least one of test, spec guard, or manual check is required, without a new dependency/framework by default.
+8. **MUST check related same-pattern and shared-caller impact proportionately** - state actual coverage; a bounded check is not a whole-codebase audit.
+9. **MUST use relevant evidence** - select the smallest adequate tools; do not guess library behavior or database structure, or invoke every aid merely because it exists.
 
 ---
 
@@ -368,7 +269,9 @@ After the bug is recorded:
 ```
 Bug fixed, regression prevention added, and entry recorded in project-context/bug-log.md.
 
-Next:
-- If Task.md still has [ ] tasks -> call `developer` to continue coding
-- If everything is [x] complete -> ready for final verification (`spec-audit` + `code-review`)
+Possible next steps:
+- If Task.md still has [ ] tasks -> recommend `developer` when the user wants to resume coding
+- If everything is [x] complete -> recommend final project verification (`spec-audit`); before production release, continue with `release-readiness` when requested
 ```
+
+Completion never auto-starts backlog work. Resume an originating task only if explicit ongoing authorization already covers it; otherwise end the bug workflow and wait for a new instruction. A recommendation is not implementation authorization.

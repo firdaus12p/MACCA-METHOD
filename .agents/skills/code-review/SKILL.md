@@ -19,9 +19,11 @@ Before continuing:
 2. Read `../_shared/references/fix-mode.md`.
 3. Read `../_shared/references/human-loop.md`.
 4. Read `../_shared/references/finding-format.md`.
-5. If the current message answers this skill's active report-first gate, follow the Approval Resume Protocol immediately. Do not repeat setup announcements, context reads, or review.
-6. Otherwise, read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If it is missing, treat it as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`.
-7. Use `languagePreferences.communication.normalized` for all review output.
+5. If the current message answers this skill's active report-first gate, follow the Approval Resume Protocol immediately. Refresh changed sources or unknown/compacted context as needed; do not repeat unchanged setup, reads, or review.
+6. Otherwise, read the configured fix-mode value from the safe preference summary under `language-config.md`. If it is missing, treat it as `"report-first"`. Announce the mode only if it has not already been announced for this authorized workflow.
+7. Use the resolved communication language from `language-config.md` for all review output.
+
+Follow `../_shared/references/interaction-contract.md`, loaded by `language-config.md`: reuse already-read current unchanged sections and refresh changed sources or unknown/compacted context. Use plain language outside exact keys, IDs, paths, and gate markers.
 
 ---
 
@@ -75,16 +77,20 @@ Ask again only for a material workspace change, conflicting findings, or newly d
 
 ## Preflight - Read Project Context
 
-Before reviewing, read available files in `project-context/`:
+Retain the origin, exact return step, review unit (`task`, `phase`, `bug`, or standalone), reviewed files, and applicable criteria. Review that unit only. A standalone review is read-only unless fixes are authorized under `fixMode`; neither a clean report nor fix approval grants automatic plan-status mutation. Return completion evidence to the originating workflow.
+
+Include approved scope/files and IDs, checked sources/freshness, validation evidence, pending issues, and next action in the handoff. A delegate reads `references/review-checklist.md` and any unknown relevant source sections; a summary does not replace the checklist. Keep context in the session without secrets or a new state file.
+
+Before reviewing, ensure fresh relevant sections from available files in `project-context/` are in context, reusing current unchanged sources already read:
 
 | File              | Used For                                                                |
 | ----------------- | ----------------------------------------------------------------------- |
-| `rules.md`        | naming, code style, team conventions (always read if it exists)         |
+| `rules.md`        | naming, code style, team conventions (required for a complete review)   |
 | `architecture.md` | allowed patterns, tech stack, folder structure                          |
 | `schema.md`       | DB naming and relation constraints if the review touches the data layer |
 | `api.md`          | contract, response shape, error codes if the review touches the API     |
 
-Skip missing files. Do not block the review if `project-context/` is absent.
+Skip only conditional files that do not apply. If `rules.md` or `architecture.md` is missing, report `NOT VERIFIED` and do not mark the review as passed; route the missing prerequisite to the owning brainstorm skill. Missing evidence alone is not an actionable finding or a reason to show a correction gate.
 
 ---
 
@@ -107,3 +113,5 @@ Read `references/review-checklist.md` and follow it for:
 - Self-Review Before Reporting
 - Phase 3 - Report & Fix
 - Key Points
+
+All 27 CR checks and 10 SEC checks are assessed internally; execute every applicable check and retain evidence. Use `N/A` only for genuine inapplicability with a reason; missing required evidence is `NOT VERIFIED`. Clean gate results return internally for the origin's combined result, or as a compact standalone report. Findings/requested detail use the full evidence and shared four-point format, actionable manifest, and one eligible gate; compact output never weakens review depth.

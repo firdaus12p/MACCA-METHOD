@@ -1,5 +1,5 @@
 {
-  "version": "2.1.3",
+  "version": "3.0.0-rc.1",
   "skills": [
     "_shared",
     "add-feature",
@@ -17,6 +17,7 @@
     "meet",
     "quick-dev",
     "release-readiness",
+    "setup-macca-method",
     "spec-audit",
     "spec-compliance",
     "spec-init"

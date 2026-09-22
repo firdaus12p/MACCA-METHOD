@@ -8,4 +8,7 @@ node_modules/
 PLAN.md
 .agents/skills/antislop-copywriting/
 .agents/skills/skill-creator/
-
+panduan-macca.md
+/.agents/developer-config.json
+/evals/results/
+/evals/*-workspace/

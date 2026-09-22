@@ -1,6 +1,6 @@
 ---
 name: spec-compliance
-description: Verifies that code matches all applicable project specs and applies approved compliance fixes. Use after each phase before code-review, on explicit compliance requests, and when the user replies yes, fix, continue, or finding IDs to this skill's report-first gate.
+description: Verifies task, phase, or bug changes against applicable project specs and applies approved compliance fixes. Use before code-review in execution workflows, on explicit compliance requests, and when the user replies yes, fix, continue, or finding IDs to this skill's report-first gate.
 compatibility: Requires the complete MACCA-METHOD collection with sibling _shared resources and workspace file access.
 metadata:
   persona: "Fachri"
@@ -19,9 +19,11 @@ Before continuing:
 2. Read `../_shared/references/fix-mode.md`.
 3. Read `../_shared/references/human-loop.md`.
 4. Read `../_shared/references/finding-format.md`.
-5. If this message answers this skill's active report-first gate, resume directly under the Approval Resume Protocol. Do not rerun startup or compliance analysis.
-6. Otherwise, read `codeReviewPreferences.fixMode` from `.agents/developer-config.json`. If it is missing, treat it as `"report-first"`. Announce: `[Fix mode: report-first]` or `[Fix mode: fix-then-report]`.
-7. Use `languagePreferences.communication.normalized` for all user-facing reports and review output.
+5. If this message answers this skill's active report-first gate, resume directly under the Approval Resume Protocol. Refresh changed sources or unknown/compacted context as needed; do not repeat unchanged setup or analysis.
+6. Otherwise, read the configured fix-mode value from the safe preference summary under `language-config.md`. If it is missing, treat it as `"report-first"`. Announce the mode only if it has not already been announced for this authorized workflow.
+7. Use the resolved communication language from `language-config.md` for all user-facing reports and review output.
+
+Follow `../_shared/references/interaction-contract.md`, loaded by `language-config.md`. Reuse already-read current unchanged source sections; refresh changed sources or unknown/compacted context. Use plain language outside exact keys, IDs, paths, and gate markers.
 
 ---
 
@@ -57,11 +59,13 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 
 ## Execution
 
-1. Identify all files created/modified in this phase (the completed phase tasks)
-2. Read every available spec document in `project-context/`
-3. If an active phase plan file exists in `project-context/plans/phase-[N]-*.md`, also read the `## Approved Scope Delta` section if present. Treat it as temporary official approval for the active phase, NOT as permanent approval across phases.
-4. Verify the code against each spec - one by one
-5. Report findings and fix BLOCKER/MAJOR issues
+1. Retain the origin, return step, and review unit: `task` (quick-dev or one developer task), `phase` (developer phase closure), `bug` (bug-fix), or explicitly bounded standalone review. Identify only its changed files and directly affected behavior. Checklist references to "this phase" below mean this selected review unit, not unrelated sibling work.
+2. Read applicable spec documents in `project-context/`. Mark genuinely inapplicable checks `N/A` with reasons and absent required evidence `NOT VERIFIED`; do not fabricate specs or implementation defects.
+3. Read `../_shared/references/scope-delta.md` and the canonical `## Approved Scope Delta` in Task.md or the active phase plan, including direct-mode minimal plans. Either location is valid temporary approval for its named task/phase, NOT permanent approval across phases.
+4. Verify every applicable SC-01 through SC-08 check below internally, retaining evidence and genuine `N/A` reasons. Compact output changes presentation, not verification depth.
+5. Report findings. In `fix-then-report`, fix actionable BLOCKER/MAJOR issues according to the execution rules below; in `report-first`, stop at the approval gate before editing only when shared Gate Eligibility is met.
+
+Carry the approved scope/files and IDs, criteria, checked sources/freshness, validation evidence, pending issues, and next action with the origin/return context. A delegate must read this skill's applicable checklist sections, not just the handoff summary. Keep context in the session without secrets or a new state file.
 
 ---
 
@@ -77,7 +81,7 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 - [ ] If this phase implements analytics or rollout behavior, it matches `PRD.md § Success Metrics and Rollout`; otherwise mark N/A
 - [ ] Failure/degraded behavior implemented by this phase matches the PRD where specified
 - [ ] If the PRD uses requirement IDs (`FEAT-*`, `BR-*`, etc.), phase code is traceable to the relevant IDs through Task.md
-- [ ] If changes are not yet in the PRD but are recorded in the active phase plan `## Approved Scope Delta`, DO NOT mark them as scope creep violations for this phase. Note them as `pending formal spec update` if needed.
+- [ ] If changes are not yet in the PRD but are recorded in a canonical `## Approved Scope Delta` in Task.md or the active phase plan, DO NOT mark them as scope creep for the named task/phase. Note `pending formal spec sync`; require the owning-skill sync before phase closure.
 
 **Example findings:**
 
@@ -160,6 +164,7 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 
 **Read:** `project-context/rules.md`
 
+- [ ] **`rules.md` exists:** If missing, mark rules compliance `NOT VERIFIED` and route the missing decision to `brainstorm-rules`; do not invent an actionable code finding or claim PASS
 - [ ] **`[FORBIDDEN]` section scanned:** Verify there are no violations. If the section is missing, note it as MINOR (not BLOCKER)
 - [ ] Naming conventions match `rules.md § Naming Conventions` - camelCase, PascalCase, UPPER_CASE
 - [ ] TypeScript rules are followed: strict, no `any`, no `enum` (if forbidden)
@@ -201,7 +206,12 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 
 **Read:** `project-context/Task.md`
 
-> **Important:** If run from `bug-fix` (no new Task.md entry), mark SC-07 as **N/A** and continue - not BLOCKER. SC-07 applies only in the `developer` workflow.
+Apply SC-07 by review unit:
+
+- **Task:** Applies to quick-dev and individual developer tasks. Verify only the selected task's acceptance criteria, traceability, and applicable task-level controls. Unfinished sibling tasks and phase-wide DoD do not block a task pass.
+- **Phase:** Verify all tasks in that phase, implementation-side Phase Definition of Done, and completed formal spec sync.
+- **Bug:** If bug-fix has no new Task.md entry, mark SC-07 **N/A** with that reason; if a task is explicitly attached, verify that task only.
+- **Standalone:** Use the explicitly reviewed task/phase when provided; otherwise report SC-07 N/A with the absence of task-completion scope, without closing anything.
 
 - [ ] All files named by the task were created/modified
 - [ ] All task acceptance criteria are met - check each one
@@ -209,7 +219,7 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 - [ ] The task is not half-finished - no unfinished work remains
 - [ ] If the task has traceability IDs, all are valid and point to real upstream artifacts
 - [ ] If an active phase task implements new scope recorded only in `## Approved Scope Delta`, treat it as valid for the active phase, but mention that syncing into the main spec documents is still pending if not done yet.
-- [ ] Every applicable Phase Definition of Done item has evidence; `N/A` items include a reason
+- [ ] For phase reviews, every applicable implementation-side Phase Definition of Done item has evidence; `N/A` items include a reason. The current spec-compliance result and downstream code-review are pending gates, not prerequisites to themselves. Developer records them only after each passes; no circular gate requirement.
 
 **Example findings:**
 
@@ -222,11 +232,11 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 
 ## [SC-08] Scope Compliance
 
-**Read:** `.agents/developer-config.json` § `developerPreferences.scope`
+**Read:** the safe preference summary under `language-config.md`: check `developerPreferences.scope.configured` and use `developerPreferences.scope.value`. This checks the saved `developerPreferences.scope` boundary without reading raw config into tool output; an unavailable/failed read is not a missing scope or permission to widen it.
 
 **Use:** `project-context/architecture.md` as the primary boundary. The folder lists below are fallback only if `architecture.md` does not define project boundaries clearly enough.
 
-> **Skip if the scope field is missing or set to `"fullstack"`.** SC-08 applies only when scope is `"frontend"` or `"backend"`.
+> Use saved scope or the user's explicit scope statement; a missing field is not permission to widen the authorized request. The frontend/backend checks below are `N/A` with a reason when neither boundary applies (including `"fullstack"`), but still verify the explicit bounded file/behavior scope. If a material boundary is unresolved, report `NOT VERIFIED` and ask only for that missing decision.
 
 - `scope = "frontend"` - verify that no backend files were created or modified in this phase:
   - [ ] No files in `routes/`, `controllers/`, `services/`, `repositories/`
@@ -250,7 +260,7 @@ To change it: update `codeReviewPreferences.fixMode` in `.agents/developer-confi
 
 > **Required before Output Format.** Compliance often runs once per phase - make sure nothing is missed.
 
-1. **Verify all 8 items** (SC-01 through SC-08) were actually checked - not skipped. An "OK" item must have been checked, not skipped.
+1. **Verify all 8 items** (SC-01 through SC-08) were assessed: perform every applicable check, record evidence, and give reasons for genuine `N/A`. An "OK" item must have been checked; missing evidence is `NOT VERIFIED`, never `N/A`.
 2. **Reread every finding** - is the severity proportional? Are code examples quoted accurately?
 3. **Ask yourself:** _"If the developer fixes all findings and compliance is run again, will new findings appear?"_ If yes, add them now.
 4. **Recheck Task.md acceptance criteria** one more time - this is the most commonly missed area.
@@ -263,12 +273,16 @@ Only after self-review, create the report.
 
 The report is shown in this session chat. Do not save it to a file unless the user explicitly asks for an artifact. Default: a temporary report used as the gate before `code-review`.
 
+**Clean result:** When called by developer, quick-dev, or bug-fix, return the verified result and evidence internally so the origin produces one combined summary after the gates. Do not print a separate clean document table. Standalone reviews return a compact result with reviewed scope, actual status, validation evidence, and any limitations. Standalone completion ends there; do not start another workflow without authorization.
+
+**Findings or requested detail:** Use the report below for findings, or provide the full check evidence when requested. Show all findings and missing required evidence; omit empty sections and clean document rows unless requested. Preserve every SC ID, shared four-point finding format, actionable fix manifest, and one eligible shared gate. `N/A` and `NOT VERIFIED` must remain distinct. Details stay available in session context, not a new report/state file by default.
+
 ```markdown
 ## Spec Compliance Report
 
 **Task/Phase:** [name]
 **Scope:** [reviewed files]
-**Status:** [✅ PASS | ⚠️ MINOR ISSUES | 🔴 MAJOR ISSUES | 💥 BLOCKER]
+**Status:** [✅ PASS | NOT VERIFIED | ⚠️ MINOR ISSUES | 🔴 MAJOR ISSUES | 💥 BLOCKER]
 
 | Document                        | Status     | Finding                          |
 | ------------------------------- | ---------- | -------------------------------- |
@@ -300,12 +314,14 @@ Format each finding with the shared `finding-format.md` loaded during setup.
 
 **`fix-then-report`:**
 
+Shared Gate Eligibility applies to both modes: INFO is report-only, missing required evidence is `NOT VERIFIED`, and no phantom findings may enter the manifest.
+
 ```
 💥 BLOCKER -> Fix now. After fixing, **rerun spec-compliance** before code-review.
 🔴 MAJOR   -> Fix before the next phase. After fixing, **rerun spec-compliance**.
 ⚠️ MINOR   -> Report to the user, ask.
 ℹ️ INFO    -> Light note - backlog, not urgent.
-✅ OK      -> Continue to the code-review skill.
+✅ OK      -> Return evidence and continue to code-review only within the authorized originating workflow.
 ```
 
 **`report-first`:**
@@ -313,7 +329,9 @@ Format each finding with the shared `finding-format.md` loaded during setup.
 ```
 💥 BLOCKER / 🔴 MAJOR / ⚠️ actionable MINOR -> Report all findings and the fix manifest. Show one gate ([GATE — Mode: report-first]). On approval, edit the approved manifest directly, validate, and rerun only affected compliance checks without another gate.
 ℹ️ INFO / non-actionable note -> Report only; do not include it in the fix manifest.
-✅ OK                 -> Present the report with Status: ✅ PASS. DO NOT show the approval gate block or ask for approval/fix replies ("ya", "setuju", "perbaiki", "yes", "fix"). Continue directly to the code-review skill.
+✅ OK                 -> Return the clean result to the origin (compact result if standalone). Claim Status: ✅ PASS only with all applicable checks verified. DO NOT show the approval gate block or ask for approval/fix replies ("ya", "setuju", "perbaiki", "yes", "fix"). Continue to code-review only within the authorized originating workflow.
 ```
+
+For INFO-only reports with all required checks verified, continue without a fix gate. With required evidence missing, report `NOT VERIFIED` and return the evidence blocker to the origin. After approved remediation passes, continue to code-review within the authorized originating workflow with the same task/phase/bug scope and return context; a standalone review ends with its result. Do not close the phase or start another task from this skill.
 
 ---

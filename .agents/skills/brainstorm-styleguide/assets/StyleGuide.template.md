@@ -1,6 +1,8 @@
 # StyleGuide
 
-> **Framework:** [CSS Framework] | **Approach:** [Utility-first / Component-based]
+> **Authoring note:** This is a placeholder menu, not a checklist to build. Keep only approved surfaces, components, and states; prune inapplicable sections or mark `N/A` with a reason. Unknown mandatory decisions remain open, not `N/A`. Reuse mature approved styles and native/existing controls. Do not automatically add a design system, dark mode, localization, or packages. Additions need a current requirement, why simpler options fail, cost within team/budget/operations constraints, and an escalation trigger. Critical depth deepens questions; accessibility and required security/recovery states remain obligations.
+
+> **Styling:** [Existing/native approach; framework only if selected]
 
 ## Document Role
 
@@ -12,40 +14,28 @@
 
 | Surface              | Included? | Notes   |
 | -------------------- | --------- | ------- |
-| Web app              | Yes / No  | [notes] |
-| Admin panel          | Yes / No  | [notes] |
-| Marketing site       | Yes / No  | [notes] |
-| Email / PDF / export | Yes / No  | [notes] |
+| [Approved surface]   | Yes / No  | [source requirement] |
 
 ---
 
-## 1. CSS Framework
+## 1. Styling Approach
 
-- **Framework:** [Tailwind CSS v3 / Bootstrap 5 / CSS Modules / etc.]
+- **Native / Existing Styles:** [selected approach; framework optional]
 - **Version:** [version]
 - **Notes:** [Additional rules]
 
 ## 2. Color Palette
 
-| Role           | Hex    | Tailwind          | Description           |
-| -------------- | ------ | ----------------- | --------------------- |
-| Primary        | `#xxx` | `bg-blue-600`     | Main brand            |
-| Secondary      | `#xxx` | `bg-gray-600`     | Accent                |
-| Background     | `#xxx` | `bg-gray-50`      | Page background       |
-| Surface        | `#xxx` | `bg-white`        | Card/panel background |
-| Primary Text   | `#xxx` | `text-gray-900`   | Main text             |
-| Secondary Text | `#xxx` | `text-gray-500`   | Secondary text        |
-| Error          | `#xxx` | `text-red-500`    | Error message         |
-| Success        | `#xxx` | `text-green-500`  | Success message       |
-| Warning        | `#xxx` | `text-yellow-500` | Warning message       |
-| Info           | `#xxx` | `text-blue-500`   | Info message          |
+| Role           | Value   | Existing Token / Style | Purpose / Contrast |
+| -------------- | ------- | ---------------------- | ------------------ |
+| [Needed role]  | [value] | [token/style]          | [usage/check]      |
 
 **Dark Mode:** [Supported / Not supported]
 
 ## 3. Typography
 
-- **Heading Font:** [Font Name] — via [Google Fonts / local]
-- **Body Font:** [Font Name] — via [Google Fonts / local]
+- **Heading Font:** [existing/system font; custom source only if justified]
+- **Body Font:** [existing/system font; custom source only if justified]
 
 | Level   | Size   | Weight   | Line Height   |
 | ------- | ------ | -------- | ------------- |
@@ -59,40 +49,29 @@
 
 ## 4. Spacing System
 
-- **Base Unit:** [4px / 8px]
-- **Scale:** [Tailwind Default / Custom]
+- **Base Unit:** [existing/approved unit if used]
+- **Scale:** [existing/native conventions or needed values]
 
-| Token | Value  | Tailwind |
-| ----- | ------ | -------- |
-| xs    | [4px]  | `p-1`    |
-| sm    | [8px]  | `p-2`    |
-| md    | [16px] | `p-4`    |
-| lg    | [24px] | `p-6`    |
-| xl    | [32px] | `p-8`    |
-| 2xl   | [48px] | `p-12`   |
+| Token / Usage | Value   | Existing Style |
+| ------------- | ------- | -------------- |
+| [Needed gap]  | [value] | [style]        |
 
 ## 5. Component Style
 
-- **Border Radius:** [rounded-md / rounded-lg / none]
-- **Shadow:** [shadow-sm / shadow-md / none]
+- **Border Radius:** [existing/approved value if needed]
+- **Shadow:** [existing/approved value if needed]
 
 ## Component Inventory
 
 | Component | Status             | Notes   |
 | --------- | ------------------ | ------- |
-| Button    | Defined            | [notes] |
-| Card      | Defined            | [notes] |
-| Input     | Defined            | [notes] |
-| Modal     | Defined / Deferred | [notes] |
-| Table     | Defined / Deferred | [notes] |
+| [Required component] | Existing / Gap | [approved surface and requirement] |
 
 ### Button
 
 | Variant   | Style                                        |
 | --------- | -------------------------------------------- |
-| Primary   | [bg-primary text-white rounded-md px-4 py-2] |
-| Secondary | [outline / ghost]                            |
-| Danger    | [bg-error text-white]                        |
+| [Needed variant] | [existing/native style and accessible states] |
 
 ### Card
 
@@ -109,9 +88,9 @@
 
 ### Transition & Animation
 
-- **Default Duration:** [150ms / 200ms / 300ms]
-- **Easing:** [ease-in-out / ease-out]
-- **Pattern:** `transition-all duration-150 ease-in-out`
+- **Duration:** [value justified by needed feedback, if motion applies]
+- **Easing:** [existing/approved behavior if motion applies]
+- **Pattern:** [only needed motion; reduced-motion alternative]
 
 ## 6. Responsive & Breakpoints
 
@@ -119,10 +98,7 @@
 
 | Breakpoint | Value    | Description   |
 | ---------- | -------- | ------------- |
-| sm         | [640px]  | Small tablet  |
-| md         | [768px]  | Tablet        |
-| lg         | [1024px] | Desktop       |
-| xl         | [1280px] | Large desktop |
+| [Needed breakpoint] | [value] | [content/device constraint] |
 
 **Layout Rules:**
 
@@ -130,9 +106,9 @@
 
 ## 7. Iconography
 
-- **Library:** [Lucide React / Heroicons / FontAwesome / etc.]
-- **Default Size:** [20px / 24px]
-- **Import Pattern:** `import { IconName } from 'lucide-react'`
+- **Source:** [existing/native assets; new library only if justified]
+- **Size:** [appropriate to actual usage and accessibility]
+- **Usage Pattern:** [actual selected source, if needed]
 - **Notes:** [Rules for icon usage]
 
 ## 8. Accessibility, Localization & Operational States

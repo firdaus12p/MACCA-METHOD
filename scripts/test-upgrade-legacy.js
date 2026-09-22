@@ -6,6 +6,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
+const { resolveNpmCommand } = require("./lib/npm-command.js");
 
 const rootDir = path.resolve(__dirname, "..");
 const temporaryRoot = fs.mkdtempSync(
@@ -13,14 +14,6 @@ const temporaryRoot = fs.mkdtempSync(
 );
 const projectDir = path.join(temporaryRoot, "project");
 const obsoleteMeetingName = Buffer.from("cmFwYXQ=", "base64").toString("utf8");
-
-function commandName(base) {
-  if (process.platform !== "win32") {
-    return base;
-  }
-
-  return base === "npm" || base === "npx" ? `${base}.cmd` : base;
-}
 
 function resolveTempRoot() {
   const tempRoot = os.tmpdir();
@@ -32,22 +25,13 @@ function resolveTempRoot() {
 }
 
 function captureNpm(args, options = {}) {
-  const npmExecPath = process.env.npm_execpath;
-  if (npmExecPath && /\.c?js$/i.test(npmExecPath)) {
-    return capture(process.execPath, [npmExecPath, ...args], options);
-  }
-
-  return capture(commandName("npm"), args, options);
+  const npm = resolveNpmCommand(args);
+  return capture(npm.command, npm.args, options);
 }
 
 function runNpm(args, options = {}) {
-  const npmExecPath = process.env.npm_execpath;
-  if (npmExecPath && /\.c?js$/i.test(npmExecPath)) {
-    run(process.execPath, [npmExecPath, ...args], options);
-    return;
-  }
-
-  run(commandName("npm"), args, options);
+  const npm = resolveNpmCommand(args);
+  run(npm.command, npm.args, options);
 }
 
 function run(command, args, options = {}) {
@@ -55,6 +39,7 @@ function run(command, args, options = {}) {
     cwd: rootDir,
     stdio: "inherit",
     ...options,
+    shell: false,
   });
 }
 
@@ -63,6 +48,7 @@ function capture(command, args, options = {}) {
     cwd: rootDir,
     encoding: "utf8",
     ...options,
+    shell: false,
   });
 }
 
@@ -83,6 +69,7 @@ try {
     "pack",
     "macca-method@1.1.0",
     "--json",
+    "--ignore-scripts",
     "--pack-destination",
     temporaryRoot,
   ]);
@@ -121,6 +108,7 @@ try {
   const packOutput = captureNpm([
     "pack",
     "--json",
+    "--ignore-scripts",
     "--pack-destination",
     temporaryRoot,
   ]);
@@ -142,6 +130,8 @@ try {
   const currentRoot = path.join(projectDir, ".opencode", "skills");
   assertExists(path.join(currentRoot, "meet", "SKILL.md"));
   assertExists(path.join(currentRoot, "release-readiness", "SKILL.md"));
+  assertExists(path.join(currentRoot, "setup-macca-method", "SKILL.md"));
+  assertExists(path.join(currentRoot, "_shared", "scripts", "config-validator.js"));
   assertMissing(path.join(legacyRoot, obsoleteMeetingName));
 
   const config = JSON.parse(

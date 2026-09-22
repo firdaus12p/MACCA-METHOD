@@ -13,7 +13,7 @@ This file defines how skills must adjust documents, recommendations, and work bo
 
 ## General Rules
 
-Skills that affect planning, workflow recommendations, or implementation MUST read `developerPreferences.scope` if the config file exists.
+Skills that affect planning, workflow recommendations, or implementation MUST resolve saved scope through the safe preference summary in `language-config.md`: check `developerPreferences.scope.configured` and use `developerPreferences.scope.value`. Do not read raw config into tool output or compare the summary wrapper to a scope string. A failed/unavailable read is not missing config; report the affected check as not verified rather than infer an unrestricted boundary. The missing-scope planning default is not implementation authorization.
 
 - `frontend` → focus on UI, pages, components, state, styling, client-side validation, and API contracts from the consumer perspective.
 - `backend` → focus on API implementation, business rules, auth, services/repositories, database, and API contracts from the provider perspective.

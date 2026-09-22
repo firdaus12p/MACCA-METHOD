@@ -1,5 +1,7 @@
 # PRD: [Project Name]
 
+> **Authoring note:** This is a placeholder menu, not a checklist to build. Use the smallest scope that fulfills approved current requirements and security/recovery obligations within evidenced scale, team, budget, and operational constraints. Prune inapplicable sections or mark `N/A` with a reason; unknown mandatory decisions remain open, not `N/A`. Do not infer login, admin, roles, subscriptions, analytics, or integrations from examples. Critical depth adds questions, not features. Use small measurable acceptance criteria and confirmed targets, not invented SLOs; future possibilities do not authorize requirements or tasks.
+
 > **Version:** 1.0 | **Date:** [date] | **Status:** Draft
 
 ## Document Role
@@ -24,7 +26,7 @@
 
 | Persona     | Description   | Role                   |
 | ----------- | ------------- | ---------------------- |
-| [Persona 1] | [Description] | End User / Admin / etc |
+| [Persona 1] | [Description] | [Actual role, if needed] |
 
 ## 3. Problem Statement
 
@@ -43,9 +45,9 @@
 | ------- | --------- | ------------- | -------- |
 | FEAT-01 | [Feature] | [Description] | High     |
 
-### Future Enhancements
+### User-Mentioned Future Possibilities (Not Approved Scope)
 
-- **FEAT-02:** [Feature] — [Description]
+- [Possibility explicitly raised by the user; exclude from current requirements and tasks until approved]
 
 ## 5. Business Rules
 
@@ -76,21 +78,20 @@
 
 | ID     | Category      | Requirement      | Target      |
 | ------ | ------------- | ---------------- | ----------- |
-| NFR-01 | Performance   | Page load time   | < 3 seconds |
-| NFR-02 | Security      | [Requirement]    | [Target]    |
-| NFR-03 | Scalability   | Concurrent users | [Count]     |
-| NFR-04 | Accessibility | [Requirement]    | [Target]    |
+| NFR-01 | [Applicable category] | [Approved requirement] | [Evidence-backed agreed target] |
+
+Record unresolved required targets as open decisions; retain applicable security, recovery, and accessibility obligations.
 
 ## 9. Success Metrics and Rollout
 
 | Metric   | Baseline          | Target   | Timeframe | Measurement Source | Owner   |
 | -------- | ----------------- | -------- | --------- | ------------------ | ------- |
-| [Metric] | [current/unknown] | [target] | [period]  | [analytics/report] | [owner] |
+| [Metric] | [current/unknown] | [target] | [period]  | [existing/manual source if sufficient] | [owner] |
 
 **Rollout:** [pilot / beta / phased / full]
 **Target Audience:** [initial cohort]
 **Readiness Criteria:** [conditions before expansion]
-**Analytics Events:** [only events required to measure the metrics]
+**Analytics Events:** [only if approved measurement cannot be met sufficiently with existing/manual sources]
 
 ## 10. Acceptance Criteria
 
