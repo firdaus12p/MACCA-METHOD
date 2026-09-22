@@ -1,8 +1,8 @@
 # Changelog
 
-## 3.0.0-rc.1 — Prerelease candidate
+## 3.0.0 — Stable release
 
-This version is a **prerelease candidate, not a stable release**, designated for the npm `next` channel. Local validation, static contract checks, and a configured CI matrix do not establish release stability or live-agent acceptance. `macca-method@latest` remains the stable channel; publishing this candidate to `next` does not replace it. Check registry availability with `npm view macca-method dist-tags`.
+MACCA 3.0.0 is the major release for AI spec-driven development skills, published to the npm `latest` channel.
 
 ### Breaking changes from 2.x
 
@@ -20,12 +20,12 @@ This version is a **prerelease candidate, not a stable release**, designated for
 
 ### Migration
 
-Back up the project, especially modified skills, preferences, installer metadata, and pending recovery files. Inspect changes before upgrading; **do not use `--force` by default**. Switch to Node.js 22 or 24, use the physical project path, run read-only diagnosis, and upgrade with the intended candidate CLI. Preserve unknown/legacy config fields and reinstall the complete collection if shared helpers are missing. Restart the host and diagnose again afterward.
+Back up the project, especially modified skills, preferences, installer metadata, and pending recovery files. Inspect changes before upgrading; **do not use `--force` by default**. Switch to Node.js 22 or 24, use the physical project path, run read-only diagnosis, and upgrade with `npx macca-method@latest upgrade`. Preserve unknown/legacy config fields and reinstall the complete collection if shared helpers are missing. Restart the host and diagnose again afterward.
 
-See [the migration guide](docs/troubleshooting.md#migrate-from-2x-to-the-3x-candidate), [legacy 1.1.0 handling](docs/troubleshooting.md#upgrade-from-110), and [safe preference reading](docs/configuration.md#safe-preference-reader). Unmodified recognized legacy payloads can be adopted; modified/unknown folders are not made owned by force, and legacy global Kimi copies are not deleted automatically.
+See [the migration guide](docs/troubleshooting.md#migrate-from-2x-to-3x), [legacy 1.1.0 handling](docs/troubleshooting.md#upgrade-from-110), and [safe preference reading](docs/configuration.md#safe-preference-reader). Unmodified recognized legacy payloads can be adopted; modified/unknown folders are not made owned by force, and legacy global Kimi copies are not deleted automatically.
 
 ### Known evidence and versioning limits
 
 - Downgrade protection uses SemVer precedence, including prerelease identifiers: stable `3.0.0` is newer than `3.0.0-rc.1`, and `rc.10` is newer than `rc.2`. Build metadata does not change precedence; invalid recorded versions stop the operation for inspection.
 - Ubuntu/Windows/macOS × Node.js 22/24 is the configured matrix, not a claim that every run has passed. Platform-specific run logs and actual live-agent evaluation evidence are required for those claims.
-- This changelog records the candidate delta only; it does not reconstruct earlier release history or authorize publication.
+- This changelog records the 3.0.0 delta; it does not reconstruct earlier release history.

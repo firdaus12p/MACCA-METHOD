@@ -58,20 +58,20 @@ Value-bearing long options also accept `--option=value`, including both tool and
 npx macca-method@latest upgrade --directory "/path/to/project"
 ```
 
-`@latest` resolves the latest **published npm package**. A GitHub push or local source edit does not update npm. To test repository changes, invoke the source CLI (for example `node bin/macca-method.js --help` from the source checkout); that is different from testing a published package. Pin a published version for reproducible bootstrap/CI.
+`@latest` selects the latest published stable release. A GitHub push or local source edit does not update npm automatically. To test repository changes, invoke the source CLI (for example `node bin/macca-method.js --help` from the source checkout); that is different from testing a published package. Pin a published version for reproducible bootstrap/CI.
 
-### Migrate from 2.x to the 3.x candidate
+### Migrate from 2.x to 3.x
 
-This source tree identifies **3.0.0-rc.1**, a **prerelease candidate** designated for the npm `next` channel, not a stable release. The `@latest` commands in this guide refer to the stable channel. Check availability with `npm view macca-method dist-tags`; when published, use `npx macca-method@3.0.0-rc.1 install` (or `upgrade`) to select this exact candidate, or `@next` for the current prerelease. See the [candidate changelog](../CHANGELOG.md).
+This release provides **3.0.0** on npm `latest`. Use `npx macca-method@3.0.0 install` (or `upgrade`) to select this exact version, or `@latest` for the current stable release. See the [changelog](../CHANGELOG.md).
 
 1. Back up the target project before upgrading, including locally modified skills, `.agents/` preferences/metadata, and any pending transaction recovery files. Review local edits before deciding which managed copies to replace.
-2. Move to **Node.js 22+** before invoking the candidate. Dropping runtimes below 22 is a breaking change from 2.x; the configured CI matrix uses **22 and 24**. Other accepted majors do not have that matrix coverage.
+2. Move to **Node.js 22+** before invoking the installer. Dropping runtimes below 22 is a breaking change from 2.x; the configured CI matrix uses **22 and 24**. Other accepted majors do not have that matrix coverage.
 3. Use an inspected **physical local path** for the target. Symlinked ancestors, Windows UNC/network paths, and device paths are rejected; see [path restrictions](#path-restrictions). A lexical `/tmp` or `/var` path on macOS may resolve through a symlink.
 4. From the source checkout, inspect with `node bin/macca-method.js doctor --directory "/physical/path/to/project"`, then run `node bin/macca-method.js upgrade --directory "/physical/path/to/project"` when ready. Do not add `--force` by default. It permits replacing reviewed managed edits, not invalid config, unowned folders, unsafe paths, or inconsistent recovery evidence.
 5. Preserve valid existing preferences, unknown extensions, and accepted legacy fields. Invalid config now blocks writes instead of being replaced with defaults; correct only the reported fields locally. Install the complete collection so the safe preference reader and sibling validator are available to every host. Missing helpers block affected config-dependent work, with no raw-file fallback; see [safe preference reading](configuration.md#safe-preference-reader).
 6. If setup created only a config file, follow [incomplete setup](#config-only-or-incomplete-setup). For older unmarked payloads, follow [legacy migration](#upgrade-from-110); modified or unknown copies require inspection, not automatic adoption. Restart the AI host after updating, then run doctor again.
 
-**Version comparison:** downgrade protection follows SemVer precedence, including prereleases. Stable `3.0.0` is newer than `3.0.0-rc.1`; `rc.10` is newer than `rc.2`. Build metadata does not affect ordering. Invalid recorded versions stop the operation for inspection. Version ordering is not evidence of release readiness; inspect the candidate's validation results separately.
+**Version comparison:** downgrade protection follows SemVer precedence, including prereleases. Stable `3.0.0` is newer than `3.0.0-rc.1`; `rc.10` is newer than `rc.2`. Build metadata does not affect ordering. Invalid recorded versions stop the operation for inspection. Version ordering is not evidence of release readiness; inspect the validation results separately.
 
 Upgrade uses `.agents/macca-tools.txt`, the managed manifest, and lock/ownership evidence. An older package is refused when the installed version is newer, including an unpublished local build. Check the invoked version before retrying with a different package.
 

@@ -1,6 +1,6 @@
 # Candidate acceptance evidence
 
-Candidate: local `3.0.0-rc.1` worktree, 2026-09-22. This is a bounded development record, not a stable-release certificate or proof of zero defects. No commit, publication, or remote CI execution is recorded here.
+Candidate: local `3.0.0` worktree, 2026-09-22. This is a bounded development record, not a stable-release certificate or proof of zero defects. No commit, publication, or remote CI execution is recorded here.
 
 ## Automated verification
 

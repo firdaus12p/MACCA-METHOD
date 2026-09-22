@@ -14,8 +14,6 @@ You describe the goal and make important decisions. Your AI assistant guides the
 
 **Requirements:** Node.js **22+** with `npx`, and a supported AI coding host. The configured test matrix covers Node.js 22 and 24 on Linux, Windows, and macOS; see [support and limits](#support-and-limits).
 
-> Source candidate: **3.0.0-rc.1**, an unpublished prerelease, not a stable release. `@latest` below selects the published npm package. Review the [changelog](CHANGELOG.md) and [2.x migration notes](docs/troubleshooting.md#migrate-from-2x-to-the-3x-candidate) before testing this candidate.
-
 Run this from your project directory:
 
 ```bash
@@ -108,6 +106,8 @@ See [configuration](docs/configuration.md) for all supported preferences, skill/
 
 ## Update and diagnose
 
+From the project directory:
+
 ```bash
 npx macca-method@latest upgrade
 npx macca-method@latest doctor
@@ -117,11 +117,16 @@ npx macca-method@latest doctor
 
 Restart your AI host after installing or upgrading skills. Preference-only changes apply on the next configuration read.
 
-`@latest` uses the newest **published npm package**. Local or GitHub changes are not available through that command until a new package is published. Pin a version when reproducibility matters.
+### Version selection
 
-The 3.x prerelease uses the **`next`** channel; it does not replace stable `latest`. Check `npm view macca-method dist-tags` before selecting a release. To try the published candidate, use `npx macca-method@next install` or pin `@3.0.0-rc.1`. Review the [breaking changes and migration notes](CHANGELOG.md) first.
+| Selector | Purpose |
+| --- | --- |
+| `@latest` | Install or upgrade to the current stable release |
+| `@3.0.0` | Pin this exact release version |
 
-See [troubleshooting](docs/troubleshooting.md) for error messages, safe recovery, and platform-specific paths.
+`@latest` resolves the latest published npm package. To test repository changes locally before publication, invoke the source CLI (for example `node bin/macca-method.js --help` from the source checkout).
+
+See [troubleshooting](docs/troubleshooting.md) for error messages, safe recovery, migration from 2.x, and platform-specific paths.
 
 ## Support and limits
 
