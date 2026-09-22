@@ -35,19 +35,25 @@ function runNpm(args, options = {}) {
 }
 
 function run(command, args, options = {}) {
+  const env = { ...process.env, ...(options.env || {}) };
+  delete env.npm_config_dry_run;
   return execFileSync(command, args, {
     cwd: rootDir,
     stdio: "inherit",
     ...options,
+    env,
     shell: false,
   });
 }
 
 function capture(command, args, options = {}) {
+  const env = { ...process.env, ...(options.env || {}) };
+  delete env.npm_config_dry_run;
   return execFileSync(command, args, {
     cwd: rootDir,
     encoding: "utf8",
     ...options,
+    env,
     shell: false,
   });
 }

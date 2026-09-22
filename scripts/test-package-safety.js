@@ -19,9 +19,11 @@ let checks = 0;
 
 function npm(args, cwd) {
   const npm = resolveNpmCommand(args);
+  const env = { ...process.env };
+  delete env.npm_config_dry_run;
   return execFileSync(
     npm.command, npm.args,
-    { cwd, encoding: "utf8", shell: false, stdio: ["ignore", "pipe", "pipe"] },
+    { cwd, env, encoding: "utf8", shell: false, stdio: ["ignore", "pipe", "pipe"] },
   );
 }
 
